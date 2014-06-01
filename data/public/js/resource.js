@@ -14,11 +14,11 @@ var ractive = new Ractive({
 var values = {};
 
 // genSPARQL generates the SPARQL query to update/insert the resource.
-var genSPARQL = function() {
+var genSPARQL = function( published ) {
   var uri = ractive.data.overview.uri;
   var now = new Date();
   var meta = [
-    { 'p': internalPred( 'profile' ), 'o': "'" + urlParams.profile + "'" },
+    { 'p': internalPred( 'profile' ), 'o': '"' + urlParams.profile + '"' },
     { 'p': internalPred( 'displayLabel' ), 'o': ractive.data.overview.displayLabel },
     { 'p': internalPred( 'searchLabel' ), 'o': ractive.data.overview.searchLabel },
     { 'p': internalPred( 'updated' ), 'o': dateFormat( now.toISOString() ) }
@@ -28,6 +28,11 @@ var genSPARQL = function() {
     if ( ractive.data.overview.published ) {
       meta.push( {"p": internalPred( "published" ), "o": dateFormat( ractive.data.overview.published )} );
     }
+  } else {
+    meta.push( { 'p': internalPred( 'created' ), "o": dateFormat( now.toISOString() ) } );
+  }
+  if ( published ) {
+     meta.push( {'p': internalPred( 'published' ), 'o': dateFormat( now.toISOString() ) } );
   }
   metaPreds = _.reduce(meta, function(s, e) {
     return s + uri + " " + e.p + " " + e.o + " .\n";
@@ -39,21 +44,36 @@ var genSPARQL = function() {
       preds += uri + " " + e.predicate + " " + e.value + " . \n";
     });
   });
+  var graph = published ? ractive.data.publicGraph : ractive.data.draftsGraph;
   if (ractive.data.existingResource) {
-    return "WITH " + ractive.data.draftsGraph +
+    return "WITH " + graph +
       "\nDELETE { " + ractive.data.existingURI  + " ?p ?o }\n" +
       "INSERT {\n" + metaPreds + preds + "}\n" +
       "WHERE { " + ractive.data.existingURI + " ?p ?o }";
   } else {
-    return "INSERT INTO " + ractive.data.draftsGraph +
+    return "INSERT INTO " + graph +
       " {\n" + metaPreds + preds + "}\n";
   }
 };
+
 // event handlers ------------------------------------------------------------
 
 listener = ractive.on({
-  previewSparql: function(event) {
-    console.log( genSPARQL() );
+  previewSparql: function( event ) {
+    var p = ractive.get( 'published' ) ? true : false;
+    console.log( genSPARQL( p ) );
+  },
+  saveDraft: function( event ) {
+    console.log( genSPARQL( false ) );
+  },
+  publish: function( event ) {
+    console.log( genSPARQL( true ) );
+  },
+  delResource: function( event) {
+    var g = ractive.get( 'overview.published' ) ? ractive.get( 'publicGraph' ) : ractive.get( 'draftsGraph' );
+    console.log( 'WITH ' + g +
+                 '\nDELETE { ' + ractive.get( 'existingURI' ) + ' ?p ?o }\n' +
+                 'WHERE { ' + ractive.get( 'existingURI' ) + ' ?p ?o }\n' );
   },
   remove: function( event ) {
     var idx = event.index;
