@@ -217,9 +217,15 @@ loadScript('/public/profiles/' + urlParams.profile + ".js", function() {
 
     req.onload = function() {
       if (req.status >= 200 && req.status < 400) {
-        console.log(req.responseText);
-
         rdfRes = JSON.parse(req.responseText);
+
+        // If the SPARQL query returns an empty set, forward to create new resource page.
+        // TODO display flash message 'resource not found' for the user
+        if ( rdfRes.results.bindings.length === 0 ) {
+          window.location.replace( window.location.origin +
+                                   window.location.pathname +
+                                  "?profile=" + urlParams.profile );
+        }
 
         // findElement returns the keypath of a predicate, or false if no match.
         var findElement = function(pred) {
