@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="/public/js/ractive.js"></script>
+		<script src='/public/js/ractive-events-keys.js'></script>
+		<script src="/public/js/underscore-min.js"></script>
+		<meta charset=utf-8 />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>opprett/endre ressurs</title>
+		<link href="/public/css/normalize.css" media="all" rel="stylesheet" type="text/css" />
+		<link href="/public/css/styles.css" media="screen" rel="stylesheet" type="text/css" />
+	</head>
+
+	<body>
+		<div class="container" id="app">
+			<script id='template' type='text/ractive'>
+				<div class="resourceMenu">
+					<button disabled='disabled'>Innhent data fra eksterne ressurser</button>
+  				<button on-click="previewSparql">Forhåndsvis SPARQL</button>
+  				<button>
+						{{#existingResource}}Trekk tilbake som kladd{{/existingResource}}
+						{{^existingResource}}Lagre som kladd{{/existingResource}}
+					</button>
+  				<button>
+						{{#existingResource}}Lagre ressurs{{/existingResource}}
+						{{^existingResource}}Publisér ressurs{{/existingResource}}
+					</button>
+				</div>
+				<div class="RDFProfile">
+
+					<h2>{{overview.title}}</h2>
+					<p>{{overview.desc}}</p>
+
+					<div class="resourceMetadata">
+						<div class="resourceURI">
+							<label>URI:</label> <span>{{overview.uri}}</span>
+						</div>
+						<div class="row clearfix resourceTimestamps">
+							<div class="column third">
+								<label>Opprettet</label><br/>
+								<input disabled=true value="{{overview.created}}" />
+							</div>
+							<div class="column third">
+								<label>Publisert</label><br/>
+								<input disabled=true value="{{overview.published}}" />
+							</div>
+							<div class="column third">
+								<label>Sist endret</label><br/>
+								<input disabled=true value="{{overview.updated}}" />
+							</div>
+							<div class="column third">
+								<label>Søkebetegnelse</label><br/>
+								<input disabled=true value="{{overview.searchLabel}}" />
+							</div>
+							<div class="column third">
+								<label>Visningsbetegnelse</label><br/>
+								<input disabled=true value="{{overview.displayLabel}}" />
+							</div>
+						</div>
+					</div>
+
+					{{#views:i1}}
+					<div class="resourceData">
+						<h3>{{title}}</h3>
+						<p>{{desc}}</p>
+
+						{{#elements:i2}}
+
+							<h4>{{label}}
+								{{#required}}<span class="red">*</span>{{/}}
+								{{#repeatable}}<span class="grey">+</span>{{/}}
+							</h4>
+
+
+							{{# type === 'URI' }}
+								{{>URIInput}}
+							{{/}}
+
+							{{# type === 'float'}}
+								{{>floatInput}}
+							{{/}}
+
+							{{# type == 'langString'}}
+								{{>langStringInput}}
+							{{/}}
+
+							<div class="propertyDesc">{{desc}}</div>
+
+							<div class="clearfix row resourceValues">
+
+							{{#values:i3}}
+
+								<div class="propertyValue column third">
+
+									<span class="propertyLabel">{{value}}</span>
+									<span class="removeProperty" on-click='remove'>x</span>
+									{{# source !== 'local' }}
+										<span class="tinyText">{{source}}</span>
+									{{/}}
+									{{#URILabel}}
+										<div><strong>{{URILabel}}</strong></div>
+									{{/URILabel}}
+								</div>
+
+							{{/values}}
+
+							</div>
+
+						{{/elements}}
+					</div>
+					{{/views}}
+				</div>
+				<!-- {{>URIInput}} -->
+					<input
+						on-keyup='searchForURI'
+						on-blur='searchBlur'
+						placeholder="søk etter ressurs"/>
+					{{#searching}}
+						<div class="relative">
+							<div class="URISearchResults">
+								<ul>
+								{{#searchResults}}
+									<li class="searchHit" on-click='selectURI'>
+										<span class="hitLabel">{{label}}</span>
+										<span class="hitURI grey">{{uri}}</span>
+									</li>
+								{{/searchResults}}
+								</ul>
+								<button>Opprett ny</button>
+							</div>
+						</div>
+					{{/}}
+				<!-- {{/URIInput}} -->
+
+				<!-- {{>floatInput}} -->
+						<input
+							on-enter='validateFloat'
+							disabled={{# repeatable == false && values}}true{{/}}
+							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
+							<span class="errorInfo">{{errorInfo}}</span>
+				<!-- {{/floatInput}} -->
+
+				<!-- {{>langStringInput}} -->
+						<input
+							on-enter='validateLangString'
+							disabled={{# repeatable == false && values}}true{{/}}
+							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
+							<span class="errorInfo">{{errorInfo}}</span>
+							<select value={{.selected}}>
+								{{#languages}}
+									<option value={{value}}>{{label}}</option>
+								{{/languages}}
+							</select>
+				<!-- {{/langStringInput}} -->
+			</script>
+		</div>
+		<script src="/public/profiles/_common.js"></script>
+		<script src="/public/js/resource.js"></script>
+	</body>
+</html>

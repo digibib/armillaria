@@ -1,0 +1,25 @@
+{
+  "ServePort": 3333,
+  "RDFStore": {
+    "Endpoint": "http://localhost:8890/sparql-auth",
+    "Username": "dba",
+    "Password": "dba"
+  },
+  "ExternalDataSources": [
+    {
+      "Name": "dewey.info",
+      "Endpoint": "http://dewey.info/sparql.php",
+      "Type": "SPARQL"
+    },
+    {
+      "Name": "data.deichman.no",
+      "Endpoint": "http://data.deichman.no/sparql",
+      "Type": "SPARQL"
+    },
+    {
+      "Name": "Z39.proxy",
+      "Endpoint": "http://datatest.deichman.no:8080",
+      "Type": "REST"
+    }
+  ]
+}

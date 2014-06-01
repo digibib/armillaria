@@ -1,0 +1,220 @@
+/* setup */
+
+*, *:before, *:after {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html {
+  font: 100%/1.5 serif;
+  font-weight: 400;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* mobile-first grid */
+
+.container {
+  margin: 0 auto;
+  max-width: 53rem;
+  width: 90%;
+}
+
+.column { margin-bottom: 1.5rem; }
+
+@media (min-width: 40rem) {
+  .column {
+    float: left;
+    margin: 0;
+    /*padding-left: 1rem;*/
+    padding-right: 1rem;
+  }
+
+  .column.full { width: 100%; }
+  .column.two-thirds { width: 66.7%; }
+  .column.half { width: 50%; }
+  .column.third { width: 33.3%; }
+  .column.fourth { width: 25%; }
+  .column.flow-opposite { float: right; }
+}
+
+@media (min-width: 40rem) {
+  html { font-size: 112%; }
+}
+
+@media (min-width: 64rem) {
+  html { font-size: 120%; }
+}
+
+
+/* clearfix */
+
+.clearfix:before,
+.clearfix:after {
+  content: " ";
+  display: table;
+}
+
+.clearfix:after {
+  clear: both;
+}
+
+.clearfix {
+  *zoom: 1;
+}
+
+/* styles */
+
+body {
+  background-color: #fff;
+  color: #222;
+  font-size: 1.1em;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: Arial, sans-serif;
+  margin: 0.6em 0;
+}
+
+label {
+  font-weight: bold;
+  font-family: monospace
+}
+
+input, select {
+  font-family: monospace;
+  font-size:90%;
+}
+
+input {
+  min-width: 20em
+}
+
+.tinyText {
+  font-size: 50%;
+}
+
+.red {
+  color: red;
+}
+
+.grey {
+  color: #aaa;
+}
+
+.errorInfo {
+  font-family: monospace;
+  background-color: yellow;
+
+  font-size:90%;
+}
+
+.relative {
+  position: relative;
+}
+
+/* resource profile form */
+
+.resourceMenu {
+  position: fixed;
+  top: 1em;
+  left: 3em;
+  width: 200px;
+  font-family: monospace;
+}
+
+.resourceMenu button {
+
+  width: 80%;
+  padding: 0.2em;
+  margin: 0.6em;
+}
+
+button[disabled=disabled], button:disabled {
+  color: #aaa;
+}
+
+.RDFProfile h3 {
+  border-bottom: 2px solid #ccc;
+}
+
+.RDFProfile p { margin: 0.5em 0; }
+
+.resourceMetadata {
+  margin: 2em 0;
+  border: 2px solid #aaa;
+  background-color: #f5f5f5;
+  padding: 0.5em;
+}
+
+.resourceURI {
+  font-family: monospace;
+  border-bottom: 2px solid #ccc;
+}
+
+.resourceTimestamps {
+  margin: 1em 0;
+}
+
+.resourceValues {
+  margin: 1em 0;
+  font-family: monospace;
+  font-size: 90%;
+}
+
+
+.propertyValue {
+  background-color: #dadada;
+  border: 2px solid #fff;
+  border-radius: 3px;
+  padding: 0.3em;
+}
+
+.propertyLabel:hover {
+ /* cursor: pointer;*/
+}
+
+.propertyDesc {
+  font-size:70%;
+}
+
+.removeProperty {
+  display: inline-block;
+  border-radius: 2px;
+  width: 1.2em;
+  color: red;
+  text-align: center;
+  background-color: pink;
+  float: right;
+}
+
+.removeProperty:hover {
+  cursor: pointer;
+}
+
+.URISearchResults {
+  z-index: 100;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #eee;
+  font-family: monospace;
+  font-size: 90%;
+  width: 100%;
+}
+
+.URISearchResults ul {
+  list-style: none;
+  padding: 0;
+}
+
+.searchHit:hover {
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.hitLabel:hover {
+  text-decoration: underline;
+}
+
