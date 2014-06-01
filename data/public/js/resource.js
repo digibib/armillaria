@@ -59,10 +59,6 @@ var genSPARQL = function( published ) {
 // event handlers ------------------------------------------------------------
 
 listener = ractive.on({
-  previewSparql: function( event ) {
-    var p = ractive.get( 'published' ) ? true : false;
-    console.log( genSPARQL( p ) );
-  },
   saveDraft: function( event ) {
     console.log( genSPARQL( false ) );
   },
