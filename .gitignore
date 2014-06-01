@@ -1,3 +1,4 @@
 notes.txt
 data/config.json
-data/public/js
+data/public/js/ractive*
+data/public/js/underscore*
