@@ -38,6 +38,7 @@
 							<label>URI:</label> <span>{{overview.uri}}</span>
 						</div>
 						<div class="row clearfix resourceTimestamps">
+							{{#existingResource}}
 							<div class="column third">
 								<label>Opprettet</label><br/>
 								<input disabled=true value="{{overview.created}}" />
@@ -50,6 +51,7 @@
 								<label>Sist endret</label><br/>
 								<input disabled=true value="{{overview.updated}}" />
 							</div>
+							{{/existingResource}}
 							<div class="column third">
 								<label>Søkebetegnelse</label><br/>
 								<input disabled=true value="{{overview.searchLabel}}" />
