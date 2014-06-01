@@ -258,12 +258,32 @@ loadScript('/public/profiles/' + urlParams.profile + ".js", function() {
 
         rdfRes.results.bindings.forEach(function(b) {
           var pred = "<" + b.p.value + ">";
-          var kp = findElement(pred);
-          var v = getValue(b.o);
-          var predLabel = ractive.get(kp).label;
           var source = 'local';
-          ractive.get(kp + ".values").push(
-            {"predicate": pred, "predicateLabel": predLabel, "value": v, "source": source});
+          var kp = findElement(pred);
+          if ( kp ) {
+            var v = getValue(b.o);
+            var predLabel = ractive.get(kp).label;
+            ractive.get(kp + ".values").push(
+              {"predicate": pred, "predicateLabel": predLabel, "value": v, "source": source});
+          } else {
+            switch ( pred ) {
+              case '<armillaria://internal/displayLabel>':
+                ractive.set( 'overview.displayLabel', getValue( b.o ) );
+                break;
+              case '<armillaria://internal/searchLabel>':
+                ractive.set( 'overview.searchLabel', getValue( b.o ) );
+                break;
+              case '<armillaria://internal/created>':
+                ractive.set( 'overview.created', getValue( b.o ) );
+                break;
+              case '<armillaria://internal/updated>':
+                ractive.set( 'overview.updated', getValue( b.o ) );
+                break;
+              case '<armillaria://internal/published>':
+                ractive.set( 'overview.published', getValue( b.o ) );
+                break;
+             }
+          }
         });
       } else {
         console.log("server error");
