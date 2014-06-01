@@ -16,6 +16,6 @@ clean:
 	@rm -f *.log
 
 deps:
-	@wget http://cdn.ractivejs.org/latest/ractive.js -O data/public/js/ractive.js
+	@wget http://cdn.ractivejs.org/latest/ractive.min.js -O data/public/js/ractive.js
 	@wget https://raw.github.com/ractivejs/ractive-events-keys/master/ractive-events-keys.js -O data/public/js/ractive-events-keys.js
 	@wget http://underscorejs.org/underscore-min.js -O data/public/js/underscore-min.js
