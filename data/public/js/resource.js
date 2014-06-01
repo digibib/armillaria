@@ -59,7 +59,6 @@ var insertQuery = function( publish ) {
 };
 
 var doQuery = function( query, successAction ) {
-  console.log( query );
   var postData = 'query=' + encodeURIComponent( query );
   req = new XMLHttpRequest();
   req.open( 'POST', '/RDF/resource', true);
