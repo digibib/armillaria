@@ -20,6 +20,7 @@ var deleteQuery = function( published ) {
           ractive.get( 'existingURI' ) + ' ?p ?o } }\n' +
           'WHERE { ' + ractive.get( 'existingURI' ) + ' ?p ?o }';
 };
+
 // insertQuery generates the SPARQL query to insert the resource into the graph.
 var insertQuery = function( publish ) {
   var uri = ractive.data.overview.uri;
@@ -31,9 +32,11 @@ var insertQuery = function( publish ) {
     { 'p': internalPred( 'updated' ), 'o': dateFormat( now.toISOString() ) }
   ];
   if ( ractive.data.existingResource ) {
-    meta.push( {"p": internalPred( "created" ), "o": dateFormat(ractive.data.overview.created)} );
+    meta.push( {"p": internalPred( "created" ),
+                "o": dateFormat(ractive.data.overview.created) } );
     if ( ractive.data.overview.published && publish ) {
-      meta.push( {"p": internalPred( "published" ), "o": dateFormat( ractive.data.overview.published )} );
+      meta.push( {"p": internalPred( "published" ),
+                  "o": dateFormat( ractive.data.overview.published ) } );
     }
   } else {
     meta.push( { 'p': internalPred( 'created' ), "o": dateFormat( now.toISOString() ) } );
@@ -210,7 +213,7 @@ var urlParams;
       query  = window.location.search.substring(1);
 
   urlParams = {};
-  while (match = search.exec(query))
+  while ( match = search.exec(query) )
     urlParams[decode(match[1])] = decode(match[2]);
 })();
 
