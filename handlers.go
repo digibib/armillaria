@@ -41,10 +41,12 @@ func loadResource(w http.ResponseWriter, r *http.Request, _ map[string]string) {
 	io.Copy(w, bytes.NewReader(res))
 }
 
-func createResource(w http.ResponseWriter, r *http.Request, _ map[string]string) {
-	uri := r.URL.Query()["uri"]
-	if len(uri) == 0 || uri[0] == "" {
-		http.Error(w, "missing required parameter: uri", http.StatusBadRequest)
+// doResourceQuery sends a query to the RDF store SPARQL endpoint and returns the
+// application/sparql-results+json  response.
+func doResourceQuery(w http.ResponseWriter, r *http.Request, _ map[string]string) {
+	q := r.FormValue("query")
+	if q == "" {
+		http.Error(w, "missing required parameter: query", http.StatusBadRequest)
 		return
 	}
 
@@ -53,9 +55,9 @@ func createResource(w http.ResponseWriter, r *http.Request, _ map[string]string)
 		return
 	}
 
-	q := fmt.Sprintf(qGet, cfg.RDFStore.DefaultGraph, uri)
 	res, err := db.Query(q)
 	if err != nil {
+		println(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 

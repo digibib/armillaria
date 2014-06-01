@@ -80,6 +80,7 @@ func (s *localRDFStore) Query(q interface{}) ([]byte, error) {
 
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
+		// log result body?
 		return nil, fmt.Errorf("SPARQL http request failed: %s", res.Status)
 	}
 

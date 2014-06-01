@@ -55,7 +55,44 @@ var insertQuery = function( publish ) {
     });
   });
   var graph = publish ? ractive.data.publicGraph : ractive.data.draftsGraph;
-  return 'INSERT { GRAPH ' + graph + ' {\n' + metaPreds + preds + '} }';
+  return 'INSERT { GRAPH ' + graph + ' {\n' + metaPreds + preds + '} }';
+};
+
+var doQuery = function( query, successAction ) {
+  console.log( query );
+  var postData = 'query=' + encodeURIComponent( query );
+  req = new XMLHttpRequest();
+  req.open( 'POST', '/RDF/resource', true);
+  req.setRequestHeader('Content-Type',
+                       'application/x-www-form-urlencoded; charset=UTF-8');
+  req.onload = function() {
+    if ( req.status >= 200 && req.status < 400 ) {
+      console.log( req.responseText );
+      switch ( successAction ) {
+        case 'reload':
+          window.location.reload(false);
+          break;
+        case 'new':
+          window.location.replace( window.location.origin +
+                                   window.location.pathname +
+                                  "?profile=" + urlParams.profile );
+         break;
+        case 'forward':
+          window.location.replace( window.location.origin +
+                                   window.location.pathname +
+                                  "?profile=" + urlParams.profile +
+                                  "&uri=" + trimURI( ractive.get( 'overview.uri' ) ) );
+      }
+    } else {
+      console.log( 'SPARQL endpoint responed with an error' );
+    }
+  };
+
+  req.onerror = function() {
+    console.log( 'Failed to execute SPQRL query' );
+  };
+
+  req.send( postData );
 };
 
 // event handlers ------------------------------------------------------------
@@ -63,15 +100,30 @@ var insertQuery = function( publish ) {
 listener = ractive.on({
   saveDraft: function( event ) {
     var published = ractive.get( 'overview.published' ) ? true : false;
-    console.log( deleteQuery( published ) + ';\n' + insertQuery( false ) );
+    var q;
+    if ( ractive.get( 'existingURI' ) ) {
+      q = deleteQuery( published ) + ';\n' + insertQuery( false );
+    } else {
+      q = insertQuery( false );
+    }
+
+    doQuery( q, 'forward' );
+
   },
   publish: function( event ) {
     var published = ractive.get( 'overview.published' ) ? true : false;
-    console.log( deleteQuery( published ) + ';\n' + insertQuery( true ) );
+    var q;
+    if ( ractive.get( 'existingURI' ) ) {
+      q = deleteQuery( published ) + ';\n' + insertQuery( true );
+    } else {
+     q = insertQuery( true, 'forward' );
+    }
+    doQuery( q, 'forward' );
   },
   delResource: function( event) {
     var published = ractive.get( 'overview.published' ) ? true : false;
-    console.log( deleteQuery( published) );
+    var q = deleteQuery( published );
+    doQuery( q, 'new' );
   },
   remove: function( event ) {
     var idx = event.index;

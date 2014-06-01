@@ -26,3 +26,7 @@ var internalPred = function(s) {
 var dateFormat = function(d) {
   return '"' + d + '"^^<http://www.w3.org/2001/XMLSchema#dateTime>'
 }
+
+var trimURI = function(s) {
+  return s.substr( 1, s.length - 2 );
+}
