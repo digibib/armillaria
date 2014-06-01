@@ -17,9 +17,12 @@ var values = {};
 var genSPARQL = function() {
   var uri = ractive.data.overview.uri;
   var now = new Date();
-  var meta = [{"p": internalPred( "displayLabel" ), "o": ractive.data.overview.displayLabel},
-              {"p": internalPred( "searchLabel" ), "o": ractive.data.overview.searchLabel},
-              {"p": internalPred( "updated" ), "o": dateFormat( now.toISOString() )}];
+  var meta = [
+    { 'p': internalPred( 'profile' ), 'o': "'" + urlParams.profile + "'" },
+    { 'p': internalPred( 'displayLabel' ), 'o': ractive.data.overview.displayLabel },
+    { 'p': internalPred( 'searchLabel' ), 'o': ractive.data.overview.searchLabel },
+    { 'p': internalPred( 'updated' ), 'o': dateFormat( now.toISOString() ) }
+  ];
   if ( ractive.data.existingResource ) {
     meta.push( {"p": internalPred( "created" ), "o": dateFormat(ractive.data.overview.created)} );
     if ( ractive.data.overview.published ) {
