@@ -18,13 +18,16 @@
 					<button disabled='disabled'>Innhent data fra eksterne ressurser</button>
   				<button on-click="previewSparql">Forhåndsvis SPARQL</button>
   				<button>
-						{{#existingResource}}Trekk tilbake som kladd{{/existingResource}}
-						{{^existingResource}}Lagre som kladd{{/existingResource}}
+						{{#overview.puslished}}Trekk tilbake til kladd{{/overview.puslished}}
+						{{^overview.puslished}}Lagre som kladd{{/overview.puslished}}
 					</button>
   				<button>
 						{{#existingResource}}Lagre ressurs{{/existingResource}}
 						{{^existingResource}}Publisér ressurs{{/existingResource}}
 					</button>
+					{{#existingResource}}
+						<button>Slett ressurs</button>
+					{{/existingResource}}
 				</div>
 				<div class="RDFProfile">
 
