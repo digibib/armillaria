@@ -27,7 +27,7 @@ var profile = {
           "label": "Foretrukket betegnelse",
           "desc": "Kort (1-3 ord) beskrivelse av dette Dewey-nummeret",
           "required": true,
-          "repeatable": true,
+          "repeatable": false,
           "predicates": [
             {
               "label": "begenelse",

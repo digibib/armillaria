@@ -22,3 +22,7 @@ var cleanString = function(s) {
 var internalPred = function(s) {
   return "<" + common.internalNamespace + s + ">";
 };
+
+var dateFormat = function(d) {
+  return '"' + d + '"^^<http://www.w3.org/2001/XMLSchema#dateTime>'
+}

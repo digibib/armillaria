@@ -13,26 +13,44 @@ var ractive = new Ractive({
 // keep a shadow copy of all values
 var values = {};
 
+// genSPARQL generates the SPARQL query to update/insert the resource.
+var genSPARQL = function() {
+  var uri = ractive.data.overview.uri;
+  var now = new Date();
+  var meta = [{"p": internalPred( "displayLabel" ), "o": ractive.data.overview.displayLabel},
+              {"p": internalPred( "searchLabel" ), "o": ractive.data.overview.searchLabel},
+              {"p": internalPred( "updated" ), "o": dateFormat( now.toISOString() )}];
+  if ( ractive.data.existingResource ) {
+    meta.push( {"p": internalPred( "created" ), "o": dateFormat(ractive.data.overview.created)} );
+    if ( ractive.data.overview.published ) {
+      meta.push( {"p": internalPred( "published" ), "o": dateFormat( ractive.data.overview.published )} );
+    }
+  }
+  metaPreds = _.reduce(meta, function(s, e) {
+    return s + uri + " " + e.p + " " + e.o + " .\n";
+  }, "");
+
+  var preds = "";
+  _.each(values, function(v, k) {
+    _.each(v, function(e) {
+      preds += uri + " " + e.predicate + " " + e.value + " . \n";
+    });
+  });
+  if (ractive.data.existingResource) {
+    return "WITH " + ractive.data.draftsGraph +
+      "\nDELETE { " + ractive.data.existingURI  + " ?p ?o }\n" +
+      "INSERT {\n" + metaPreds + preds + "}\n" +
+      "WHERE { " + ractive.data.existingURI + " ?p ?o }";
+  } else {
+    return "INSERT INTO " + ractive.data.draftsGraph +
+      " {\n" + metaPreds + preds + "}\n";
+  }
+};
 // event handlers ------------------------------------------------------------
 
 listener = ractive.on({
   previewSparql: function(event) {
-    var uri = ractive.data.overview.uri;
-    var preds = "";
-    _.each(values, function(v, k) {
-      _.each(v, function(e) {
-        preds += uri + " " + e.predicate + " " + e.value + " . \n";
-      });
-    });
-    if (ractive.data.existingResource) {
-      console.log("WITH " + ractive.data.draftsGraph +
-                  "\nDELETE { " + uri + " ?p ?o }\n" +
-                  "INSERT {\n" + preds + "}\n" +
-                  "WHERE { " + ractive.data.existingURI + " ?p ?o }");
-    } else {
-      console.log("INSERT INTO " + ractive.data.draftsGraph +
-                  " {\n" + preds + "}\n");
-    }
+    console.log( genSPARQL() );
   },
   remove: function( event ) {
     var idx = event.index;
