@@ -16,9 +16,10 @@
 			<script id='template' type='text/ractive'>
 				<div class="resourceMenu">
 					<button disabled='disabled'>Innhent data fra eksterne ressurser</button>
-  				{{^overview.published}}
-						<button on-click="saveDraft">Lagre kladd</button>
-					{{/overview.published}}
+  				<button on-click="saveDraft">
+						{{^overview.published}}Lagre kladd{{/overview.published}}
+						{{#overview.published}}Trekk tilbake til kladd{{/overview.published}}
+					</button>
   					<button on-click="publish">
 							{{^overview.published}}Publisér{{/overview.published}}
 							{{#overview.published}}Lagre{{/overview.published}}
