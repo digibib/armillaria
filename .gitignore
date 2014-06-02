@@ -2,3 +2,4 @@ notes.txt
 data/config.json
 data/public/js/ractive*
 data/public/js/underscore*
+data/public/css/normalize.css
