@@ -16,16 +16,16 @@
 			<script id='template' type='text/ractive'>
 				<div class="resourceMenu">
 					<button disabled='true'>Innhent data fra eksterne ressurser</button>
-  				<button on-click="saveDraft" disabled='{{savingDisabled}}'>
+  				<button on-click="saveDraft" disabled='{{draftDisabled}}'>
 						{{^overview.published}}Lagre kladd{{/overview.published}}
 						{{#overview.published}}Trekk tilbake til kladd{{/overview.published}}
 					</button>
-  					<button on-click="publish" disabled='{{savingDisabled}}'>
+  					<button on-click="publish" disabled='{{publishDisabled}}'>
 							{{^overview.published}}Publisér{{/overview.published}}
 							{{#overview.published}}Lagre{{/overview.published}}
 						</button>
 					{{#existingResource}}
-						<button on-click="delResource">Slett</button>
+						<button on-click="delResource" disabled='{{deleteDisabled}}'>Slett</button>
 					{{/existingResource}}
 				</div>
 				<div class="RDFProfile">

@@ -104,9 +104,7 @@ listener = ractive.on({
     } else {
       q = insertQuery( false );
     }
-
     doQuery( q, 'forward' );
-
   },
   publish: function( event ) {
     var published = ractive.get( 'overview.published' ) ? true : false;
@@ -208,27 +206,39 @@ listener = ractive.on({
 ractive.observe('views', function( newValue, oldValue, keypath) {
   // keep values in sync
   values = {};
+  var missingValues = false;
   newValue.forEach(function(view, i) {
     view.elements.forEach(function(elem, j) {
       if (!values[elem.id]) {
         values[elem.id] = [];
+      }
+      // Check if all required attributes in the schema has a value
+      if ( elem.required && elem.values.length === 0 ) {
+        console.log( 'missing value for ' + elem.id);
+        missingValues = true;
       }
       elem.values.forEach(function(v) {
         values[elem.id].push(v);
       });
     });
   });
+  // Don't allow publish a resource with misssing required values.
+  if ( missingValues ) {
+    ractive.set( 'publishDisabled', true );
+  } else if ( !ractive.get( 'duplicateURI') ) {
+    ractive.set( { 'publishDisabled': false, 'draftDisabled': false } );
+  }
 
   var createURI = _.every(ractive.data.uriNeedIds, function(id) {
     return (values[id].length > 0);
   });
 
-  if (createURI) {
+  if ( createURI ) {
     // create URI if the needed id's are present
-    ractive.set('overview.uri', ractive.data.uriFn(values));
+    ractive.set( 'overview.uri', ractive.data.uriFn( values ) );
   } else {
     // or remove uri if there is one
-    ractive.set('overview.uri', "");
+    ractive.set( 'overview.uri', '' );
   }
 
   // create searchLabel and displayLabel
@@ -248,7 +258,10 @@ ractive.observe( 'overview.uri', function( newURI, oldURI, keyPath ) {
       if (req.status >= 200 && req.status < 400) {
         var exists = JSON.parse( req.responseText ).boolean;
         ractive.set( 'duplicateURI', exists );
-        ractive.set( 'savingDisabled', exists );
+        ractive.set( 'draftDisabled', exists );
+        if ( exists && !ractive.get( 'publishDisabled') ) {
+            ractive.set( 'publishDisabled', true );
+        }
       } else {
         console.log( 'server error' );
       }
@@ -261,7 +274,9 @@ ractive.observe( 'overview.uri', function( newURI, oldURI, keyPath ) {
     req.send( q );
   } else {
     ractive.set( 'duplicateURI', false );
-    ractive.set( 'savingDisabled', false );
+  }
+  if ( newURI === "" ) {
+    ractive.set( 'draftDisabled', true );
   }
 });
 
@@ -407,9 +422,10 @@ if ( urlParams.uri ) {
           }); // end rdfRes.results.bindings.forEach
         }); // end loadScript
       }
-      ractive.set( 'savingDisabled', false );
+      ractive.set( { 'draftDisabled': false, 'deleteDisabled': false, 'publishDisabled': false } );
     } else { // req.status > 300 || < 200
       console.log("server error"); // TODO give user feedback
+      ractive.set( { 'draftDisabled': true, 'deleteDisabled': true, 'publishDisabled': true } );
     }
   };
 
@@ -427,6 +443,6 @@ if ( urlParams.profile && !urlParams.uri ) {
   // No URI given; assuming creating a new resource.
   ractive.set('existingResource', false);
   loadScript( '/public/profiles/' + urlParams.profile + ".js", createSchema );
-  ractive.set( 'savingDisabled', false );
+  ractive.set( { 'draftDisabled': true, 'deleteDisabled': true, 'publishDisabled': true } );
 }
 
