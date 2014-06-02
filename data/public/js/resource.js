@@ -1,4 +1,3 @@
-
 // ractive init  -------------------------------------------------------------
 
 var ractive = new Ractive({
@@ -207,6 +206,7 @@ listener = ractive.on({
 // observers  ----------------------------------------------------------------
 
 ractive.observe('views', function( newValue, oldValue, keypath) {
+  // keep values in sync
   values = {};
   newValue.forEach(function(view, i) {
     view.elements.forEach(function(elem, j) {
@@ -234,6 +234,35 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
   // create searchLabel and displayLabel
   ractive.set('overview.searchLabel', ractive.data.searchLabel(values));
   ractive.set('overview.displayLabel', ractive.data.displayLabel(values));
+});
+
+ractive.observe( 'overview.uri', function( newURI, oldURI, keyPath ) {
+  // Check if URI allready exists in local RDF repo.
+  if ( newURI !== "" && newURI !== ractive.get( 'existingURI' ) ) {
+    var q = 'query=' + encodeURIComponent('ASK WHERE { ' + newURI + '?p ?o }' );
+    req = new XMLHttpRequest();
+    req.open( 'POST', '/RDF/resource', true );
+    req.setRequestHeader( 'Content-Type',
+                         'application/x-www-form-urlencoded; charset=UTF-8' );
+    req.onload = function() {
+      if (req.status >= 200 && req.status < 400) {
+        var exists = JSON.parse( req.responseText ).boolean;
+        ractive.set( 'duplicateURI', exists );
+        ractive.set( 'savingDisabled', exists );
+      } else {
+        console.log( 'server error' );
+      }
+    };
+
+    req.onerror = function() {
+      console.log( 'failed to send request: server unavailable' );
+    }
+
+    req.send( q );
+  } else {
+    ractive.set( 'duplicateURI', false );
+    ractive.set( 'savingDisabled', false );
+  }
 });
 
 // load profile and (optionally) resource data -------------------------------
@@ -378,8 +407,9 @@ if ( urlParams.uri ) {
           }); // end rdfRes.results.bindings.forEach
         }); // end loadScript
       }
+      ractive.set( 'savingDisabled', false );
     } else { // req.status > 300 || < 200
-      console.log("server error");
+      console.log("server error"); // TODO give user feedback
     }
   };
 
@@ -397,4 +427,6 @@ if ( urlParams.profile && !urlParams.uri ) {
   // No URI given; assuming creating a new resource.
   ractive.set('existingResource', false);
   loadScript( '/public/profiles/' + urlParams.profile + ".js", createSchema );
+  ractive.set( 'savingDisabled', false );
 }
+

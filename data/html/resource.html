@@ -15,12 +15,12 @@
 		<div class="container" id="app">
 			<script id='template' type='text/ractive'>
 				<div class="resourceMenu">
-					<button disabled='disabled'>Innhent data fra eksterne ressurser</button>
-  				<button on-click="saveDraft">
+					<button disabled='true'>Innhent data fra eksterne ressurser</button>
+  				<button on-click="saveDraft" disabled='{{savingDisabled}}'>
 						{{^overview.published}}Lagre kladd{{/overview.published}}
 						{{#overview.published}}Trekk tilbake til kladd{{/overview.published}}
 					</button>
-  					<button on-click="publish">
+  					<button on-click="publish" disabled='{{savingDisabled}}'>
 							{{^overview.published}}Publisér{{/overview.published}}
 							{{#overview.published}}Lagre{{/overview.published}}
 						</button>
@@ -36,6 +36,9 @@
 					<div class="resourceMetadata">
 						<div class="resourceURI">
 							<label>URI:</label> <span>{{overview.uri}}</span>
+							{{#duplicateURI}}
+								<span class="errorInfo">denne URIen finnes fra før!</span>
+							{{/duplicateURI}}
 						</div>
 						<div class="row clearfix resourceTimestamps">
 							{{#existingResource}}
