@@ -17,8 +17,8 @@ var values = {};
 var deleteQuery = function( published ) {
   var graph = published ? ractive.data.publicGraph : ractive.data.draftsGraph;
   return 'DELETE { GRAPH ' + graph + ' { ' +
-          ractive.get( 'existingURI' ) + ' ?p ?o } }\n' +
-          'WHERE { ' + ractive.get( 'existingURI' ) + ' ?p ?o }';
+    ractive.get( 'existingURI' ) + ' ?p ?o } }\n' +
+    'WHERE { ' + ractive.get( 'existingURI' ) + ' ?p ?o }';
 };
 
 // insertQuery generates the SPARQL query to insert the resource into the graph.
@@ -42,7 +42,7 @@ var insertQuery = function( publish ) {
     meta.push( { 'p': internalPred( 'created' ), "o": dateFormat( now.toISOString() ) } );
   }
   if ( publish && !ractive.data.overview.published ) {
-     meta.push( {'p': internalPred( 'published' ), 'o': dateFormat( now.toISOString() ) } );
+    meta.push( {'p': internalPred( 'published' ), 'o': dateFormat( now.toISOString() ) } );
   }
   metaPreds = _.reduce(meta, function(s, e) {
     return s + uri + " " + e.p + " " + e.o + " .\n";
@@ -73,12 +73,12 @@ var doQuery = function( query, successAction ) {
           break;
         case 'new':
           window.location.replace( window.location.origin +
-                                   window.location.pathname +
+                                  window.location.pathname +
                                   "?profile=" + urlParams.profile );
-         break;
+          break;
         case 'forward':
           window.location.replace( window.location.origin +
-                                   window.location.pathname +
+                                  window.location.pathname +
                                   "?profile=" + urlParams.profile +
                                   "&uri=" + trimURI( ractive.get( 'overview.uri' ) ) );
       }
@@ -115,7 +115,7 @@ listener = ractive.on({
     if ( ractive.get( 'existingURI' ) ) {
       q = deleteQuery( published ) + ';\n' + insertQuery( true );
     } else {
-     q = insertQuery( true, 'forward' );
+      q = insertQuery( true, 'forward' );
     }
     doQuery( q, 'forward' );
   },
@@ -131,9 +131,9 @@ listener = ractive.on({
   searchBlur: function ( event ) {
     // delay a bit so that the on-click event has time to fire in case of searchhit select
     setTimeout( function () {
-          event.node.value = "";
-          ractive.set( event.keypath + ".searching", false);
-        }, 100 );
+      event.node.value = "";
+      ractive.set( event.keypath + ".searching", false);
+    }, 100 );
   },
   newValue: function(event) {
     var value, predicate, predicateLabel, source;
@@ -178,10 +178,10 @@ listener = ractive.on({
     // validate float
     if ( !value.match(/^[0-9]+(?:\.[0-9]+)?$/) ) {
       ractive.merge( event.keypath + ".errorInfo",
-                     "ugyldig verdi: må være et tall" );
+                    "ugyldig verdi: må være et tall" );
       setTimeout( function () {
-          event.node.focus();
-        }, 0 );
+        event.node.focus();
+      }, 0 );
       return;
     }
 
@@ -255,6 +255,8 @@ var loadScript = function(src, callback) {
 
   (document.body || document.head).appendChild(s);
 };
+
+// Get the query parameters.
 var urlParams;
 (window.onpopstate = function () {
   var match,
@@ -268,8 +270,8 @@ var urlParams;
     urlParams[decode(match[1])] = decode(match[2]);
 })();
 
-// Load profile
-loadScript('/public/profiles/' + urlParams.profile + ".js", function() {
+// createSchema creates a schema acording to a loaded profile.
+var createSchema = function() {
   // set values to empty array
   profile.views.forEach(function(view, i) {
     view.elements.forEach(function(elem, j) {
@@ -277,103 +279,122 @@ loadScript('/public/profiles/' + urlParams.profile + ".js", function() {
     });
   });
   ractive.set(_.extend(profile, common));
-  // TODO onerror: what if profile is not found?
+}
 
-  // Populate schema if uri is given
-  if ( urlParams.uri ) {
-    ractive.set( 'existingResource', true );
-    ractive.set( 'existingURI', "<" + urlParams.uri + ">" );
+// Load resource if uri query parameter is given.
+if ( urlParams.uri ) {
+  ractive.set( 'existingResource', true );
+  ractive.set( 'existingURI', "<" + urlParams.uri + ">" );
 
-    var postData = 'query=' +
-                   encodeURIComponent( 'SELECT * WHERE { <' +
-                                        urlParams.uri + '> ?p ?o }' );
-    req = new XMLHttpRequest();
-    req.open( 'POST', '/RDF/resource', true );
-    req.setRequestHeader( 'Content-Type',
-                          'application/x-www-form-urlencoded; charset=UTF-8' );
-    req.onload = function() {
-      if (req.status >= 200 && req.status < 400) {
-        rdfRes = JSON.parse(req.responseText);
+  var postData = 'query=' +
+      encodeURIComponent( 'SELECT * WHERE { <' +
+                         urlParams.uri + '> ?p ?o }' );
+  req = new XMLHttpRequest();
+  req.open( 'POST', '/RDF/resource', true );
+  req.setRequestHeader( 'Content-Type',
+                       'application/x-www-form-urlencoded; charset=UTF-8' );
+  req.onload = function() {
+    if (req.status >= 200 && req.status < 400) {
+      rdfRes = JSON.parse(req.responseText);
 
-        // If the SPARQL query returns an empty set, forward to create new resource page.
-        // TODO display flash message 'resource not found' for the user
-        if ( rdfRes.results.bindings.length === 0 ) {
-          window.location.replace( window.location.origin +
-                                   window.location.pathname +
-                                  "?profile=" + urlParams.profile );
+      // If the SPARQL query returns an empty set, forward to create new resource page.
+      // TODO display flash message 'resource not found' for the user
+      if ( rdfRes.results.bindings.length === 0 && urlParams.profile ) {
+        window.location.replace( window.location.origin +
+                                window.location.pathname +
+                                "?profile=" + urlParams.profile );
+      }
+
+      // get the profile from the response
+      var p = "";
+      rdfRes.results.bindings.forEach(function(b) {
+        if ( b.p.value ===  trimURI( internalPred( 'profile' ) ) ) {
+          p = b.o.value;
         }
+      });
 
-        // findElement returns the keypath of a predicate, or false if no match.
-        var findElement = function(pred) {
-          var kp = false;
-          ractive.data.views.forEach(function(v, i) {
-            v.elements.forEach(function(e, j) {
-              e.predicates.forEach(function(p, k) {
-                if (p.uri === pred) {
-                  kp = "views."+i+".elements."+j;
-                }
+      if ( p === "" ) {
+        console.log( 'ERROR: no profile in resource.' );
+      } else {
+        loadScript( '/public/profiles/' + p + ".js", function() {
+          createSchema();
+          // findElement returns the keypath of a predicate, or false if no match.
+          var findElement = function(pred) {
+            var kp = false;
+            ractive.data.views.forEach(function(v, i) {
+              v.elements.forEach(function(e, j) {
+                e.predicates.forEach(function(p, k) {
+                  if (p.uri === pred) {
+                    kp = "views."+i+".elements."+j;
+                  }
+                });
               });
             });
-          });
-          return kp;
-        };
+            return kp;
+          };
 
-        // getValue returns the value of a binding, including surrounding quotes
-        // for strings and language tag if present.
-        var getValue = function(b) {
-          if ( b.type === 'uri' || b.type === 'typed-literal' ) {
-            return b.value;
-          }
-          if ( b.type === 'literal' ) {
-            if ( b['xml:lang'] ) {
-              return '"' + b.value + '"@' + b["xml:lang"];
+          // getValue returns the value of a binding, including surrounding quotes
+          // for strings and language tag if present.
+          var getValue = function(b) {
+            if ( b.type === 'uri' || b.type === 'typed-literal' ) {
+              return b.value;
             }
-            return '"' + b.value + '"';
-          }
-        };
+            if ( b.type === 'literal' ) {
+              if ( b['xml:lang'] ) {
+                return '"' + b.value + '"@' + b["xml:lang"];
+              }
+              return '"' + b.value + '"';
+            }
+          };
 
-        rdfRes.results.bindings.forEach(function(b) {
-          var pred = "<" + b.p.value + ">";
-          var source = 'local';
-          var kp = findElement(pred);
-          if ( kp ) {
-            var v = getValue(b.o);
-            var predLabel = ractive.get(kp).label;
-            ractive.get(kp + ".values").push(
-              {"predicate": pred, "predicateLabel": predLabel, "value": v, "source": source});
-          } else {
-            switch ( pred ) {
-              case '<armillaria://internal/displayLabel>':
-                ractive.set( 'overview.displayLabel', getValue( b.o ) );
-                break;
-              case '<armillaria://internal/searchLabel>':
-                ractive.set( 'overview.searchLabel', getValue( b.o ) );
-                break;
-              case '<armillaria://internal/created>':
-                ractive.set( 'overview.created', getValue( b.o ) );
-                break;
-              case '<armillaria://internal/updated>':
-                ractive.set( 'overview.updated', getValue( b.o ) );
-                break;
-              case '<armillaria://internal/published>':
-                ractive.set( 'overview.published', getValue( b.o ) );
-                break;
-             }
-          }
-        });
-      } else {
-        console.log("server error");
+          rdfRes.results.bindings.forEach(function(b) {
+            var pred = "<" + b.p.value + ">";
+            var source = 'local';
+            var kp = findElement(pred);
+            if ( kp ) {
+              var v = getValue(b.o);
+              var predLabel = ractive.get(kp).label;
+              ractive.get(kp + ".values").push(
+                {"predicate": pred, "predicateLabel": predLabel, "value": v, "source": source});
+            } else {
+              switch ( pred ) {
+                case '<armillaria://internal/displayLabel>':
+                  ractive.set( 'overview.displayLabel', getValue( b.o ) );
+                  break;
+                case '<armillaria://internal/searchLabel>':
+                  ractive.set( 'overview.searchLabel', getValue( b.o ) );
+                  break;
+                case '<armillaria://internal/created>':
+                  ractive.set( 'overview.created', getValue( b.o ) );
+                  break;
+                case '<armillaria://internal/updated>':
+                  ractive.set( 'overview.updated', getValue( b.o ) );
+                  break;
+                case '<armillaria://internal/published>':
+                  ractive.set( 'overview.published', getValue( b.o ) );
+                  break;
+              }
+            }
+          }); // end rdfRes.results.bindings.forEach
+        }); // end loadScript
       }
-    };
+    } else { // req.status > 300 || < 200
+      console.log("server error");
+    }
+  };
 
-    req.onerror = function() {
-      console.log("connection error");
-    };
+  req.onerror = function() {
+    console.log("connection error");
+  };
 
-    req.send( postData );
-  } else {
-    // No URI given; assuming creating a new resource.
-    ractive.set('existingResource', false);
-  }
+  req.send( postData );
+}
 
-});
+// Load profile if supplied in query string, and not allready fetched via
+// loaded resource.
+// TODO onerror: what if profile is not found?
+if ( urlParams.profile && !urlParams.uri ) {
+  // No URI given; assuming creating a new resource.
+  ractive.set('existingResource', false);
+  loadScript( '/public/profiles/' + urlParams.profile + ".js", createSchema );
+}
