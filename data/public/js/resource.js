@@ -12,6 +12,10 @@ var ractive = new Ractive({
 // keep a shadow copy of all values
 var values = {};
 
+// true before any changes made, needed for uri observer to not disable
+// draft button on page load.
+var firstLoad = true;
+
 // deleteQuery generates the SPARQL query to remove a resource from the graph.
 var deleteQuery = function( published ) {
   var graph = published ? ractive.data.publicGraph : ractive.data.draftsGraph;
@@ -57,7 +61,7 @@ var insertQuery = function( publish ) {
   return 'INSERT { GRAPH ' + graph + ' {\n' + metaPreds + preds + '} }';
 };
 
-var doQuery = function( query, successAction ) {
+var doQuery = function( query, callback ) {
   var postData = 'query=' + encodeURIComponent( query );
   req = new XMLHttpRequest();
   req.open( 'POST', '/RDF/resource', true);
@@ -66,23 +70,10 @@ var doQuery = function( query, successAction ) {
   req.onload = function() {
     if ( req.status >= 200 && req.status < 400 ) {
       console.log( req.responseText );
-      switch ( successAction ) {
-        case 'reload':
-          window.location.reload(false);
-          break;
-        case 'new':
-          window.location.replace( window.location.origin +
-                                  window.location.pathname +
-                                  "?profile=" + urlParams.profile );
-          break;
-        case 'forward':
-          window.location.replace( window.location.origin +
-                                  window.location.pathname +
-                                  "?profile=" + urlParams.profile +
-                                  "&uri=" + trimURI( ractive.get( 'overview.uri' ) ) );
-      }
+      callback( JSON.parse( req.responseText ) );
     } else {
       console.log( 'SPARQL endpoint responed with an error' );
+      ractive.set( { 'draftDisabled': true, 'deleteDisabled': true, 'publishDisabled': true } );
     }
   };
 
@@ -104,7 +95,12 @@ listener = ractive.on({
     } else {
       q = insertQuery( false );
     }
-    doQuery( q, 'forward' );
+    doQuery( q, function() {
+      // Forward to saved uri
+      window.location.replace( window.location.origin +
+                                window.location.pathname +
+                                "?uri=" + trimURI( ractive.get( 'overview.uri' ) ) );
+    });
   },
   publish: function( event ) {
     var published = ractive.get( 'overview.published' ) ? true : false;
@@ -114,12 +110,21 @@ listener = ractive.on({
     } else {
       q = insertQuery( true, 'forward' );
     }
-    doQuery( q, 'forward' );
+    doQuery( q, function() {
+     // Forward to saved uri
+      window.location.replace( window.location.origin +
+                               window.location.pathname +
+                               "?uri=" + trimURI( ractive.get( 'overview.uri' ) ) );
+    } );
   },
   delResource: function( event) {
     var published = ractive.get( 'overview.published' ) ? true : false;
     var q = deleteQuery( published );
-    doQuery( q, 'new' );
+    doQuery( q, function() {
+      window.location.replace( window.location.origin +
+                                  window.location.pathname +
+                                  "?profile=" + urlParams.profile );
+    } );
   },
   remove: function( event ) {
     var idx = event.index;
@@ -214,7 +219,6 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
       }
       // Check if all required attributes in the schema has a value
       if ( elem.required && elem.values.length === 0 ) {
-        console.log( 'missing value for ' + elem.id);
         missingValues = true;
       }
       elem.values.forEach(function(v) {
@@ -240,6 +244,7 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
     // or remove uri if there is one
     ractive.set( 'overview.uri', '' );
   }
+  firstLoad = false; //
 
   // create searchLabel and displayLabel
   ractive.set('overview.searchLabel', ractive.data.searchLabel(values));
@@ -249,40 +254,27 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
 ractive.observe( 'overview.uri', function( newURI, oldURI, keyPath ) {
   // Check if URI allready exists in local RDF repo.
   if ( newURI !== "" && newURI !== ractive.get( 'existingURI' ) ) {
-    var q = 'query=' + encodeURIComponent('ASK WHERE { ' + newURI + '?p ?o }' );
-    req = new XMLHttpRequest();
-    req.open( 'POST', '/RDF/resource', true );
-    req.setRequestHeader( 'Content-Type',
-                         'application/x-www-form-urlencoded; charset=UTF-8' );
-    req.onload = function() {
-      if (req.status >= 200 && req.status < 400) {
-        var exists = JSON.parse( req.responseText ).boolean;
-        ractive.set( 'duplicateURI', exists );
-        ractive.set( 'draftDisabled', exists );
-        if ( exists && !ractive.get( 'publishDisabled') ) {
-            ractive.set( 'publishDisabled', true );
-        }
-      } else {
-        console.log( 'server error' );
+    var q = 'ASK WHERE { ' + newURI + '?p ?o }';
+    doQuery( q, function( data) {
+      var exists = data.boolean;
+      ractive.set( 'duplicateURI', exists );
+      ractive.set( 'draftDisabled', exists );
+      if ( exists && !ractive.get( 'publishDisabled') ) {
+        ractive.set( 'publishDisabled', true );
       }
-    };
-
-    req.onerror = function() {
-      console.log( 'failed to send request: server unavailable' );
-    }
-
-    req.send( q );
+    });
   } else {
     ractive.set( 'duplicateURI', false );
   }
-  if ( newURI === "" ) {
+  if ( newURI === "" && !firstLoad ) {
     ractive.set( 'draftDisabled', true );
   }
 });
 
 // load profile and (optionally) resource data -------------------------------
 
-var loadScript = function(src, callback) {
+// loadScript dynamically loads a javascript file, executing callback on success.
+var loadScript = function( src, callback ) {
   var s = document.createElement('script');
   s.type = 'text/javascript';
   s.async = false;
@@ -330,111 +322,94 @@ if ( urlParams.uri ) {
   ractive.set( 'existingResource', true );
   ractive.set( 'existingURI', "<" + urlParams.uri + ">" );
 
-  var postData = 'query=' +
-      encodeURIComponent( 'SELECT * WHERE { <' +
-                         urlParams.uri + '> ?p ?o }' );
-  req = new XMLHttpRequest();
-  req.open( 'POST', '/RDF/resource', true );
-  req.setRequestHeader( 'Content-Type',
-                       'application/x-www-form-urlencoded; charset=UTF-8' );
-  req.onload = function() {
-    if (req.status >= 200 && req.status < 400) {
-      rdfRes = JSON.parse(req.responseText);
+  var q = 'SELECT * WHERE { <' + urlParams.uri + '> ?p ?o }';
+  doQuery( q, function( rdfRes ) {
+    // If the SPARQL query returns an empty set, forward to create new resource page.
+    // TODO display flash message 'resource not found' for the user
+    if ( rdfRes.results.bindings.length === 0 && urlParams.profile ) {
+      window.location.replace( window.location.origin +
+                              window.location.pathname +
+                              "?profile=" + urlParams.profile ); // TODO urlParams.profile is not set here
+    }
 
-      // If the SPARQL query returns an empty set, forward to create new resource page.
-      // TODO display flash message 'resource not found' for the user
-      if ( rdfRes.results.bindings.length === 0 && urlParams.profile ) {
-        window.location.replace( window.location.origin +
-                                window.location.pathname +
-                                "?profile=" + urlParams.profile );
+    // get the profile from the response
+    var p = "";
+    rdfRes.results.bindings.forEach(function(b) {
+      if ( b.p.value ===  trimURI( internalPred( 'profile' ) ) ) {
+        p = b.o.value;
+        urlParams.profile = p;
       }
+    });
 
-      // get the profile from the response
-      var p = "";
-      rdfRes.results.bindings.forEach(function(b) {
-        if ( b.p.value ===  trimURI( internalPred( 'profile' ) ) ) {
-          p = b.o.value;
-        }
-      });
-
-      if ( p === "" ) {
-        console.log( 'ERROR: no profile in resource.' );
-      } else {
-        loadScript( '/public/profiles/' + p + ".js", function() {
-          createSchema();
-          // findElement returns the keypath of a predicate, or false if no match.
-          var findElement = function(pred) {
-            var kp = false;
-            ractive.data.views.forEach(function(v, i) {
-              v.elements.forEach(function(e, j) {
-                e.predicates.forEach(function(p, k) {
-                  if (p.uri === pred) {
-                    kp = "views."+i+".elements."+j;
-                  }
-                });
+    if ( p === "" ) {
+      console.log( 'ERROR: no profile in resource.' );
+    } else {
+      loadScript( '/public/profiles/' + p + ".js", function() {
+        createSchema();
+        // findElement returns the keypath of a predicate, or false if no match.
+        var findElement = function(pred) {
+          var kp = false;
+          ractive.data.views.forEach(function(v, i) {
+            v.elements.forEach(function(e, j) {
+              e.predicates.forEach(function(p, k) {
+                if (p.uri === pred) {
+                  kp = "views."+i+".elements."+j;
+                }
               });
             });
-            return kp;
-          };
+          });
+          return kp;
+        };
 
-          // getValue returns the value of a binding, including surrounding quotes
-          // for strings and language tag if present.
-          var getValue = function(b) {
-            if ( b.type === 'uri' || b.type === 'typed-literal' ) {
-              return b.value;
+        // getValue returns the value of a binding, including surrounding quotes
+        // for strings and language tag if present.
+        var getValue = function(b) {
+          if ( b.type === 'uri' || b.type === 'typed-literal' ) {
+            return b.value;
+          }
+          if ( b.type === 'literal' ) {
+            if ( b['xml:lang'] ) {
+              return '"' + b.value + '"@' + b["xml:lang"];
             }
-            if ( b.type === 'literal' ) {
-              if ( b['xml:lang'] ) {
-                return '"' + b.value + '"@' + b["xml:lang"];
-              }
-              return '"' + b.value + '"';
+            return '"' + b.value + '"';
+          }
+        };
+
+        rdfRes.results.bindings.forEach(function(b) {
+          var pred = "<" + b.p.value + ">";
+          var source = 'local';
+          var kp = findElement(pred);
+          if ( kp ) {
+            var v = getValue(b.o);
+            var predLabel = ractive.get(kp).label;
+            ractive.get(kp + ".values").push(
+              {"predicate": pred, "predicateLabel": predLabel, "value": v, "source": source});
+          } else {
+            switch ( pred ) {
+              case '<armillaria://internal/displayLabel>':
+                ractive.set( 'overview.displayLabel', getValue( b.o ) );
+                break;
+              case '<armillaria://internal/searchLabel>':
+                ractive.set( 'overview.searchLabel', getValue( b.o ) );
+                break;
+              case '<armillaria://internal/created>':
+                ractive.set( 'overview.created', getValue( b.o ) );
+                break;
+              case '<armillaria://internal/updated>':
+                ractive.set( 'overview.updated', getValue( b.o ) );
+                break;
+              case '<armillaria://internal/published>':
+                ractive.set( 'overview.published', getValue( b.o ) );
+                break;
             }
-          };
-
-          rdfRes.results.bindings.forEach(function(b) {
-            var pred = "<" + b.p.value + ">";
-            var source = 'local';
-            var kp = findElement(pred);
-            if ( kp ) {
-              var v = getValue(b.o);
-              var predLabel = ractive.get(kp).label;
-              ractive.get(kp + ".values").push(
-                {"predicate": pred, "predicateLabel": predLabel, "value": v, "source": source});
-            } else {
-              switch ( pred ) {
-                case '<armillaria://internal/displayLabel>':
-                  ractive.set( 'overview.displayLabel', getValue( b.o ) );
-                  break;
-                case '<armillaria://internal/searchLabel>':
-                  ractive.set( 'overview.searchLabel', getValue( b.o ) );
-                  break;
-                case '<armillaria://internal/created>':
-                  ractive.set( 'overview.created', getValue( b.o ) );
-                  break;
-                case '<armillaria://internal/updated>':
-                  ractive.set( 'overview.updated', getValue( b.o ) );
-                  break;
-                case '<armillaria://internal/published>':
-                  ractive.set( 'overview.published', getValue( b.o ) );
-                  break;
-              }
-            }
-          }); // end rdfRes.results.bindings.forEach
-        }); // end loadScript
-      }
-      ractive.set( { 'draftDisabled': false, 'deleteDisabled': false, 'publishDisabled': false } );
-    } else { // req.status > 300 || < 200
-      console.log("server error"); // TODO give user feedback
-      ractive.set( { 'draftDisabled': true, 'deleteDisabled': true, 'publishDisabled': true } );
-    }
-  };
-
-  req.onerror = function() {
-    console.log("connection error");
-  };
-
-  req.send( postData );
+          }
+        }); // end rdfRes.results.bindings.forEach
+      }); // end loadScript
+    } // end p (profile) !== ""
+  });
+  ractive.set( { 'draftDisabled': false, 'deleteDisabled': false, 'publishDisabled': false } );
 }
+
 
 // Load profile if supplied in query string, and not allready fetched via
 // loaded resource.
