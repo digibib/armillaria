@@ -284,9 +284,13 @@ loadScript('/public/profiles/' + urlParams.profile + ".js", function() {
     ractive.set( 'existingResource', true );
     ractive.set( 'existingURI', "<" + urlParams.uri + ">" );
 
+    var postData = 'query=' +
+                   encodeURIComponent( 'SELECT * WHERE { <' +
+                                        urlParams.uri + '> ?p ?o }' );
     req = new XMLHttpRequest();
-    req.open( 'GET', '/RDF/resource?uri=' + encodeURIComponent(urlParams.uri), true );
-
+    req.open( 'POST', '/RDF/resource', true );
+    req.setRequestHeader( 'Content-Type',
+                          'application/x-www-form-urlencoded; charset=UTF-8' );
     req.onload = function() {
       if (req.status >= 200 && req.status < 400) {
         rdfRes = JSON.parse(req.responseText);
@@ -366,7 +370,7 @@ loadScript('/public/profiles/' + urlParams.profile + ".js", function() {
       console.log("connection error");
     };
 
-    req.send();
+    req.send( postData );
   } else {
     // No URI given; assuming creating a new resource.
     ractive.set('existingResource', false);

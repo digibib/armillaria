@@ -15,10 +15,6 @@ var (
 	cfg config
 )
 
-const (
-	qGet = `SELECT * WHERE { <%s> ?p ?o }`
-)
-
 func main() {
 	// Load configuration file --------------------------------------------------
 	cfg, err := loadConfig("data/config.json")
@@ -34,7 +30,6 @@ func main() {
 
 	// Routing ------------------------------------------------------------------
 	mux := httprouter.New()
-	mux.GET("/RDF/resource", loadResource)
 	mux.POST("/RDF/resource", doResourceQuery)
 	mux.HandlerFunc("GET", "/resource", serveFile("./data/html/resource.html"))
 	mux.ServeFiles("/public/*filepath", http.Dir("./data/public/"))
