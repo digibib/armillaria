@@ -2,24 +2,26 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
+	"os"
 
 	"github.com/julienschmidt/httprouter"
-	//log "gopkg.in/inconshreveable/log15.v2"
+	log "gopkg.in/inconshreveable/log15.v2"
 )
 
 // Global variables and constants---------------------------------------------
 var (
 	db  *localRDFStore
 	cfg config
+	l   = log.New()
 )
 
 func main() {
 	// Load configuration file --------------------------------------------------
 	cfg, err := loadConfig("data/config.json")
 	if err != nil {
-		log.Fatal(err)
+		l.Error("failed to load config.json", log.Ctx{"details": err.Error()})
+		os.Exit(1)
 	}
 
 	// Setup local repo ---------------------------------------------------------
@@ -35,5 +37,9 @@ func main() {
 	mux.ServeFiles("/public/*filepath", http.Dir("./data/public/"))
 
 	// Start server -------------------------------------------------------------
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.ServePort), mux))
+	l.Info("starting Armillaria server")
+	err = http.ListenAndServe(fmt.Sprintf(":%d", cfg.ServePort), mux)
+	if err != nil {
+		l.Error("http server crashed", log.Ctx{"details": err.Error()})
+	}
 }
