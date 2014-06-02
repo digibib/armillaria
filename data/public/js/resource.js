@@ -269,6 +269,8 @@ ractive.observe( 'overview.uri', function( newURI, oldURI, keyPath ) {
   if ( newURI === "" && !firstLoad ) {
     ractive.set( 'draftDisabled', true );
   }
+  // notify user if URI has changed
+  ractive.set( 'changedURI', ( ractive.get( 'existingURI' ) != newURI && newURI !== "" ) );
 });
 
 // load profile and (optionally) resource data -------------------------------
