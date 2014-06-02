@@ -68,3 +68,9 @@ Armellaria has a configuration file where you must fill out a few things:
 mv data/config_example.json data/config.json
 editor data/config.json
 ```
+
+To start the server type:
+
+```bash
+make deps && make run
+```
