@@ -388,19 +388,19 @@ if ( urlParams.uri ) {
               {"predicate": pred, "predicateLabel": predLabel, "value": v, "source": source});
           } else {
             switch ( pred ) {
-              case '<armillaria://internal/displayLabel>':
+              case internalPred( 'displayLabel' ):
                 ractive.set( 'overview.displayLabel', getValue( b.o ) );
                 break;
-              case '<armillaria://internal/searchLabel>':
+              case internalPred( 'searchLabel' ):
                 ractive.set( 'overview.searchLabel', getValue( b.o ) );
                 break;
-              case '<armillaria://internal/created>':
+              case internalPred( 'created' ):
                 ractive.set( 'overview.created', getValue( b.o ) );
                 break;
-              case '<armillaria://internal/updated>':
+              case internalPred( 'updated' ):
                 ractive.set( 'overview.updated', getValue( b.o ) );
                 break;
-              case '<armillaria://internal/published>':
+              case internalPred( 'published' ):
                 ractive.set( 'overview.published', getValue( b.o ) );
                 break;
             }
