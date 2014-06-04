@@ -51,7 +51,7 @@ Either way, you must make sure to set your `GOPATH` environment variable. This t
 export GOPATH=/home/<your username>/go  # for example
 ```
 
-Of course, you should ad the above `export`-statements to your `.bashrc`, `.profile` or similar, to avoid having to enter it every time you open a new shell.
+Of course, you should add the above `export`-statements to your `.bashrc`, `.profile` or similar, to avoid having to enter it every time you open a new shell.
 
 If you want to know more about using the Go tools, please consult its [exellent documentation](http://golang.org/doc/code.html).
 
