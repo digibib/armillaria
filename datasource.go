@@ -90,5 +90,6 @@ func (s *localRDFStore) Query(q interface{}) ([]byte, error) {
 	}
 
 	// TODO proxy the *http.Response directly?
+	// look into ReverseProxy at http://golang.org/pkg/net/http/httputil/
 	return body, nil
 }
