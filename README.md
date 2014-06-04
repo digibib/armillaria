@@ -12,13 +12,7 @@ The instructions will probably work with any Debian/Ubuntu-flavoured distro. My 
 Armillaria is developed and tested against Virtuoso 7, which must be compiled [from source](https://github.com/openlink/virtuoso-opensource):
 
 ```bash
-TODO instructions
-```
-
-But there is a package for Virtuoso 6, which probably will work fine:
-
-```bash
-sudo apt-get install virtuoso-opensource
+TODO build instructions
 ```
 
 
