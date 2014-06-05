@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"strings"
 
 	log "gopkg.in/inconshreveable/log15.v2"
 )
@@ -39,4 +40,28 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ map[string]string
 
 	w.Header().Set("Content-Type", "application/json")
 	io.Copy(w, bytes.NewReader(res))
+}
+
+// addToIndex enqueues the requested URI to the indexing queue.
+func addToIndex(w http.ResponseWriter, r *http.Request, _ map[string]string) {
+	uri := strings.TrimSpace(r.FormValue("uri"))
+	if uri == "" {
+		http.Error(w, "missing required parameter: uri", http.StatusBadRequest)
+		return
+	}
+
+	queueAdd.WorkQueue <- indexRequest(uri)
+	w.WriteHeader(http.StatusCreated)
+}
+
+// rmFromIndex enqueues the requested URI to the remove-from-index queue.
+func rmFromIndex(w http.ResponseWriter, r *http.Request, _ map[string]string) {
+	uri := strings.TrimSpace(r.FormValue("uri"))
+	if uri == "" {
+		http.Error(w, "missing required parameter: uri", http.StatusBadRequest)
+		return
+	}
+
+	queueRemove.WorkQueue <- indexRequest(uri)
+	w.WriteHeader(http.StatusCreated)
 }

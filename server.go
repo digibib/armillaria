@@ -11,9 +11,11 @@ import (
 
 // Global variables and constants---------------------------------------------
 var (
-	db  *localRDFStore
-	cfg config
-	l   = log.New()
+	db          *localRDFStore
+	cfg         config
+	l           = log.New()
+	queueAdd    Queue
+	queueRemove Queue
 )
 
 func main() {
@@ -30,9 +32,17 @@ func main() {
 		cfg.RDFStore.Username,
 		cfg.RDFStore.Password)
 
+	// Initialize queues and workers
+	queueAdd = newQueue("addToIndex", 100, 2, newAddWorker)
+	go queueAdd.runDispatcher()
+	queueRemove = newQueue("rmFromIndex", 100, 1, newRmWorker)
+	go queueRemove.runDispatcher()
+
 	// Routing ------------------------------------------------------------------
 	mux := httprouter.New()
 	mux.POST("/RDF/resource", doResourceQuery)
+	mux.POST("/queue/add", addToIndex)
+	mux.POST("/queue/remove", rmFromIndex)
 	mux.HandlerFunc("GET", "/resource", serveFile("./data/html/resource.html"))
 	mux.ServeFiles("/public/*filepath", http.Dir("./data/public/"))
 

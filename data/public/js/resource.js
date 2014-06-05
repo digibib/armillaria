@@ -16,6 +16,9 @@ var values = {};
 // draft button on page load.
 var firstLoad = true;
 
+
+// utility functions  --------------------------------------------------------
+
 // deleteQuery generates the SPARQL query to remove a resource from the graph.
 var deleteQuery = function( published ) {
   var graph = published ? ractive.data.publicGraph : ractive.data.draftsGraph;
@@ -61,10 +64,11 @@ var insertQuery = function( publish ) {
   return 'INSERT { GRAPH ' + graph + ' {\n' + metaPreds + preds + '} }';
 };
 
+// doQuery sends a SPARQL query the endpoint, and takes a success callback function.
 var doQuery = function( query, callback ) {
   var postData = 'query=' + encodeURIComponent( query );
-  req = new XMLHttpRequest();
-  req.open( 'POST', '/RDF/resource', true);
+  var req = new XMLHttpRequest();
+  req.open( 'POST', '/RDF/resource', true );
   req.setRequestHeader('Content-Type',
                        'application/x-www-form-urlencoded; charset=UTF-8');
   req.onload = function() {
@@ -84,6 +88,28 @@ var doQuery = function( query, callback ) {
   req.send( postData );
 };
 
+// enqueue sends an uri to a named queue.
+// It's currently fire & forget: no success/failure handling.
+var enqueue = function ( queue, uri) {
+  var postData = 'uri=' + encodeURIComponent( uri );
+  var req = new XMLHttpRequest();
+  req.open( 'POST', '/queue/' + queue, true) ;
+  req.setRequestHeader( 'Content-Type',
+                        'application/x-www-form-urlencoded; charset=UTF-8' );
+  req.send( postData );
+}
+
+// addToIndex sends an uri to the indexing queue.
+var addToIndex = function( uri ) {
+  enqueue( "add", uri );
+}
+
+// removeFromIndex sends an uri to the remove-from-index queue.
+var removeFromIndex = function( uri) {
+  enqueue( "remove", uri );
+}
+
+
 // event handlers ------------------------------------------------------------
 
 listener = ractive.on({
@@ -96,10 +122,15 @@ listener = ractive.on({
       q = insertQuery( false );
     }
     doQuery( q, function() {
+      // update the index
+      addToIndex( ractive.get( 'overview.uri' ) );
+
       // Forward to saved uri
-      window.location.replace( window.location.origin +
-                                window.location.pathname +
-                                "?uri=" + trimURI( ractive.get( 'overview.uri' ) ) );
+      setTimeout( function () {
+        window.location.replace( window.location.origin +
+                                  window.location.pathname +
+                                  "?uri=" + trimURI( ractive.get( 'overview.uri' ) ) );
+      }, 200);
     });
   },
   publish: function( event ) {
@@ -111,19 +142,30 @@ listener = ractive.on({
       q = insertQuery( true, 'forward' );
     }
     doQuery( q, function() {
-     // Forward to saved uri
-      window.location.replace( window.location.origin +
-                               window.location.pathname +
-                               "?uri=" + trimURI( ractive.get( 'overview.uri' ) ) );
+      // update the index
+      addToIndex( ractive.get( 'overview.uri' ) );
+
+      // Forward to saved uri
+      setTimeout( function () {
+        window.location.replace( window.location.origin +
+                                 window.location.pathname +
+                                 "?uri=" + trimURI( ractive.get( 'overview.uri' ) ) );
+      }, 200);
     } );
   },
   delResource: function( event) {
     var published = ractive.get( 'overview.published' ) ? true : false;
     var q = deleteQuery( published );
     doQuery( q, function() {
-      window.location.replace( window.location.origin +
-                                  window.location.pathname +
-                                  "?profile=" + urlParams.profile );
+      // update the index
+      removeFromIndex( ractive.get( 'overview.uri' ) );
+
+      // forward to create new resource
+      setTimeout( function () {
+        window.location.replace( window.location.origin +
+                                    window.location.pathname +
+                                    "?profile=" + urlParams.profile );
+      }, 200);
     } );
   },
   remove: function( event ) {
