@@ -3,7 +3,7 @@ all: todo
 	@golint .
 
 run:
-	@go run server.go config.go datasource.go rdfstore.go handlers.go queue.go
+	@go run server.go config.go datasource.go rdfstore.go handlers.go queue.go indexing.go
 
 todo:
 	@grep -rn TODO *.go || true
@@ -29,8 +29,9 @@ build: deps
 
 
 indexes:
+	@curl -XDELETE http://localhost:9200/public,drafts
 	@curl -XPUT http://localhost:9200/public -d @data/es_settings.json
 	@curl -XPUT http://localhost:9200/drafts -d @data/es_settings.json
 
 mappings:
-	go run setupmappings.go
+	go run setupmappings.go indexing.go

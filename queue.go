@@ -1,14 +1,22 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/digibib/armillaria/sparql"
 	log "gopkg.in/inconshreveable/log15.v2"
 )
+
+const resourceQuery = "SELECT * WHERE { %s ?p ?o }"
 
 // indexRequest holds the URI which should be indexed or removed from an index.
 type indexRequest string
 
 // workerFactory is the function signature for creating a worker.
 type workerFactory func(int, chan chan indexRequest) Worker
+
+func urlify(s string) string { return fmt.Sprintf("<%s>", s) }
 
 // Queue is an in-memory work queue.
 type Queue struct {
@@ -25,7 +33,7 @@ func (q Queue) runDispatcher() {
 	for i := 0; i < q.NumWorkers; i++ {
 		w := q.WorkerFactory(i+1, q.WorkerQueue)
 		go w.Run()
-		l.Info("staring worker", log.Ctx{"queue": q.Name, "id2": w.Who()})
+		l.Info("staring worker", log.Ctx{"queue": q.Name, "workerID": w.Who()})
 	}
 
 	for {
@@ -69,7 +77,65 @@ func (w addWorker) Run() {
 
 		select {
 		case uri := <-w.Work:
-			println(w.Who(), "adding to index:", uri)
+			r, err := db.Query(fmt.Sprintf(resourceQuery, uri))
+			if err != nil {
+				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, uri)})
+				break
+			}
+
+			var res *sparql.Results
+			err = json.Unmarshal(r, &res)
+			if err != nil {
+				l.Error("failed to parse sparql response", log.Ctx{"error": err.Error(), "uri": uri})
+				break
+			}
+
+			// fetch the resource profile from the SPARQL response
+			var profile string
+			published := false
+			for _, b := range res.Results.Bindings {
+				if b["p"].Value == "armillaria://internal/profile" {
+					profile = b["o"].Value
+				}
+				if b["p"].Value == "armillaria://internal/published" {
+					// we need to know which index to write to
+					published = true
+				}
+			}
+			if profile == "" {
+				l.Error("resource lacks profile information", log.Ctx{"uri": uri})
+				break
+			}
+
+			resource := make(map[string]string)
+			var pred string
+			for _, b := range res.Results.Bindings {
+				pred = urlify(b["p"].Value)
+				if indexMappings[profile][pred] == "" {
+					continue // if not in mapping, we don't want to index it
+				}
+				resource[indexMappings[profile][pred]] = b["o"].Value
+			}
+
+			// We want to use the URI as the elasticsearch document ID
+			resource["uri"] = string(uri[1 : len(uri)-1])
+			resourceBody, err := json.Marshal(resource)
+			if err != nil {
+				l.Error("failed to marshal json", log.Ctx{"error": err.Error(), "uri": uri})
+			}
+
+			var index = "drafts"
+			if published {
+				index = "public"
+			}
+
+			err = esIndexer.Add(index, profile, resourceBody)
+			if err != nil {
+				log.Error("failed to index resource", log.Ctx{"error": err.Error(), "uri": uri})
+				break
+			}
+
+			l.Info("indexed resource", log.Ctx{"uri": uri, "workerID": w.Who(), "index": "public", "profile": profile})
 		case <-w.Quit:
 			println(w.Who(), "quitting")
 			return
@@ -107,7 +173,8 @@ func (w rmWorker) Run() {
 
 		select {
 		case uri := <-w.Work:
-			println(w.Who(), "removing from index:", uri)
+
+			l.Info("removed resource from index", log.Ctx{"uri": uri, "workerID": w.Who()})
 		case <-w.Quit:
 			println(w.Who(), "quitting")
 			return

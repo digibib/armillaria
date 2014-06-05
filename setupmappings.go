@@ -11,15 +11,6 @@ import (
 	"strings"
 )
 
-type Details struct {
-	Type  string `json:"type,omitempty"`
-	Index string `json:"index,omitempty"`
-}
-
-type Mapping map[string]Details
-
-type preMappings map[string]Mapping
-
 func main() {
 	cb, err := ioutil.ReadFile("data/mappings/_common")
 	if err != nil {
@@ -37,7 +28,7 @@ func main() {
 	}
 
 	for _, f := range files {
-		properties := make(map[string]Details)
+		properties := make(map[string]details)
 		var m preMappings
 		for _, v := range common {
 			for ki, vi := range v {
@@ -65,12 +56,12 @@ func main() {
 		var export bytes.Buffer
 		export.WriteString("{\"")
 		export.WriteString(profile)
-		export.WriteString("\":{\"properties\":")
+		export.WriteString("\":{\"_id\": {\"path\": \"uri\"},\"properties\":")
 		export.Write(out)
 		export.WriteString("}}")
 
 		req, err := http.NewRequest(
-			"POST",
+			"PUT",
 			"http://localhost:9200/public,drafts/"+profile+"/_mapping",
 			bytes.NewReader(export.Bytes()))
 		if err != nil {

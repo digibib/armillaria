@@ -11,19 +11,26 @@ import (
 
 // Global variables and constants---------------------------------------------
 var (
-	db          *localRDFStore
-	cfg         config
-	l           = log.New()
-	queueAdd    Queue
-	queueRemove Queue
+	db            *localRDFStore
+	cfg           config
+	l             = log.New()
+	queueAdd      Queue
+	queueRemove   Queue
+	indexMappings map[string]map[string]string // indexMappings[profile]map[predicate] = property
+	esIndexer     = Indexer{host: "http://localhost:9200", client: http.DefaultClient}
 )
 
 func main() {
-	// Load configuration file --------------------------------------------------
+	// Load configuration files -------------------------------------------------
 	cfg, err := loadConfig("data/config.json")
 	if err != nil {
-		l.Error("failed to load config.json", log.Ctx{"details": err.Error()})
+		l.Error("failed to load config.json", log.Ctx{"error": err.Error()})
 		os.Exit(1)
+	}
+
+	indexMappings, err = loadFromProfiles()
+	if err != nil {
+		l.Error("failed to load index mappings", log.Ctx{"error": err.Error()})
 	}
 
 	// Setup local repo ---------------------------------------------------------
@@ -32,7 +39,7 @@ func main() {
 		cfg.RDFStore.Username,
 		cfg.RDFStore.Password)
 
-	// Initialize queues and workers
+	// Initialize queues and workers -------------------------------------------
 	queueAdd = newQueue("addToIndex", 100, 2, newAddWorker)
 	go queueAdd.runDispatcher()
 	queueRemove = newQueue("rmFromIndex", 100, 1, newRmWorker)
