@@ -63,8 +63,15 @@ mv data/config_example.json data/config.json
 editor data/config.json
 ```
 
+Fetch dependencies and setup indexes (expects Elasticsearch to be running on localhost:9200):
+
+```bash
+make deps
+make indexes
+```
+
 To start the server type:
 
 ```bash
-make deps && make run
+make run
 ```

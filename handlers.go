@@ -34,7 +34,7 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ map[string]string
 
 	res, err := db.Query(q)
 	if err != nil {
-		l.Error("db.Query failed", log.Ctx{"details": err.Error()})
+		l.Error("db.Query failed", log.Ctx{"error": err.Error()})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
