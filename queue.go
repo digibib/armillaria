@@ -173,6 +173,11 @@ func (w rmWorker) Run() {
 
 		select {
 		case uri := <-w.Work:
+			err := esIndexer.Remove(string(uri[1 : len(uri)-1]))
+			if err != nil {
+				log.Error("failed to remove resource from index", log.Ctx{"error": err.Error(), "uri": uri})
+				break
+			}
 
 			l.Info("removed resource from index", log.Ctx{"uri": uri, "workerID": w.Who()})
 		case <-w.Quit:

@@ -40,13 +40,35 @@ func (i Indexer) Add(idx string, tp string, b []byte) error {
 	if err != nil {
 		return err
 	}
+	// TODO check if res.StatusCode > 300 or < 200
 
 	return nil
 
 }
 
 // Remove removes a resource from an index.
-func (i Indexer) Remove(idx string, tp string, uri string) error {
+func (i Indexer) Remove(uri string) error {
+	// Delete resource by query, in both indexes
+	var queryData bytes.Buffer
+	queryData.Write([]byte(`{"query":{"ids":{"values":["`))
+	queryData.Write([]byte(uri))
+	queryData.Write([]byte(`"]}}}`))
+
+	req, err := http.NewRequest(
+		"DELETE",
+		fmt.Sprintf("%s/drafts,public/_query", i.host),
+		&queryData,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err := i.client.Do(req)
+	if err != nil {
+		return err
+	}
+	// TODO check if res.StatusCode > 300 or < 200
+
 	return nil
 }
 
