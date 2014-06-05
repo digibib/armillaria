@@ -1,0 +1,7 @@
+{
+  "<armillaria://internal/created>": { "created": { "type": "date", "index": "not_analyzed" } },
+  "<armillaria://internal/published>": { "created": { "type": "date", "index": "not_analyzed" } },
+  "<armillaria://internal/updated>": { "created": { "type": "date", "index": "not_analyzed" } },
+  "<armillaria://internal/searchLabel>": { "searchLabel": { "type": "string"} },
+  "<armillaria://internal/displayLabel>": { "displayLabel": { "type": "string", "index": "not_analyzed" } }
+}

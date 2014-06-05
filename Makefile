@@ -26,3 +26,11 @@ deps:
 build: deps
 	@export GOBIN=$(shell pwd)
 	@go build
+
+
+indexes:
+	@curl -XPUT http://localhost:9200/public -d @data/es_settings.json
+	@curl -XPUT http://localhost:9200/drafts -d @data/es_settings.json
+
+mappings:
+	go run setupmappings.go
