@@ -29,9 +29,8 @@ build: deps
 
 
 indexes:
-	@curl -XDELETE http://localhost:9200/public,drafts
+	@curl -XDELETE http://localhost:9200/public
 	@curl -XPUT http://localhost:9200/public -d @data/es_settings.json
-	@curl -XPUT http://localhost:9200/drafts -d @data/es_settings.json
 
 mappings:
 	go run setupmappings.go indexing.go

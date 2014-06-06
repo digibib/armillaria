@@ -62,7 +62,7 @@ func main() {
 
 		req, err := http.NewRequest(
 			"PUT",
-			"http://localhost:9200/public,drafts/"+profile+"/_mapping",
+			"http://localhost:9200/public/"+profile+"/_mapping",
 			bytes.NewReader(export.Bytes()))
 		if err != nil {
 			log.Fatal(err)
@@ -78,7 +78,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("set mappings for /public/drafts/%s\n", profile)
+		fmt.Printf("set mappings for /public/%s\n", profile)
 	}
 
 }

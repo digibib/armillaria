@@ -92,14 +92,10 @@ func (w addWorker) Run() {
 
 			// fetch the resource profile from the SPARQL response
 			var profile string
-			published := false
 			for _, b := range res.Results.Bindings {
 				if b["p"].Value == "armillaria://internal/profile" {
 					profile = b["o"].Value
-				}
-				if b["p"].Value == "armillaria://internal/published" {
-					// we need to know which index to write to
-					published = true
+					break
 				}
 			}
 			if profile == "" {
@@ -124,12 +120,7 @@ func (w addWorker) Run() {
 				l.Error("failed to marshal json", log.Ctx{"error": err.Error(), "uri": uri})
 			}
 
-			var index = "drafts"
-			if published {
-				index = "public"
-			}
-
-			err = esIndexer.Add(index, profile, resourceBody)
+			err = esIndexer.Add("public", profile, resourceBody)
 			if err != nil {
 				log.Error("failed to index resource", log.Ctx{"error": err.Error(), "uri": uri})
 				break

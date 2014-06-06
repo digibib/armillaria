@@ -48,7 +48,7 @@ func (i Indexer) Add(idx string, tp string, b []byte) error {
 
 // Remove removes a resource from an index.
 func (i Indexer) Remove(uri string) error {
-	// Delete resource by query, in both indexes
+	// Delete resource by query, in any index|
 	var queryData bytes.Buffer
 	queryData.Write([]byte(`{"query":{"ids":{"values":["`))
 	queryData.Write([]byte(uri))
@@ -56,14 +56,14 @@ func (i Indexer) Remove(uri string) error {
 
 	req, err := http.NewRequest(
 		"DELETE",
-		fmt.Sprintf("%s/drafts,public/_query", i.host),
+		fmt.Sprintf("%s/public/_query", i.host),
 		&queryData,
 	)
 	if err != nil {
 		return err
 	}
 
-	_, err := i.client.Do(req)
+	_, err = i.client.Do(req)
 	if err != nil {
 		return err
 	}
