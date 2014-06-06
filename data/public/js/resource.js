@@ -399,7 +399,9 @@ if ( urlParams.uri ) {
   ractive.set( 'existingResource', true );
   ractive.set( 'existingURI', "<" + urlParams.uri + ">" );
 
-  var q = 'SELECT * WHERE { <' + urlParams.uri + '> ?p ?o }';
+  var q = 'SELECT * WHERE { { <' + urlParams.uri + '> ?p ?o } UNION ' +
+          '{ <' + urlParams.uri + '> ?p ?o .' +
+          ' ?o ' + internalPred( 'displayLabel') + ' ?l } }';
   doQuery( q, function( rdfRes ) {
     // If the SPARQL query returns an empty set, forward to create new resource page.
     // TODO display flash message 'resource not found' for the user
@@ -441,8 +443,11 @@ if ( urlParams.uri ) {
         // getValue returns the value of a binding, including surrounding quotes
         // for strings and language tag if present.
         var getValue = function(b) {
-          if ( b.type === 'uri' || b.type === 'typed-literal' ) {
+          if ( b.type === 'typed-literal' ) {
             return b.value;
+          }
+          if ( b.type === 'uri' ) {
+            return '<' + b.value + '>';
           }
           if ( b.type === 'literal' ) {
             if ( b['xml:lang'] ) {
@@ -452,6 +457,14 @@ if ( urlParams.uri ) {
           }
         };
 
+        // Find bindings which are labels for URIs
+        var uriLabels = {};
+        rdfRes.results.bindings.forEach( function( b ) {
+          if ( b.l ) {
+            uriLabels['<' + b.o.value + '>'] = b.l.value;
+          }
+        });
+
         rdfRes.results.bindings.forEach(function(b) {
           var pred = "<" + b.p.value + ">";
           var source = 'local';
@@ -459,8 +472,13 @@ if ( urlParams.uri ) {
           if ( kp ) {
             var v = getValue(b.o);
             var predLabel = ractive.get(kp).label;
-            ractive.get(kp + ".values").push(
-              {"predicate": pred, "predicateLabel": predLabel, "value": v, "source": source});
+            var res = {"predicate": pred, "predicateLabel": predLabel, "value": v, "source": source}
+            if ( uriLabels[v] ) {
+              res.URILabel = uriLabels[v]
+            }
+            if ( !b.l ) { // skip URI label bindings
+              ractive.get(kp + ".values").push(res);
+            }
           } else {
             switch ( pred ) {
               case internalPred( 'displayLabel' ):
