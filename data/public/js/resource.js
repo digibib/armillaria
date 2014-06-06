@@ -235,13 +235,19 @@ listener = ractive.on({
     label = event.context._source.displayLabel;
     uri = event.context._source.uri;
     source = 'local';
-    console.log( event.context );
     var idx = event.index;
     predicate = ractive.data.views[idx.i1].elements[idx.i2].predicates[0].uri;
     predicateLabel = ractive.data.views[idx.i1].elements[idx.i2].predicates[0].label;
-    ractive.data.views[idx.i1].elements[idx.i2].values.push(
-      {"predicate": predicate, "predicateLabel": predicateLabel, "value": uri,
-       "URILabel": label, "source": source});
+    var exsitingURI = _.find(ractive.data.views[idx.i1].elements[idx.i2].values, function( e ) {
+      return e.value === uri;
+    });
+
+    if ( !exsitingURI ) {
+      ractive.data.views[idx.i1].elements[idx.i2].values.push(
+        {"predicate": predicate, "predicateLabel": predicateLabel, "value": uri,
+         "URILabel": label, "source": source});
+    }
+
   },
   validateFloat: function(event) {
     var value = event.node.value.trim();
