@@ -73,7 +73,7 @@ var doQuery = function( query, callback ) {
                        'application/x-www-form-urlencoded; charset=UTF-8');
   req.onload = function() {
     if ( req.status >= 200 && req.status < 400 ) {
-      console.log( req.responseText );
+      //console.log( req.responseText );
       callback( JSON.parse( req.responseText ) );
     } else {
       console.log( 'SPARQL endpoint responed with an error' );
@@ -177,6 +177,7 @@ listener = ractive.on({
     setTimeout( function () {
       event.node.value = "";
       ractive.set( event.keypath + ".searching", false);
+      ractive.set( 'searchResults', [] );
     }, 100 );
   },
   newValue: function(event) {
@@ -200,18 +201,44 @@ listener = ractive.on({
       ractive.set( event.keypath + ".searching", false);
       return;
     }
-    console.log("searching for " + q);
+
+    var searchTypes = ractive.get( event.keypath + '.searchTypes' ).join(',');
+    var searchQuery = { "query": {} };
+    if ( q.length == 1 ) {
+      // Do a prefix query if query string is only one character
+      searchQuery.query.prefix = { "searchLabel": q };
+    } else {
+      // Otherwise normal match query (matches ngram size 2-20)
+      searchQuery.query.match = { "searchLabel": q };
+    }
+    var queryData = JSON.stringify( searchQuery );
+    var req = new XMLHttpRequest();
+    req.open( 'POST', '/search/public/'+ searchTypes, true) ;
+    req.setRequestHeader( 'Content-Type', 'application/json; charset=UTF-8' );
+
+    req.onerror = function( e ) {
+      console.log( "failed to reach search endoint: " + e.target.status );
+    }
+
+    req.onload = function( e) {
+      //console.log( e.target.responseText );
+      ractive.set( 'searchResults',
+                   JSON.parse( e.target.responseText).hits.hits );
+    }
+
+    req.send( queryData );
+
     ractive.merge( event.keypath + ".searching", true);
   }, 100),
   selectURI: function( event ) {
     var label, uri, predicate, predicateLabel, source;
-    label = event.context.label;
-    uri = event.context.uri;
+    label = event.context._source.displayLabel;
+    uri = event.context._source.uri;
     source = 'local';
-
+    console.log( event.context );
     var idx = event.index;
-    predicate = data.views[idx.i1].elements[idx.i2].predicates[0].uri;
-    predicateLabel = data.views[idx.i1].elements[idx.i2].predicates[0].label;
+    predicate = ractive.data.views[idx.i1].elements[idx.i2].predicates[0].uri;
+    predicateLabel = ractive.data.views[idx.i1].elements[idx.i2].predicates[0].label;
     ractive.data.views[idx.i1].elements[idx.i2].values.push(
       {"predicate": predicate, "predicateLabel": predicateLabel, "value": uri,
        "URILabel": label, "source": source});

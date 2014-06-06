@@ -56,7 +56,7 @@ func main() {
 	esProxy := httputil.NewSingleHostReverseProxy(esHost)
 
 	mux := httprouter.New()
-	mux.Handle("GET", "/search/*indexandtype", searchHandler(esProxy))
+	mux.Handle("POST", "/search/*indexandtype", searchHandler(esProxy))
 	mux.POST("/RDF/resource", doResourceQuery)
 	mux.POST("/queue/add", addToIndex)
 	mux.POST("/queue/remove", rmFromIndex)

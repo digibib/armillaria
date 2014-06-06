@@ -133,8 +133,8 @@
 								<ul>
 								{{#searchResults}}
 									<li class="searchHit" on-click='selectURI'>
-										<span class="hitLabel">{{label}}</span>
-										<span class="hitURI grey">{{uri}}</span>
+										<span class="hitLabel">{{_source.displayLabel}}</span>
+										<span class="hitURI grey">{{_source.uri}}</span>
 									</li>
 								{{/searchResults}}
 								</ul>

@@ -55,7 +55,7 @@ var profile = {
             }
           ],
           "type": "URI",
-          "searchQuery": "",
+          "searchTypes": ["concept"],
           "values": []
         },
         {
@@ -71,7 +71,7 @@ var profile = {
             }
           ],
           "type": "URI",
-          "searchQuery": "",
+          "searchTypes": ["concept"],
           "values": []
         }]
     }
