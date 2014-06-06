@@ -11,6 +11,7 @@ type config struct {
 	ServePort           int
 	RDFStore            source
 	ExternalDataSources []source
+	Elasticsearch       string
 }
 
 type source struct {

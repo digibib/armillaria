@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"strings"
 
 	log "gopkg.in/inconshreveable/log15.v2"
@@ -64,4 +65,12 @@ func rmFromIndex(w http.ResponseWriter, r *http.Request, _ map[string]string) {
 
 	queueRemove.WorkQueue <- indexRequest(uri)
 	w.WriteHeader(http.StatusCreated)
+}
+
+// searchHandler proxies request to Elasticsearch.
+func searchHandler(p *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request, map[string]string) {
+	return func(w http.ResponseWriter, r *http.Request, _ map[string]string) {
+		r.URL.Path = strings.TrimPrefix(r.URL.Path, "/search") + "/_search"
+		p.ServeHTTP(w, r)
+	}
 }

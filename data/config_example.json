@@ -5,6 +5,7 @@
     "Username": "dba",
     "Password": "dba"
   },
+  "Elasticsearch": "http:localhost:9200",
   "ExternalDataSources": [
     {
       "Name": "dewey.info",

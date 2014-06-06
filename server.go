@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 
 	"github.com/julienschmidt/httprouter"
@@ -46,7 +48,15 @@ func main() {
 	go queueRemove.runDispatcher()
 
 	// Routing ------------------------------------------------------------------
+	esHost, err := url.Parse(cfg.Elasticsearch)
+	if err != nil {
+		l.Error("unparsable Elasticsearch host address", log.Ctx{"error": err.Error()})
+		os.Exit(1)
+	}
+	esProxy := httputil.NewSingleHostReverseProxy(esHost)
+
 	mux := httprouter.New()
+	mux.Handle("GET", "/search/*indexandtype", searchHandler(esProxy))
 	mux.POST("/RDF/resource", doResourceQuery)
 	mux.POST("/queue/add", addToIndex)
 	mux.POST("/queue/remove", rmFromIndex)
