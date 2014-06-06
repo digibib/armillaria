@@ -25,7 +25,7 @@ deps:
 
 build: deps
 	@export GOBIN=$(shell pwd)
-	@go build
+	@go build server.go config.go datasource.go rdfstore.go handlers.go queue.go indexing.go
 
 
 indexes:
