@@ -114,6 +114,8 @@ input {
   position: relative;
 }
 
+.monospace { font-family: monospace }
+
 /* resource profile form */
 
 .resourceMenu {

@@ -32,6 +32,7 @@ var insertQuery = function( publish ) {
   var uri = ractive.data.overview.uri;
   var now = new Date();
   var meta = [
+    { 'p': 'a', 'o': ractive.data.overview.type },
     { 'p': internalPred( 'profile' ), 'o': '"' + urlParams.profile + '"' },
     { 'p': internalPred( 'displayLabel' ), 'o': ractive.data.overview.displayLabel },
     { 'p': internalPred( 'searchLabel' ), 'o': ractive.data.overview.searchLabel },

@@ -1,7 +1,8 @@
 var profile = {
   "overview": {
     "title": "Dewey-nummer",
-    "desc": "Beskriver en plassering i Deweys desimalklassifikasjonssytem"
+    "desc": "Beskriver en plassering i Deweys desimalklassifikasjonssytem",
+    "type": "<http://dewey.info/Class>"
   },
   "views": [
     {
