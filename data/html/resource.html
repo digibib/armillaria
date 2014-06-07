@@ -93,8 +93,21 @@
 								{{>floatInput}}
 							{{/}}
 
+							{{# type == 'integer' }}
+								{{>integerInput}}
+							{{/}}
+
+							{{# type == 'gYear' }}
+								{{>gYearInput}}
+							{{/}}
+
+
 							{{# type == 'langString'}}
 								{{>langStringInput}}
+							{{/}}
+
+							{{# type == 'string' }}
+								{{>stringInput}}
 							{{/}}
 
 							<div class="propertyDesc">{{desc}}</div>
@@ -153,6 +166,22 @@
 							<span class="errorInfo">{{errorInfo}}</span>
 				<!-- {{/floatInput}} -->
 
+				<!-- {{>integerInput}} -->
+						<input
+							on-enter='validateInteger'
+							disabled={{# repeatable == false && values}}true{{/}}
+							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
+							<span class="errorInfo">{{errorInfo}}</span>
+				<!-- {{/integerInput}} -->
+
+				<!-- {{>gYearInput}} -->
+						<input
+							on-enter='validateGYear'
+							disabled={{# repeatable == false && values}}true{{/}}
+							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
+							<span class="errorInfo">{{errorInfo}}</span>
+				<!-- {{/gYearInput}} -->
+
 				<!-- {{>langStringInput}} -->
 						<input
 							on-enter='validateLangString'
@@ -165,6 +194,14 @@
 								{{/languages}}
 							</select>
 				<!-- {{/langStringInput}} -->
+
+				<!-- {{>stringInput}} -->
+						<input
+							on-enter='validateString'
+							disabled={{# repeatable == false && values}}true{{/}}
+							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
+							<span class="errorInfo">{{errorInfo}}</span>
+				<!-- {{/stringInput}} -->
 			</script>
 		</div>
 		<script src="/public/profiles/_common.js"></script>

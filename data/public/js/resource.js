@@ -265,6 +265,43 @@ listener = ractive.on({
 
     ractive.fire( "newValue", event );
   },
+  validateInteger: function(event) {
+    var value = event.node.value.trim();
+
+    // validate integer
+    if ( !value.match(/^[0-9]+$/) ) {
+      ractive.merge( event.keypath + ".errorInfo",
+                    "ugyldig verdi: må være et heltall" );
+      setTimeout( function () {
+        event.node.focus();
+      }, 0 );
+      return;
+    }
+
+    ractive.fire( "newValue", event );
+  },
+  validateGYear: function(event) {
+    var value = event.node.value.trim();
+
+    // validate float
+    if ( !value.match(/^[0-9]{1,4}$/) ) {
+      ractive.merge( event.keypath + ".errorInfo",
+                    "ugyldig verdi: må være et årstall" );
+      setTimeout( function () {
+        event.node.focus();
+      }, 0 );
+      return;
+    }
+
+    // add xsd:gYear datatype
+    event.node.value = '"' + event.node.value + '"^^xsd:gYear';
+
+    ractive.fire( "newValue", event );
+  },
+  validateString: function( event ) {
+    event.node.value = '"' + event.node.value + '"';
+    ractive.fire( 'newValue', event );
+  },
   validateLangString: function( event ) {
     var value, lang;
     var idx = event.index;
