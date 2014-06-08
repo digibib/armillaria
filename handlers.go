@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httputil"
+	"strconv"
 	"strings"
 
 	log "gopkg.in/inconshreveable/log15.v2"
@@ -73,4 +74,10 @@ func searchHandler(p *httputil.ReverseProxy) func(http.ResponseWriter, *http.Req
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, "/search") + "/_search"
 		p.ServeHTTP(w, r)
 	}
+}
+
+// getIdHandler returns the next available ID number for a given RDF type.
+func getIdHandler(w http.ResponseWriter, r *http.Request, values map[string]string) {
+	n := idGen.NextId(values["type"])
+	w.Write([]byte(strconv.Itoa(n)))
 }

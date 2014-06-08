@@ -3,7 +3,7 @@ all: todo
 	@golint .
 
 run:
-	@go run server.go config.go datasource.go rdfstore.go handlers.go queue.go indexing.go
+	@go run server.go config.go datasource.go rdfstore.go handlers.go queue.go indexing.go ids.go
 
 todo:
 	@grep -rn TODO *.go || true

@@ -29,7 +29,7 @@ var deleteQuery = function( published ) {
 
 // insertQuery generates the SPARQL query to insert the resource into the graph.
 var insertQuery = function( publish ) {
-  var uri = ractive.data.overview.uri;
+  var uri = ractive.get( 'overview.uri' );
   var now = new Date();
   var meta = [
     { 'p': 'a', 'o': ractive.data.overview.type },
@@ -38,6 +38,9 @@ var insertQuery = function( publish ) {
     { 'p': internalPred( 'searchLabel' ), 'o': ractive.data.overview.searchLabel },
     { 'p': internalPred( 'updated' ), 'o': dateFormat( now.toISOString() ) }
   ];
+  if ( !ractive.data.uriFn ) {
+    meta.push( { 'p': internalPred( 'id' ), 'o': ractive.get( 'overview.idNumber' ) } );
+  }
   if ( ractive.data.existingResource ) {
     meta.push( {"p": internalPred( "created" ),
                 "o": dateFormat(ractive.data.overview.created) } );
@@ -346,44 +349,51 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
     ractive.set( { 'publishDisabled': false, 'draftDisabled': false } );
   }
 
-  var createURI = _.every(ractive.data.uriNeedIds, function(id) {
-    return (values[id].length > 0);
-  });
 
-  if ( createURI ) {
-    // create URI if the needed id's are present
-    ractive.set( 'overview.uri', ractive.data.uriFn( values ) );
-  } else {
-    // or remove uri if there is one
-    ractive.set( 'overview.uri', '' );
+  // Use uriFn if it exists
+  if ( ractive.get('uriFn') ) {
+    var createURI = _.every(ractive.data.uriNeedIds, function(id) {
+      return ( values[id].length > 0 );
+    });
+    if ( createURI) {
+      // got all needed values to generate uri
+      ractive.set( 'overview.uri', ractive.data.uriFn( values ) );
+    } else {
+      ractive.set( 'overview.uri', '' );
+    }
   }
-  firstLoad = false; //
 
-  // create searchLabel and displayLabel
-  ractive.set('overview.searchLabel', ractive.data.searchLabel(values));
-  ractive.set('overview.displayLabel', ractive.data.displayLabel(values));
+  firstLoad = false; //
+  var sl = ractive.data.searchLabel(values);
+  var dl = ractive.data.displayLabel(values);
+
+   // create searchLabel and displayLabel
+  ractive.set( 'overview.searchLabel', sl);
+  ractive.set( 'overview.displayLabel', dl);
 });
 
 ractive.observe( 'overview.uri', function( newURI, oldURI, keyPath ) {
-  // Check if URI allready exists in local RDF repo.
-  if ( newURI !== "" && newURI !== ractive.get( 'existingURI' ) ) {
-    var q = 'ASK WHERE { ' + newURI + '?p ?o }';
-    doQuery( q, function( data) {
-      var exists = data.boolean;
-      ractive.set( 'duplicateURI', exists );
-      ractive.set( 'draftDisabled', exists );
-      if ( exists && !ractive.get( 'publishDisabled') ) {
-        ractive.set( 'publishDisabled', true );
-      }
-    });
-  } else {
-    ractive.set( 'duplicateURI', false );
+  if ( ractive.get( 'uriFn') ) {
+    // Check if URI allready exists in local RDF repo.
+    if ( newURI !== "" && newURI !== ractive.get( 'existingURI' ) ) {
+      var q = 'ASK WHERE { ' + newURI + '?p ?o }';
+      doQuery( q, function( data) {
+        var exists = data.boolean;
+        ractive.set( 'duplicateURI', exists );
+        ractive.set( 'draftDisabled', exists );
+        if ( exists && !ractive.get( 'publishDisabled') ) {
+          ractive.set( 'publishDisabled', true );
+        }
+      });
+    } else {
+      ractive.set( 'duplicateURI', false );
+    }
+    if ( newURI === "" && !firstLoad ) {
+      ractive.set( 'draftDisabled', true );
+    }
+    // notify user if URI has changed
+    ractive.set( 'changedURI', ( ractive.get( 'existingURI' ) && ractive.get( 'existingURI' ) != newURI && newURI !== "" ) );
   }
-  if ( newURI === "" && !firstLoad ) {
-    ractive.set( 'draftDisabled', true );
-  }
-  // notify user if URI has changed
-  ractive.set( 'changedURI', ( ractive.get( 'existingURI' ) && ractive.get( 'existingURI' ) != newURI && newURI !== "" ) );
 });
 
 // load profile and (optionally) resource data -------------------------------
@@ -534,6 +544,10 @@ if ( urlParams.uri ) {
               case internalPred( 'published' ):
                 ractive.set( 'overview.published', getValue( b.o ) );
                 break;
+              case internalPred( 'id' ):
+                ractive.set( 'overview.idNumber', getValue( b.o ) );
+                ractive.set( 'overview.uri', '<' + urlParams.uri + '>' );
+                break;
             }
           }
         }); // end rdfRes.results.bindings.forEach
@@ -552,5 +566,22 @@ if ( urlParams.profile && !urlParams.uri ) {
   ractive.set('existingResource', false);
   loadScript( '/public/profiles/' + urlParams.profile + ".js", createSchema );
   ractive.set( { 'draftDisabled': true, 'deleteDisabled': true, 'publishDisabled': true } );
+
+  // Get a ID number for the new resource
+  var req = new XMLHttpRequest();
+  req.open( 'GET', '/id/'+ urlParams.profile, true) ;
+
+  req.onerror = function( e ) {
+      console.log( "failed to reach idService endpoint: " + e.target.status );
+  }
+
+  req.onload = function( e) {
+    var id = e.target.responseText;
+    ractive.set( 'overview.idNumber', id );
+    ractive.set( 'overview.uri', '<http://data.deichman.no/' +
+                                 urlParams.profile + '/' + id +'>' );
+  }
+
+  req.send();
 }
 

@@ -20,6 +20,7 @@ var (
 	queueRemove   Queue
 	indexMappings map[string]map[string]string // indexMappings[profile]map[predicate] = property
 	esIndexer     = Indexer{host: "http://localhost:9200", client: http.DefaultClient}
+	idGen         = newIdService()
 )
 
 func main() {
@@ -41,6 +42,18 @@ func main() {
 		cfg.RDFStore.Username,
 		cfg.RDFStore.Password)
 
+	// Init idService
+	res, err := db.Query(queryGetMax)
+	if err != nil {
+		l.Error("failed to get maximum Ids from RDF store; exiting", log.Ctx{"error": err.Error()})
+		os.Exit(1) // Cannot continue without this information
+	}
+	err = idGen.Init(res)
+	if err != nil {
+		l.Error("failed to initalize idService; exiting", log.Ctx{"error": err.Error()})
+		os.Exit(1) // Cannot continue without this information
+	}
+
 	// Initialize queues and workers -------------------------------------------
 	queueAdd = newQueue("addToIndex", 100, 2, newAddWorker)
 	go queueAdd.runDispatcher()
@@ -57,6 +70,7 @@ func main() {
 
 	mux := httprouter.New()
 	mux.Handle("POST", "/search/*indexandtype", searchHandler(esProxy))
+	mux.GET("/id/:type", getIdHandler)
 	mux.POST("/RDF/resource", doResourceQuery)
 	mux.POST("/queue/add", addToIndex)
 	mux.POST("/queue/remove", rmFromIndex)
