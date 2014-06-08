@@ -151,8 +151,10 @@
 										<span class="hitURI grey">{{_source.uri}}</span>
 									</li>
 								{{/searchResults}}
+								{{^searchResults}} (ingen treff) {{/searchResults}}
 								</ul>
-								<button>Opprett ny</button>
+								<strong>Opprett ny ressurs: </strong>
+								{{#searchTypes}}<a class='newResLink' target='_blank' href='/resource?profile={{.}}'>{{.}}</a>{{/searchTypes}}
 							</div>
 						</div>
 					{{/}}

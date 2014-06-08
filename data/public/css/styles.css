@@ -204,6 +204,8 @@ button[disabled=disabled], button:disabled {
   font-family: monospace;
   font-size: 90%;
   width: 100%;
+  border-bottom: 1px solid #888;
+  padding: 0.3em;
 }
 
 .URISearchResults ul {
@@ -220,3 +222,6 @@ button[disabled=disabled], button:disabled {
   text-decoration: underline;
 }
 
+.newResLink {
+  margin: 0 0.3em;
+}
