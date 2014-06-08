@@ -67,7 +67,7 @@ Fetch dependencies and setup indexes (expects Elasticsearch to be running on loc
 
 ```bash
 make deps
-make indexes
+make indexes && make mappings
 ```
 
 To start the server type:
