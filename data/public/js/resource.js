@@ -440,6 +440,29 @@ var createSchema = function() {
     });
   });
   ractive.set(_.extend(profile, common));
+
+  if (urlParams.uri) {
+    // loading an existing resource
+    return
+  }
+
+  // Get a ID number for new resource
+  var req = new XMLHttpRequest();
+  req.open( 'GET', '/id/'+ urlParams.profile + '?nocacheplease=' + new Date().valueOf(), true) ;
+
+  req.onerror = function( e ) {
+      console.log( "failed to reach idService endpoint: " + e.target.status );
+  }
+
+  req.onload = function( e) {
+    var id = e.target.responseText;
+    ractive.set( 'overview.idNumber', id );
+    ractive.set( 'overview.uri', '<http://data.deichman.no/' +
+                                 urlParams.profile + '/' + id +'>' );
+    ractive.update();
+  }
+
+  req.send();
 }
 
 // Load resource if uri query parameter is given.
@@ -567,21 +590,6 @@ if ( urlParams.profile && !urlParams.uri ) {
   loadScript( '/public/profiles/' + urlParams.profile + ".js", createSchema );
   ractive.set( { 'draftDisabled': true, 'deleteDisabled': true, 'publishDisabled': true } );
 
-  // Get a ID number for the new resource
-  var req = new XMLHttpRequest();
-  req.open( 'GET', '/id/'+ urlParams.profile, true) ;
 
-  req.onerror = function( e ) {
-      console.log( "failed to reach idService endpoint: " + e.target.status );
-  }
-
-  req.onload = function( e) {
-    var id = e.target.responseText;
-    ractive.set( 'overview.idNumber', id );
-    ractive.set( 'overview.uri', '<http://data.deichman.no/' +
-                                 urlParams.profile + '/' + id +'>' );
-  }
-
-  req.send();
 }
 
