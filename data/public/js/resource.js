@@ -200,6 +200,10 @@ listener = ractive.on({
 
   },
   searchForURI: _.debounce(function( event) {
+    if (event.original.keyCode == 27) {
+      ractive.fire( "searchBlur", event );
+      return
+    }
     var q = event.node.value.trim();
     if (q === "") {
       ractive.set( event.keypath + ".searching", false);
