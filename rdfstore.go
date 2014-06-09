@@ -50,6 +50,8 @@ func (s *localRDFStore) Query(q string) ([]byte, error) {
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
 		// log result body?
+		// b, _ := ioutil.ReadAll(res.Body)
+		// println(string(b))
 		return nil, fmt.Errorf("SPARQL http request failed: %s", res.Status)
 	}
 
