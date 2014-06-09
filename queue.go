@@ -10,7 +10,8 @@ import (
 
 const resourceQuery = `
 SELECT * WHERE {
-   { %s ?p ?o }
+   { %s ?p ?o .
+     MINUS { %s ?p ?o . ?o <armillaria://internal/displayLabel> _:l . } }
    UNION
    { %s ?p ?o .
      ?o <armillaria://internal/displayLabel> ?l . }
@@ -83,9 +84,9 @@ func (w addWorker) Run() {
 
 		select {
 		case uri := <-w.Work:
-			r, err := db.Query(fmt.Sprintf(resourceQuery, uri, uri))
+			r, err := db.Query(fmt.Sprintf(resourceQuery, uri, uri, uri))
 			if err != nil {
-				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, uri)})
+				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, uri, uri, uri)})
 				break
 			}
 
@@ -117,13 +118,6 @@ func (w addWorker) Run() {
 			var pred string
 			uf := uriField{}
 
-			uriFields := make(map[string]bool)
-			for _, b := range res.Results.Bindings {
-				if _, ok := b["l"]; ok {
-					uriFields[urlify(b["p"].Value)] = true
-				}
-			}
-
 			for _, b := range res.Results.Bindings {
 				pred = urlify(b["p"].Value)
 				if indexMappings[profile][pred] == "" {
@@ -145,20 +139,20 @@ func (w addWorker) Run() {
 					}
 					continue
 				}
-				if !uriFields[pred] {
-					val := b["o"].Value
-					switch resource[indexMappings[profile][pred]].(type) {
-					case []interface{}:
-						resource[indexMappings[profile][pred]] =
-							append(resource[indexMappings[profile][pred]].([]interface{}), val)
-					case interface{}:
-						s := make([]interface{}, 0)
-						s = append(s, resource[indexMappings[profile][pred]])
-						resource[indexMappings[profile][pred]] = append(s, val)
-					default:
-						resource[indexMappings[profile][pred]] = val
-					}
+
+				val := b["o"].Value
+				switch resource[indexMappings[profile][pred]].(type) {
+				case []interface{}:
+					resource[indexMappings[profile][pred]] =
+						append(resource[indexMappings[profile][pred]].([]interface{}), val)
+				case interface{}:
+					s := make([]interface{}, 0)
+					s = append(s, resource[indexMappings[profile][pred]])
+					resource[indexMappings[profile][pred]] = append(s, val)
+				default:
+					resource[indexMappings[profile][pred]] = val
 				}
+
 			}
 
 			// We want to use the URI as the elasticsearch document ID
