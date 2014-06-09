@@ -28,7 +28,7 @@ var profile = {
           "label": "Foretrukket betegnelse",
           "desc": "Kort (1-3 ord) beskrivelse av dette Dewey-nummeret",
           "required": true,
-          "repeatable": false,
+          "repeatable": true,
           "predicates": [
             {
               "label": "begenelse",
@@ -56,8 +56,7 @@ var profile = {
             }
           ],
           "type": "URI",
-          "searchTypes": ["concept"],
-          "values": []
+          "searchTypes": ["emne"]
         },
         {
           "id": "closeMatch",
@@ -72,9 +71,9 @@ var profile = {
             }
           ],
           "type": "URI",
-          "searchTypes": ["concept"],
-          "values": []
-        }]
+          "searchTypes": ["emne"]
+        }
+      ]
     }
   ],
   "uriNeedIds": ["loc"],

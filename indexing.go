@@ -115,6 +115,7 @@ func loadFromProfiles() (map[string]map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	//                  map[profile]map[predicate]field
 	allMappings := make(map[string]map[string]string)
 	for _, f := range files {
 		profile := strings.TrimSuffix(strings.TrimPrefix(f, "data/mappings/"), ".json")

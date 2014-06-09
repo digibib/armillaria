@@ -8,7 +8,13 @@ import (
 	log "gopkg.in/inconshreveable/log15.v2"
 )
 
-const resourceQuery = "SELECT * WHERE { %s ?p ?o }"
+const resourceQuery = `
+SELECT * WHERE {
+   { %s ?p ?o }
+   UNION
+   { %s ?p ?o .
+     ?o <armillaria://internal/displayLabel> ?l . }
+}`
 
 // indexRequest holds the URI which should be indexed or removed from an index.
 type indexRequest string
@@ -58,7 +64,7 @@ func newQueue(name string, bufferSize int, numWorkers int, wFn workerFactory) Qu
 
 // Worker is the interface witch all queue workers must implement.
 type Worker interface {
-	Who() int
+	Who() int // TODO rename ID()
 	Run()
 	Stop()
 }
@@ -77,7 +83,7 @@ func (w addWorker) Run() {
 
 		select {
 		case uri := <-w.Work:
-			r, err := db.Query(fmt.Sprintf(resourceQuery, uri))
+			r, err := db.Query(fmt.Sprintf(resourceQuery, uri, uri))
 			if err != nil {
 				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, uri)})
 				break
@@ -103,18 +109,61 @@ func (w addWorker) Run() {
 				break
 			}
 
-			resource := make(map[string]string)
+			resource := make(map[string]interface{})
+			type uriField struct {
+				URI   string `json:"uri"`
+				Label string `json:"label"`
+			}
 			var pred string
+			uf := uriField{}
+
+			uriFields := make(map[string]bool)
+			for _, b := range res.Results.Bindings {
+				if _, ok := b["l"]; ok {
+					uriFields[urlify(b["p"].Value)] = true
+				}
+			}
+
 			for _, b := range res.Results.Bindings {
 				pred = urlify(b["p"].Value)
 				if indexMappings[profile][pred] == "" {
 					continue // if not in mapping, we don't want to index it
 				}
-				resource[indexMappings[profile][pred]] = b["o"].Value
+				if _, ok := b["l"]; ok {
+					uf.URI = b["o"].Value
+					uf.Label = b["l"].Value
+					switch resource[indexMappings[profile][pred]].(type) {
+					case []interface{}:
+						resource[indexMappings[profile][pred]] =
+							append(resource[indexMappings[profile][pred]].([]interface{}), uf)
+					case uriField:
+						s := make([]interface{}, 0)
+						s = append(s, resource[indexMappings[profile][pred]])
+						resource[indexMappings[profile][pred]] = append(s, uf)
+					default:
+						resource[indexMappings[profile][pred]] = uf
+					}
+					continue
+				}
+				if !uriFields[pred] {
+					val := b["o"].Value
+					switch resource[indexMappings[profile][pred]].(type) {
+					case []interface{}:
+						resource[indexMappings[profile][pred]] =
+							append(resource[indexMappings[profile][pred]].([]interface{}), val)
+					case interface{}:
+						s := make([]interface{}, 0)
+						s = append(s, resource[indexMappings[profile][pred]])
+						resource[indexMappings[profile][pred]] = append(s, val)
+					default:
+						resource[indexMappings[profile][pred]] = val
+					}
+				}
 			}
 
 			// We want to use the URI as the elasticsearch document ID
 			resource["uri"] = string(uri[1 : len(uri)-1])
+
 			resourceBody, err := json.Marshal(resource)
 			if err != nil {
 				l.Error("failed to marshal json", log.Ctx{"error": err.Error(), "uri": uri})

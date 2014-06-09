@@ -30,7 +30,7 @@ func main() {
 	}
 
 	for _, f := range files {
-		properties := make(map[string]details)
+		properties := make(map[string]interface{})
 		var m preMappings
 		for _, v := range common {
 			for ki, vi := range v {
@@ -61,6 +61,7 @@ func main() {
 		export.WriteString("\":{\"_id\": {\"path\": \"uri\"},\"properties\":")
 		export.Write(out)
 		export.WriteString("}}")
+		//fmt.Println(string(export.Bytes()))
 
 		req, err := http.NewRequest(
 			"PUT",
@@ -80,7 +81,12 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("set mappings for /public/%s\n", profile)
+		if resp.StatusCode > 300 || resp.StatusCode < 200 {
+			fmt.Println("ERROR setting mappings for /public/%s\n", profile)
+			fmt.Println(string(b))
+		} else {
+			fmt.Printf("OK set mappings for /public/%s\n", profile)
+		}
 	}
 
 }

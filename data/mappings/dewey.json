@@ -1,6 +1,40 @@
 {
-  "<http://www.w3.org/2004/02/skos/core#notation>": { "location": { "type": "float" } },
-  "<http://www.w3.org/2004/02/skos/core#prefLabel>": { "prefLabel": {"type": "string" } },
-  "<http://www.w3.org/2004/02/skos/core#exactMatch>": { "exactMatch": {"type": "string", "index": "not_analyzed" } },
-  "<http://www.w3.org/2004/02/skos/core#closeMatch>": { "closeMatch": {"type": "string", "index": "not_analyzed" } }
+  "<http://www.w3.org/2004/02/skos/core#notation>": {
+    "location": {
+      "type": "float"
+    }
+  },
+  "<http://www.w3.org/2004/02/skos/core#prefLabel>": {
+    "prefLabel": {
+      "type": "string"
+    }
+  },
+  "<http://www.w3.org/2004/02/skos/core#exactMatch>": {
+    "exactMatch": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://www.w3.org/2004/02/skos/core#closeMatch>": {
+    "closeMatch": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }
