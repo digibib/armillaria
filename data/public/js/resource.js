@@ -208,14 +208,23 @@ listener = ractive.on({
 
     var searchTypes = ractive.get( event.keypath + '.searchTypes' ).join(',');
     var searchQuery = { "query": {} };
+    var query = {};
+    var queryData;
     if ( q.length == 1 ) {
       // Do a prefix query if query string is only one character
-      searchQuery.query.prefix = { "searchLabel": q };
+      query.prefix = { "searchLabel": q };
     } else {
       // Otherwise normal match query (matches ngram size 2-20)
-      searchQuery.query.match = { "searchLabel": q };
+     query.match = { "searchLabel": q };
     }
-    var queryData = JSON.stringify( searchQuery );
+    // filter the current URI if we're editing a resource
+    if ( ractive.get( 'existingResource' ) ) {
+      searchQuery.query = {"filtered": { "filter": {"not": {"ids": {"values": [ trimURI( ractive.get( 'overview.uri' ) ) ] } } },
+                                         "query": query} };
+    } else {
+      searchQuery.query = query;
+    }
+    queryData = JSON.stringify( searchQuery );
     var req = new XMLHttpRequest();
     req.open( 'POST', '/search/public/'+ searchTypes, true) ;
     req.setRequestHeader( 'Content-Type', 'application/json; charset=UTF-8' );
