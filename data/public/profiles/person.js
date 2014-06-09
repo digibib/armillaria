@@ -74,7 +74,7 @@ var profile = {
           "predicates": [
             {
               "label": "fødselssår",
-              "uri": "<http://dbpedia.org/ontolog/birthYear>"
+              "uri": "<http://dbpedia.org/ontology/birthYear>"
             }
           ],
           "type": "integer"
@@ -88,7 +88,7 @@ var profile = {
           "predicates": [
             {
               "label": "dødsår",
-              "uri": "<http://dbpedia.org/ontolog/deathYear>"
+              "uri": "<http://dbpedia.org/ontology/deathYear>"
             }
           ],
           "type": "integer"
@@ -102,7 +102,7 @@ var profile = {
           "predicates": [
             {
               "label": "nasjonalitet",
-              "uri": "<http://dbpedia.org/ontolog/nationality>"
+              "uri": "<http://dbpedia.org/ontology/nationality>"
             }
           ],
           "type": "URI",
@@ -147,14 +147,6 @@ var profile = {
     if ( values.firstname[0] && values.lastname[0] ) {
       label = cleanString( values.firstname[0].value ) + " " +
               cleanString( values.lastname[0].value );
-      if ( values.birthyear[0] ) {
-        label += " ("+ cleanString( values.birthyear[0].value );
-        if ( values.deathyear[0] ) {
-          label += "-" + cleanString( values.deathyear[0].value ) + ")";
-        } else {
-          label += ")";
-        }
-      }
     }
     return '"' + label + '"';
   },
