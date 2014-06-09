@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -10,12 +11,12 @@ import (
 	"strings"
 )
 
-type details struct {
-	Type  string `json:"type,omitempty"`
-	Index string `json:"index,omitempty"`
+// esError represents an error returned from a Elasticsearch REST endpoint.
+type esError struct {
+	Error  string `json:"error"`
+	Status int    `json:"status"`
 }
-
-type mapping map[string]details
+type mapping map[string]interface{}
 
 type preMappings map[string]mapping
 
@@ -36,19 +37,31 @@ func (i Indexer) Add(idx string, tp string, b []byte) error {
 		return err
 	}
 
-	_, err = i.client.Do(req)
+	resp, err := i.client.Do(req)
 	if err != nil {
 		return err
 	}
-	// TODO check if res.StatusCode > 300 or < 200
-
+	defer resp.Body.Close()
+	b, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode > 300 || resp.StatusCode < 200 {
+		var esErr esError
+		e := "unparsable error response from Elasticsearch"
+		err := json.Unmarshal(b, &esErr)
+		if err == nil {
+			e = esErr.Error
+		}
+		return errors.New(e)
+	}
 	return nil
 
 }
 
 // Remove removes a resource from an index.
 func (i Indexer) Remove(uri string) error {
-	// Delete resource by query, in any index|
+	// Delete resource by query
 	var queryData bytes.Buffer
 	queryData.Write([]byte(`{"query":{"ids":{"values":["`))
 	queryData.Write([]byte(uri))
@@ -63,12 +76,24 @@ func (i Indexer) Remove(uri string) error {
 		return err
 	}
 
-	_, err = i.client.Do(req)
+	resp, err := i.client.Do(req)
 	if err != nil {
 		return err
 	}
-	// TODO check if res.StatusCode > 300 or < 200
-
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode > 300 || resp.StatusCode < 200 {
+		var esErr esError
+		e := "unparsable error response from Elasticsearch"
+		err := json.Unmarshal(b, &esErr)
+		if err == nil {
+			e = esErr.Error
+		}
+		return errors.New(e)
+	}
 	return nil
 }
 
