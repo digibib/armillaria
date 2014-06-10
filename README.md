@@ -1,6 +1,9 @@
 # Armillaira
 RDF cataloging interface.
 
+## Architecture
+[A course overview of the system architecture](https://docs.google.com/drawings/d/1t1vchNhGd86gPENq5_H0lCoWZGQYu8LqWr56qcUDbAU)
+
 ## Setup
 Eventually, a debian package will be provided, but for now, you must manually set up your environment.
 
