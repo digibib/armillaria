@@ -211,24 +211,19 @@ listener = ractive.on({
     }
 
     var searchTypes = ractive.get( event.keypath + '.searchTypes' ).join(',');
-    var searchQuery = { "query": {} };
-    var query = {};
-    var queryData;
+    var searchQuery = { "query": { "filtered": { "query": {}, "filter": { "bool": {"must": [{"missing": {"field": "published"}}]}}} } };
     if ( q.length == 1 ) {
       // Do a prefix query if query string is only one character
-      query.prefix = { "searchLabel": q };
+      searchQuery.query.filtered.query.prefix = { "searchLabel": q };
     } else {
       // Otherwise normal match query (matches ngram size 2-20)
-     query.match = { "searchLabel": q };
+     searchQuery.query.filtered.query.match = { "searchLabel": q };
     }
     // filter the current URI if we're editing a resource
     if ( ractive.get( 'existingResource' ) ) {
-      searchQuery.query = {"filtered": { "filter": {"not": {"ids": {"values": [ trimURI( ractive.get( 'overview.uri' ) ) ] } } },
-                                         "query": query} };
-    } else {
-      searchQuery.query = query;
+      searchQuery.query.filtered.filter.bool.must_not = {"ids": {"values": [trimURI( ractive.get( 'overview.uri' ) )]}};
     }
-    queryData = JSON.stringify( searchQuery );
+    var queryData = JSON.stringify( searchQuery );
     var req = new XMLHttpRequest();
     req.open( 'POST', '/search/public/'+ searchTypes, true) ;
     req.setRequestHeader( 'Content-Type', 'application/json; charset=UTF-8' );
