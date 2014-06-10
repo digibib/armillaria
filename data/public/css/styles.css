@@ -137,6 +137,11 @@ button[disabled=disabled], button:disabled {
   color: #aaa;
 }
 
+.indicator {
+  position: absolute;
+  left: -20px;
+}
+
 .RDFProfile h3 {
   border-bottom: 2px solid #ccc;
 }
