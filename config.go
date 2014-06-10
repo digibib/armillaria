@@ -9,6 +9,7 @@ import (
 // config holds the application configuration variables.
 type config struct {
 	ServePort           int
+	LogFile             string
 	RDFStore            source
 	ExternalDataSources []source
 	Elasticsearch       string

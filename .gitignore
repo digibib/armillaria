@@ -4,3 +4,4 @@ data/public/js/ractive*
 data/public/js/underscore*
 data/public/css/normalize.css
 armillaria
+*.log

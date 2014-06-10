@@ -24,19 +24,26 @@ var (
 )
 
 func main() {
-	// Load configuration files -------------------------------------------------
+	// Load configuration files
 	cfg, err := loadConfig("data/config.json")
 	if err != nil {
 		l.Error("failed to load config.json", log.Ctx{"error": err.Error()})
 		os.Exit(1)
 	}
 
+	// Setup logging
+	l.SetHandler(log.MultiHandler(
+		log.LvlFilterHandler(log.LvlInfo, log.Must.FileHandler(cfg.LogFile, log.LogfmtFormat())),
+		log.StreamHandler(os.Stdout, log.TerminalFormat())),
+	)
+
+	// Load index mappings (RDF predicate -> Elasticsearch document field)
 	indexMappings, err = loadFromProfiles()
 	if err != nil {
 		l.Error("failed to load index mappings", log.Ctx{"error": err.Error()})
 	}
 
-	// Setup local repo ---------------------------------------------------------
+	// Setup local repo
 	db = newLocalRDFStore(
 		cfg.RDFStore.Endpoint,
 		cfg.RDFStore.Username,
@@ -54,13 +61,13 @@ func main() {
 		os.Exit(1) // Cannot continue without this information
 	}
 
-	// Initialize queues and workers -------------------------------------------
+	// Initialize queues and workers
 	queueAdd = newQueue("addToIndex", 100, 2, newAddWorker)
 	go queueAdd.runDispatcher()
 	queueRemove = newQueue("rmFromIndex", 100, 1, newRmWorker)
 	go queueRemove.runDispatcher()
 
-	// Routing ------------------------------------------------------------------
+	// Routing
 	esHost, err := url.Parse(cfg.Elasticsearch)
 	if err != nil {
 		l.Error("unparsable Elasticsearch host address", log.Ctx{"error": err.Error()})
@@ -77,7 +84,7 @@ func main() {
 	mux.HandlerFunc("GET", "/resource", serveFile("./data/html/resource.html"))
 	mux.ServeFiles("/public/*filepath", http.Dir("./data/public/"))
 
-	// Start server -------------------------------------------------------------
+	// Start server
 	l.Info("starting Armillaria server")
 	err = http.ListenAndServe(fmt.Sprintf(":%d", cfg.ServePort), mux)
 	if err != nil {

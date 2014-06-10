@@ -1,5 +1,6 @@
 {
   "ServePort": 3333,
+  "LogFile": "/var/log/armillaria.log",
   "RDFStore": {
     "Endpoint": "http://localhost:8890/sparql-auth",
     "Username": "dba",
