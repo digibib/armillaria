@@ -256,7 +256,7 @@ listener = ractive.on({
     predicate = ractive.data.views[idx.i1].elements[idx.i2].predicates[0].uri;
     predicateLabel = ractive.data.views[idx.i1].elements[idx.i2].predicates[0].label;
     var exsitingURI = _.find(ractive.data.views[idx.i1].elements[idx.i2].values, function( e ) {
-      return '<' + e.value + '>' === uri;
+      return e.value === uri;
     });
 
     if ( !exsitingURI ) {
