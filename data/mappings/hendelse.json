@@ -1,0 +1,54 @@
+{
+  "<http://purl.org/dc/terms/title>": {
+    "title": {
+      "type": "string"
+    }
+  },
+  "<http://purl.org/dc/terms/description>": {
+    "description": {
+      "type": "string"
+    }
+  },
+  "<http://purl.org/NET/c4dm/event.owl#place>": {
+    "place": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://purl.org/NET/c4dm/event.owl#time>": {
+    "time": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://purl.org/NET/c4dm/event.owl#agent>": {
+    "agent": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
