@@ -211,7 +211,7 @@ listener = ractive.on({
     }
 
     var searchTypes = ractive.get( event.keypath + '.searchTypes' ).join(',');
-    var searchQuery = { "query": { "filtered": { "query": {}, "filter": { "bool": {"must": [{"missing": {"field": "published"}}]}}} } };
+    var searchQuery = { "query": { "filtered": { "query": {}, "filter": { "bool": {"must_not": [{"missing": {"field": "published"}}]}}} } };
     if ( q.length == 1 ) {
       // Do a prefix query if query string is only one character
       searchQuery.query.filtered.query.prefix = { "searchLabel": q };
@@ -221,7 +221,7 @@ listener = ractive.on({
     }
     // filter the current URI if we're editing a resource
     if ( ractive.get( 'existingResource' ) ) {
-      searchQuery.query.filtered.filter.bool.must_not = {"ids": {"values": [trimURI( ractive.get( 'overview.uri' ) )]}};
+      searchQuery.query.filtered.filter.bool.must_not.push( {"ids": {"values": [trimURI( ractive.get( 'overview.uri' ) )]}} );
     }
     var queryData = JSON.stringify( searchQuery );
     var req = new XMLHttpRequest();
