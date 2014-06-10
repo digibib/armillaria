@@ -441,10 +441,12 @@ var urlParams;
 
 // createSchema creates a schema acording to a loaded profile.
 var createSchema = function() {
-  // set values to empty array
+  // set values to empty array, if not allready popuated with predefined values.
   profile.views.forEach(function(view, i) {
     view.elements.forEach(function(elem, j) {
-      profile.views[i].elements[j].values = [];
+      if ( !profile.views[i].elements[j].values ) {
+        profile.views[i].elements[j].values = [];
+      }
     });
   });
   ractive.set(_.extend(profile, common));
