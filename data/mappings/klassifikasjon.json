@@ -1,6 +1,6 @@
 {
   "<http://www.w3.org/2004/02/skos/core#notation>": {
-    "location": {
+    "number": {
       "type": "float"
     }
   },
@@ -9,22 +9,8 @@
       "type": "string"
     }
   },
-  "<http://www.w3.org/2004/02/skos/core#exactMatch>": {
-    "exactMatch": {
-      "type": "nested",
-      "properties": {
-        "uri": {
-          "type": "string",
-          "index": "not_analyzed"
-        },
-        "label": {
-          "type": "string"
-        }
-      }
-    }
-  },
-  "<http://www.w3.org/2004/02/skos/core#closeMatch>": {
-    "closeMatch": {
+  "<http://www.w3.org/2004/02/skos/core#narrowMatch>": {
+    "relatedSubject": {
       "type": "nested",
       "properties": {
         "uri": {
