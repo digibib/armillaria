@@ -1,0 +1,82 @@
+{
+  "<http://www.w3.org/2004/02/skos/core#prefLabel>": {
+    "prefLabel": {
+      "type": "string"
+    }
+  },
+  "<http://www.w3.org/2004/02/skos/core#altLabel>": {
+    "altLabel": {
+      "type": "string"
+    }
+  },
+  "<http://www.w3.org/2004/02/skos/core#broadMatch>": {
+    "broadMatch": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http:/data.deichman.no/subdivision>": {
+    "subdivision": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http:/data.deichman.no/qualifier>": {
+    "qualifier": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://www.w3.org/2004/02/skos/core#related>": {
+    "related": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://xmlns.com/foaf/0.1/focus>": {
+    "focus": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
