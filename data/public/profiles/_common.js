@@ -2,8 +2,8 @@ var common = {
   "languages": [
     {"label": "ikke angitt språk", "value": ""},
     {"label": "norsk", "value": "no"},
-    {"label": "norsk (bokmål)", "value": "nb-NO"},
-    {"label": "norsk (nynorsk)", "value": "nn-NO"},
+    {"label": "norsk (bokmål)", "value": "nb-no"},
+    {"label": "norsk (nynorsk)", "value": "nn-no"},
     {"label": "engelsk", "value": "en"}
   ],
   "internalNamespace": "armillaria://internal/",
