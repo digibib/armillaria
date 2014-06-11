@@ -197,7 +197,7 @@ listener = ractive.on({
       {"predicate": predicate, "predicateLabel": predicateLabel, "value": value, "source": source});
     event.node.value = "";
     ractive.merge( event.keypath + ".errorInfo", "");
-
+    ractive.set( event.keypath + '.currentValue', "");
   },
   searchForURI: _.debounce(function( event) {
     if (event.original.keyCode == 27) {
@@ -268,7 +268,27 @@ listener = ractive.on({
     } );
     ractive.set( event.keypath +'.values.0', selected );
   },
-  validateFloat: function(event) {
+  editLiteral: function( event ) {
+    var kp = event.keypath.substr(0, event.keypath.indexOf('.values'));
+    var v = event.context.value;
+    var langTag = v.match(/(?:"@)(.*)/);
+
+    // select language tag if we have one
+    if ( langTag ) {
+      ractive.set( kp + '.selected', langTag[1] );
+    }
+
+    // put value in input field
+    ractive.set( kp + ".currentValue", cleanString( event.context.value ) );
+
+    // set focus on input field
+    document.getElementById( ractive.get( kp ).id ).focus();
+
+    // remove the value we're editing from values array
+    var idx = event.index;
+    ractive.data.views[idx.i1].elements[idx.i2].values.splice(idx.i3, 1);
+  },
+  validateFloat: function( event ) {
     var value = event.node.value.trim();
 
     // validate float
@@ -468,6 +488,7 @@ var createSchema = function() {
     view.elements.forEach(function(elem, j) {
       if ( !profile.views[i].elements[j].values ) {
         profile.views[i].elements[j].values = [];
+        profile.views[i].elements[j].currentValue = "";
       }
     });
   });

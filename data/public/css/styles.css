@@ -114,6 +114,10 @@ input {
   position: relative;
 }
 
+.clickable:hover {
+  cursor: pointer;
+}
+
 .monospace { font-family: monospace }
 
 /* resource profile form */
@@ -178,12 +182,8 @@ button[disabled=disabled], button:disabled {
   padding: 0.3em;
 }
 
-.propertyLabel:hover {
- /* cursor: pointer;*/
-}
-
 .valSelect, .resourceData input {
-  width: 22em;
+  min-width: 22em;
 }
 
 .propertyDesc {

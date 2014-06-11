@@ -126,7 +126,8 @@
 							{{^ type == 'select'}}
 								<div class="propertyValue column third">
 
-									<span class="propertyLabel">{{value}}</span>
+									{{^URILabel}}<span class="propertyLabel clickable" on-click="editLiteral">{{value}}</span>{{/URILabel}}
+									{{#URILabel}}<span class="propertyLabel">{{value}}</span>{{/URILabel}}
 									<span class="removeProperty" on-click='remove'>&times;</span>
 									{{# source !== 'local' }}
 										<span class="tinyText">{{source}}</span>
@@ -169,7 +170,8 @@
 				<!-- {{/URIInput}} -->
 
 				<!-- {{>floatInput}} -->
-						<input
+						<input id="{{id}}"
+						  value='{{currentValue}}'
 							on-enter='validateFloat'
 							disabled={{# repeatable == false && values}}true{{/}}
 							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
@@ -177,7 +179,8 @@
 				<!-- {{/floatInput}} -->
 
 				<!-- {{>integerInput}} -->
-						<input
+						<input id="{{id}}"
+						  value={{currentValue}}
 							on-enter='validateInteger'
 							disabled={{# repeatable == false && values}}true{{/}}
 							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
@@ -185,7 +188,8 @@
 				<!-- {{/integerInput}} -->
 
 				<!-- {{>gYearInput}} -->
-						<input
+						<input id="{{id}}"
+						  value={{currentValue}}
 							on-enter='validateGYear'
 							disabled={{# repeatable == false && values}}true{{/}}
 							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
@@ -193,12 +197,13 @@
 				<!-- {{/gYearInput}} -->
 
 				<!-- {{>langStringInput}} -->
-						<input
+						<input id="{{id}}"
+						  value={{currentValue}}
 							on-enter='validateLangString'
 							disabled={{# repeatable == false && values}}true{{/}}
 							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
 							<span class="errorInfo">{{errorInfo}}</span>
-							<select value={{.selected}}>
+							<select class="langTagSelect" value={{.selected}}>
 								{{#languages}}
 									<option value={{value}}>{{label}}</option>
 								{{/languages}}
@@ -206,7 +211,8 @@
 				<!-- {{/langStringInput}} -->
 
 				<!-- {{>stringInput}} -->
-						<input
+						<input id="{{id}}"
+						  value={{currentValue}}
 							on-enter='validateString'
 							disabled={{# repeatable == false && values}}true{{/}}
 							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
