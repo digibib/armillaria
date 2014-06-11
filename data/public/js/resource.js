@@ -282,7 +282,9 @@ listener = ractive.on({
     ractive.set( kp + ".currentValue", cleanString( event.context.value ) );
 
     // set focus on input field
-    document.getElementById( ractive.get( kp ).id ).focus();
+    setTimeout(function() {
+      document.getElementById( ractive.get( kp ).id ).focus();
+    }, 0);
 
     // remove the value we're editing from values array
     var idx = event.index;
