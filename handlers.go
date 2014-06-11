@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/julienschmidt/httprouter"
 	log "gopkg.in/inconshreveable/log15.v2"
 )
 
@@ -22,7 +23,7 @@ func serveFile(filename string) func(w http.ResponseWriter, r *http.Request) {
 
 // doResourceQuery sends a query to the RDF store SPARQL endpoint and returns the
 // application/sparql-results+json  response.
-func doResourceQuery(w http.ResponseWriter, r *http.Request, _ map[string]string) {
+func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	q := r.FormValue("query")
 	if q == "" {
 		http.Error(w, "missing required parameter: query", http.StatusBadRequest)
@@ -45,7 +46,7 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ map[string]string
 }
 
 // addToIndex enqueues the requested URI to the indexing queue.
-func addToIndex(w http.ResponseWriter, r *http.Request, _ map[string]string) {
+func addToIndex(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	uri := strings.TrimSpace(r.FormValue("uri"))
 	if uri == "" {
 		http.Error(w, "missing required parameter: uri", http.StatusBadRequest)
@@ -57,7 +58,7 @@ func addToIndex(w http.ResponseWriter, r *http.Request, _ map[string]string) {
 }
 
 // rmFromIndex enqueues the requested URI to the remove-from-index queue.
-func rmFromIndex(w http.ResponseWriter, r *http.Request, _ map[string]string) {
+func rmFromIndex(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	uri := strings.TrimSpace(r.FormValue("uri"))
 	if uri == "" {
 		http.Error(w, "missing required parameter: uri", http.StatusBadRequest)
@@ -69,15 +70,15 @@ func rmFromIndex(w http.ResponseWriter, r *http.Request, _ map[string]string) {
 }
 
 // searchHandler proxies request to Elasticsearch.
-func searchHandler(p *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request, map[string]string) {
-	return func(w http.ResponseWriter, r *http.Request, _ map[string]string) {
+func searchHandler(p *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, "/search") + "/_search"
 		p.ServeHTTP(w, r)
 	}
 }
 
 // getIdHandler returns the next available ID number for a given RDF type.
-func getIdHandler(w http.ResponseWriter, r *http.Request, values map[string]string) {
-	n := idGen.NextId(values["type"])
+func getIdHandler(w http.ResponseWriter, r *http.Request, values httprouter.Params) {
+	n := idGen.NextId(values.ByName("type"))
 	w.Write([]byte(strconv.Itoa(n)))
 }
