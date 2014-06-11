@@ -14,6 +14,7 @@ var values = {};
 
 // true before any changes made, needed for uri observer to not disable
 // draft button on page load.
+// TODO find a better way to solve this
 var firstLoad = true;
 
 
