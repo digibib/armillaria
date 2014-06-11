@@ -262,12 +262,10 @@ listener = ractive.on({
 
   },
   selectOption: function( event ) {
-    console.log( event );
     var v = event.node.value;
     selected = _.find( ractive.get( event.keypath + '.options' ), function( o ) {
-      return cleanString(o.value) === v;
+      return o.value === v;
     } );
-    console.log( selected );
     ractive.set( event.keypath +'.values.0', selected );
   },
   validateFloat: function(event) {
