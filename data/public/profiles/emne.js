@@ -60,7 +60,7 @@ var profile = {
         },
         {
           "id": "subdiv",
-          "label": "Underaveling",
+          "label": "Underavdeling",
           "desc": "Underordnet emne?",
           "required": false,
           "repeatable": true,
