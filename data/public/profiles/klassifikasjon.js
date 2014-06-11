@@ -63,7 +63,7 @@ var profile = {
           ]
         },
         {
-          "id": "label",
+          "id": "prefLabel",
           "label": "Foretrukket betegnelse",
           "desc": "Kort (1-3 ord) beskrivelse av dette Dewey-nummeret",
           "required": false,
@@ -103,8 +103,8 @@ var profile = {
     var label = "";
     if ( values.num[0] ) {
       label = values.num[0].value;
-      if ( values.label[0] ) {
-        label += " " + cleanString(values.label[0].value);
+      if ( values.prefLabel[0] ) {
+        label += " " + cleanString(values.prefLabel[0].value);
       }
     }
     return '"' + label + '"';
@@ -112,8 +112,8 @@ var profile = {
   "searchLabel": function( values ) {
     if ( values.num[0] ) {
       label = values.num[0].value;
-      if ( values.label[0]) {
-        label += " " + cleanString( values.label[0].value );
+      if ( values.prefLabel[0]) {
+        label += " " + cleanString( values.prefLabel[0].value );
       }
     }
     return '"' + label + '"';
