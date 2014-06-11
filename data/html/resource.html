@@ -110,12 +110,16 @@
 								{{>stringInput}}
 							{{/}}
 
+							{{# type == 'select'}}
+								{{>selectInput}}
+							{{/}}
+
 							<div class="propertyDesc">{{desc}}</div>
 
 							<div class="clearfix row resourceValues">
 
 							{{#values:i3}}
-
+							{{^ type == 'select'}}
 								<div class="propertyValue column third">
 
 									<span class="propertyLabel">{{value}}</span>
@@ -127,7 +131,7 @@
 										<div><strong>{{URILabel}}</strong></div>
 									{{/URILabel}}
 								</div>
-
+							{{/}}
 							{{/values}}
 
 							</div>
@@ -204,6 +208,14 @@
 							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
 							<span class="errorInfo">{{errorInfo}}</span>
 				<!-- {{/stringInput}} -->
+				<!-- {{>selectInput}} -->
+						<select class="valSelect" value={{values[0].value}} on-change="selectOption">
+							{{# options}}
+								<option value={{value}}>{{URILabel || value}}</option>
+							{{/options}}
+						</select>
+						<span class="errorInfo">{{errorInfo}}</span>
+				<!-- {{/selectInput}} -->
 			</script>
 		</div>
 		<script src="/public/profiles/_common.js"></script>

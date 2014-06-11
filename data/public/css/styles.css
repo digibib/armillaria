@@ -182,6 +182,10 @@ button[disabled=disabled], button:disabled {
  /* cursor: pointer;*/
 }
 
+.valSelect, .resourceData input {
+  min-width: 22em;
+}
+
 .propertyDesc {
   font-size:70%;
 }

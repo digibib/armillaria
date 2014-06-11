@@ -44,7 +44,23 @@ var profile = {
               "source": "local"
             }
           ],
-          "type": "float"
+          "type": "select",
+          "options": [
+            {
+              "predicate": "<http://www.w3.org/2004/02/skos/core#inScheme>",
+              "predicateLabel": "Deweyutgave",
+              "value": "<http://data.deichman.no/class/DDK4>",
+              "URILabel": "DDK4",
+              "source": "local"
+            },
+            {
+              "predicate": "<http://www.w3.org/2004/02/skos/core#inScheme>",
+              "predicateLabel": "Deweyutgave",
+              "value": "<http://data.deichman.no/class/DDK5>",
+              "URILabel": "DDK5",
+              "source": "local"
+            }
+          ]
         },
         {
           "id": "label",
