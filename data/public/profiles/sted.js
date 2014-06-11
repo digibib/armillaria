@@ -56,9 +56,10 @@ var profile = {
         {
           "id": "lat",
           "label": "Breddegrad",
-          "desc": "",
+          "desc": "Hentes automatisk fra Geonames",
           "required": false,
           "repeatable": false,
+          "generated": true,
           "predicates": [
             {
               "label": "breddegrad",
@@ -70,9 +71,10 @@ var profile = {
         {
           "id": "long",
           "label": "Lengdegrad",
-          "desc": "",
+          "desc": "Hentes automatisk fra Geonames",
           "required": false,
           "repeatable": false,
+          "generated": true,
           "predicates": [
             {
               "label": "lengdegrad",

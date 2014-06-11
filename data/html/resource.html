@@ -82,37 +82,41 @@
 							<h4 class="relative">{{label}}
 								{{#required}}<span class="indicator red">*</span>{{/}}
 								{{#repeatable}}<span class="indicator grey">+</span>{{/}}
+								{{#generated}}<span class="indicator grey">a</span>{{/}}
 							</h4>
 
+							{{^ generated}}
 
-							{{# type === 'URI' }}
-								{{>URIInput}}
-							{{/}}
+								{{# type === 'URI' }}
+									{{>URIInput}}
+								{{/}}
 
-							{{# type === 'float'}}
-								{{>floatInput}}
-							{{/}}
+								{{# type === 'float'}}
+									{{>floatInput}}
+								{{/}}
 
-							{{# type == 'integer' }}
-								{{>integerInput}}
-							{{/}}
+								{{# type == 'integer' }}
+									{{>integerInput}}
+								{{/}}
 
-							{{# type == 'gYear' }}
-								{{>gYearInput}}
-							{{/}}
+								{{# type == 'gYear' }}
+									{{>gYearInput}}
+								{{/}}
 
 
-							{{# type == 'langString'}}
-								{{>langStringInput}}
-							{{/}}
+								{{# type == 'langString'}}
+									{{>langStringInput}}
+								{{/}}
 
-							{{# type == 'string' }}
-								{{>stringInput}}
-							{{/}}
+								{{# type == 'string' }}
+									{{>stringInput}}
+								{{/}}
 
-							{{# type == 'select'}}
-								{{>selectInput}}
-							{{/}}
+								{{# type == 'select'}}
+									{{>selectInput}}
+								{{/}}
+
+							{{/generated}}
 
 							<div class="propertyDesc">{{desc}}</div>
 
