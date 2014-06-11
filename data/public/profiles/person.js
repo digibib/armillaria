@@ -27,7 +27,7 @@ var profile = {
           "id": "lastname",
           "label": "Etternavn",
           "desc": "Etternavn kan være så mangt.",
-          "required": true,
+          "required": false,
           "repeatable": false,
           "predicates": [
             {
