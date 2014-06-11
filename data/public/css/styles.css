@@ -183,7 +183,7 @@ button[disabled=disabled], button:disabled {
 }
 
 .valSelect, .resourceData input {
-  min-width: 22em;
+  width: 22em;
 }
 
 .propertyDesc {
