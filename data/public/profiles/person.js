@@ -40,7 +40,7 @@ var profile = {
         {
           "id": "tittel",
           "label": "Tittel",
-          "desc": "herr fru professor doktor ærbødigst?",
+          "desc": "Kongelige titler",
           "required": false,
           "repeatable": true,
           "predicates": [
@@ -54,7 +54,7 @@ var profile = {
         {
           "id": "nummer",
           "label": "Nummer",
-          "desc": "Hva er dette, tro?",
+          "desc": "Brukes primært for ordensnummer til kongelige",
           "required": false,
           "repeatable": false,
           "predicates": [
@@ -63,7 +63,7 @@ var profile = {
               "uri": "<http://data.deichman.no/ordinal>"
             }
           ],
-          "type": "integer"
+          "type": "string"
         },
         {
           "id": "birthyear",
