@@ -77,7 +77,7 @@ var profile = {
           "type": "langString"
         },
         {
-          "id": "closeMatch",
+          "id": "related",
           "label": "Relatert emne",
           "desc": "Emne som beskriver dette Dewey-nummeret",
           "required": false,
