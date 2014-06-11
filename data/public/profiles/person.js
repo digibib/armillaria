@@ -54,7 +54,7 @@ var profile = {
         {
           "id": "nummer",
           "label": "Nummer",
-          "desc": "Brukes primært for ordensnummer til kongelige",
+          "desc": "Ordensnummer for kongelige, paver osv.",
           "required": false,
           "repeatable": false,
           "predicates": [
