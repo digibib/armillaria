@@ -381,7 +381,22 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
 });
 
 ractive.observe( 'overview.uri', function( newURI, oldURI, keyPath ) {
-  if ( ractive.get( 'uriFn') ) {
+  var missingValues = false;
+  newValue.forEach(function(view, i) {
+    view.elements.forEach(function(elem, j) {
+      if (!values[elem.id]) {
+        values[elem.id] = [];
+      }
+      // Check if all required attributes in the schema has a value
+      if ( elem.required && elem.values.length === 0 ) {
+        missingValues = true;
+      }
+      elem.values.forEach(function(v) {
+        values[elem.id].push(v);
+      });
+    });
+  });
+  if ( ractive.get( 'uriFn') && !missingValues ) {
     // Check if URI allready exists in local RDF repo.
     if ( newURI !== "" && newURI !== ractive.get( 'existingURI' ) ) {
       var q = 'ASK WHERE { ' + newURI + '?p ?o }';
