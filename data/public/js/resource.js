@@ -195,6 +195,13 @@ listener = ractive.on({
     predicateLabel = event.context.predicates[0].label;
     source = 'local';
 
+
+    // Don't add allow duplicate values:
+    var exists = _.find( ractive.get( event.keypath ).values, function( e ) {
+      return e.value === value;
+    } );
+    if (exists) { return }
+
     var idx = event.index;
     ractive.data.views[idx.i1].elements[idx.i2].values.push(
       {"predicate": predicate, "predicateLabel": predicateLabel, "value": value, "source": source});
@@ -273,10 +280,18 @@ listener = ractive.on({
   },
   selectAddOption: function( event ) {
     var v = ractive.get( event.keypath+'.selected' );
-    selected = _.find( ractive.get( event.keypath + '.options' ), function( o ) {
+    var selected = _.find( ractive.get( event.keypath + '.options' ), function( o ) {
       return o.value === v;
     } );
-    ractive.get( event.keypath ).values.push( selected );
+
+    // Don't add allow duplicate values:
+    var exists = _.find( ractive.get( event.keypath).values, function( e ) {
+      console.log(e);
+      return e.value === v;
+    } );
+    if (!exists) {
+      ractive.get( event.keypath ).values.push( selected );
+    }
   },
   editLiteral: function( event ) {
     var kp = event.keypath.substr(0, event.keypath.indexOf('.values'));
