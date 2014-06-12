@@ -44,7 +44,7 @@ var profile = {
               "source": "local"
             }
           ],
-          "type": "select",
+          "type": "selectMust",
           "options": [
             {
               "predicate": "<http://www.w3.org/2004/02/skos/core#inScheme>",

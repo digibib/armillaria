@@ -80,9 +80,9 @@
 						{{#elements:i2}}
 
 							<h4 class="relative">{{label}}
-								{{#required}}<span class="indicator red">*</span>{{/}}
+								{{#required}}<span class="indicator2 red">*</span>{{/}}
 								{{#repeatable}}<span class="indicator grey">+</span>{{/}}
-								{{#generated}}<span class="indicator grey">a</span>{{/}}
+								{{#generated}}<span class="indicator2 grey">a</span>{{/}}
 							</h4>
 
 							{{^ generated}}
@@ -112,6 +112,10 @@
 									{{>stringInput}}
 								{{/}}
 
+								{{# type == 'selectMust'}}
+									{{>selectMustInput}}
+								{{/}}
+
 								{{# type == 'select'}}
 									{{>selectInput}}
 								{{/}}
@@ -121,23 +125,22 @@
 							<div class="propertyDesc">{{desc}}</div>
 
 							<div class="clearfix row resourceValues">
+							{{^ type == 'selectMust'}}
+								{{#values:i3}}
+									<div class="propertyValue column third">
 
-							{{#values:i3}}
-							{{^ type == 'select'}}
-								<div class="propertyValue column third">
-
-									{{^URILabel}}<span class="propertyLabel clickable" on-click="editLiteral">{{value}}</span>{{/URILabel}}
-									{{#URILabel}}<span class="propertyLabel">{{value}}</span>{{/URILabel}}
-									<span class="removeProperty" on-click='remove'>&times;</span>
-									{{# source !== 'local' }}
-										<span class="tinyText">{{source}}</span>
-									{{/}}
-									{{#URILabel}}
-										<div><strong>{{URILabel}}</strong></div>
-									{{/URILabel}}
-								</div>
+										{{^URILabel}}<span class="propertyLabel clickable" on-click="editLiteral">{{value}}</span>{{/URILabel}}
+										{{#URILabel}}<span class="propertyLabel">{{value}}</span>{{/URILabel}}
+										<span class="removeProperty" on-click='remove'>&times;</span>
+										{{# source !== 'local' }}
+											<span class="tinyText">{{source}}</span>
+										{{/}}
+										{{#URILabel}}
+											<div><strong>{{URILabel}}</strong></div>
+										{{/URILabel}}
+									</div>
+								{{/values}}
 							{{/}}
-							{{/values}}
 
 							</div>
 
@@ -218,12 +221,23 @@
 							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
 							<span class="errorInfo">{{errorInfo}}</span>
 				<!-- {{/stringInput}} -->
-				<!-- {{>selectInput}} -->
+				<!-- {{>selectMustInput}} -->
 						<select class="valSelect" value={{values[0].value}} on-change="selectOption">
 							{{# options}}
 								<option value={{value}}>{{URILabel || value}}</option>
 							{{/options}}
 						</select>
+						<span class="errorInfo">{{errorInfo}}</span>
+				<!-- {{/selectMustInput}} -->
+				<!-- {{>selectInput}} -->
+						<select
+							disabled={{# repeatable == false && values}}true{{/}}
+							class="valSelect" value={{.selected}}>
+							{{# options}}
+								<option value={{value}}>{{URILabel || value}}</option>
+							{{/options}}
+						</select>
+						<button class="smallButton monospace" on-click="selectAddOption">Legg til</button>
 						<span class="errorInfo">{{errorInfo}}</span>
 				<!-- {{/selectInput}} -->
 			</script>

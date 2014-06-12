@@ -42,7 +42,7 @@ var profile = {
           "label": "Landkode",
           "desc": "",
           "required": false,
-          "repeatable": false,
+          "repeatable": true,
           "predicates": [
             {
               "label": "landkode",

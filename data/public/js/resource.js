@@ -30,6 +30,7 @@ var deleteQuery = function( published ) {
 
 // insertQuery generates the SPARQL query to insert the resource into the graph.
 var insertQuery = function( publish ) {
+  // generate overview triples using the internal namespace
   var uri = ractive.get( 'overview.uri' );
   var now = new Date();
   var meta = [
@@ -59,6 +60,7 @@ var insertQuery = function( publish ) {
     return s + uri + " " + e.p + " " + e.o + " .\n";
   }, "");
 
+  // generate a triple for each of the values in the form
   var preds = "";
   _.each(values, function(v, k) {
     _.each(v, function(e) {
@@ -268,6 +270,13 @@ listener = ractive.on({
       return o.value === v;
     } );
     ractive.set( event.keypath +'.values.0', selected );
+  },
+  selectAddOption: function( event ) {
+    var v = ractive.get( event.keypath+'.selected' );
+    selected = _.find( ractive.get( event.keypath + '.options' ), function( o ) {
+      return o.value === v;
+    } );
+    ractive.get( event.keypath ).values.push( selected );
   },
   editLiteral: function( event ) {
     var kp = event.keypath.substr(0, event.keypath.indexOf('.values'));
@@ -485,14 +494,20 @@ var urlParams;
 })();
 
 // createSchema creates a schema acording to a loaded profile.
-var createSchema = function() {
+var createSchema = function( newResource ) {
   // set values to empty array, if not allready popuated with predefined values.
   profile.views.forEach(function(view, i) {
     view.elements.forEach(function(elem, j) {
-      if ( !profile.views[i].elements[j].values ) {
+      if ( newResource ) {
+        if ( !profile.views[i].elements[j].values ) {
+          profile.views[i].elements[j].values = [];
+        }
+      } else {
+        // we don't want to populate with default values if we're loading
+        // an existing resource.
         profile.views[i].elements[j].values = [];
-        profile.views[i].elements[j].currentValue = "";
       }
+      profile.views[i].elements[j].currentValue = "";
     });
   });
   ractive.set(_.extend(profile, common));
@@ -551,7 +566,7 @@ if ( urlParams.uri ) {
       console.log( 'ERROR: no profile in resource.' );
     } else {
       loadScript( '/public/profiles/' + p + ".js", function() {
-        createSchema();
+        createSchema(false);
         // findElement returns the keypath of a predicate, or false if no match.
         var findElement = function(pred) {
           var kp = false;
