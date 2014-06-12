@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="/public/js/ractive.js"></script>
+		<script src='/public/js/ractive-events-keys.js'></script>
+		<script src="/public/js/underscore-min.js"></script>
+		<meta charset=utf-8 />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Armillaria</title>
+		<link href="/public/css/normalize.css" media="all" rel="stylesheet" type="text/css" />
+		<link href="/public/css/styles.css" media="screen" rel="stylesheet" type="text/css" />
+	</head>
+
+	<body>
+		<div class="container" id="app">
+			<script id='template' type='text/ractive'>
+				<h2>Opprett ny ressurs</h2>
+				<ul class="profileList">
+					{{#profiles}}
+						<li><a href="/resource?profile={{.}}">{{.}}</a></li>
+					{{/profiles}}
+				</ul>
+				<div class="clearfix"></div>
+				<h2>Endre eksisterende ressurs</h2>
+				<input
+					type="text"
+					on-keyup='search'
+					on-blur='searchBlur'
+					placeholder="søk etter ressurs"
+					value="{{.q}}" />
+				<input type="checkbox" checked="{{.includeDrafts}}" /> <span class="utkast">inkl. utkast</span>
+
+				<div class="mainSearchResults clearfix">
+					<div class="textRight smallText">{{searchResults.hits.total}} treff ({{searchResults.took}} ms.)</div>
+					<table>
+						{{#searchResults.hits.hits}}
+							<tr class="{{^._source.published}}utkast{{/}}">
+								<td class="resType"><strong>{{._type}}</strong></td>
+								<td><a href="/resource?uri={{._id}}">{{._source.displayLabel}}</a></td>
+							</tr>
+						{{/searchResults.hits.hits}}
+					</table>
+				</div>
+			</script>
+		</div>
+		<script>
+
+			var ractive = new Ractive({
+				el: 'app',
+				template: '#template',
+				data: {
+					"profiles": ["person", "emne", "sted", "verk", "klassifikasjon"],
+					"includeDrafts": true,
+					"searchResults": {}
+				}
+			});
+
+			listener = ractive.on({
+				search: _.debounce(function( event) {
+					var searchQuery,
+							query = {};
+					var q = event.node.value.trim();
+					if (q.length == 0 ) {
+						return;
+					}
+
+					if ( q.length == 1) {
+						query.prefix = {"searchLabel": q};
+					} else {
+						query.match = {"searchLabel": q};
+					}
+
+					if ( ractive.get( 'includeDrafts' ) ) {
+						searchQuery = {"query": query};
+					} else {
+						searchQuery = {"query": {"filtered": {"query": query, "filter": {"exists": {"field": "published"}}}}}
+					}
+
+					var req = new XMLHttpRequest();
+					req.open( 'POST', '/search/public/', true) ;
+					req.setRequestHeader( 'Content-Type', 'application/json; charset=UTF-8' );
+
+					req.onerror = function( e ) {
+						console.log( "failed to reach search endoint: " + e.target.status );
+					}
+
+					req.onload = function( e) {
+						console.log( e.target.responseText );
+						ractive.set( 'searchResults',
+												JSON.parse( e.target.responseText) );
+					}
+
+					req.send( JSON.stringify( searchQuery ) );
+
+				}, 100),
+				searchBlur: function( event) {
+				}
+			});
+
+		</script>
+	</body>
+</html>

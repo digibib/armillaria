@@ -82,6 +82,7 @@ func main() {
 	mux.POST("/queue/add", addToIndex)
 	mux.POST("/queue/remove", rmFromIndex)
 	mux.HandlerFunc("GET", "/resource", serveFile("./data/html/resource.html"))
+	mux.HandlerFunc("GET", "/", serveFile("./data/html/index.html"))
 	mux.ServeFiles("/public/*filepath", http.Dir("./data/public/"))
 
 	// Start server

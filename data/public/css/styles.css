@@ -77,6 +77,10 @@ h1, h2, h3, h4, h5 {
   margin: 0.6em 0;
 }
 
+a:link, a:visited {
+  color: navy;
+}
+
 label {
   font-weight: bold;
   font-family: monospace
@@ -87,8 +91,12 @@ input, select {
   font-size:90%;
 }
 
-input {
+input[type=text] {
   min-width: 20em
+}
+
+input[type=checkbox] {
+  margin: 0 1em;
 }
 
 textarea {
@@ -125,6 +133,47 @@ textarea {
 
 .monospace { font-family: monospace }
 
+.textRight { text-align: right}
+.smallText { font-size: 70% }
+
+/* main page */
+
+.profileList {
+  list-style: none;
+  padding: 0;
+}
+
+.profileList li {
+  display: inline-block;
+  float: left;
+  margin: 0 1em;
+  padding: 0.2em;
+}
+
+.mainSearchResults {
+  background: #eee;
+  min-height:200px;
+}
+
+.mainSearchResults table {
+  width: 100%;
+}
+
+.mainSearchResults td {
+  padding: 0.1em;
+}
+
+.resType {
+  width: 10em
+}
+
+.utkast {
+  background:#aef
+}
+
+.mainSearchResults tr:hover {
+  background:#fff
+}
 /* resource profile form */
 
 .resourceMenu {
