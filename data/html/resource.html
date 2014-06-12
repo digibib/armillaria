@@ -206,7 +206,7 @@
 							disabled={{# repeatable == false && values}}true{{/}}
 							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
 							<span class="errorInfo">{{errorInfo}}</span>
-							<select class="langTagSelect" value={{.selected}}>
+							<select class="langTagSelect" value={{.selectedLang}}>
 								{{#languages}}
 									<option value={{value}}>{{label}}</option>
 								{{/languages}}

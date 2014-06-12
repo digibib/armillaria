@@ -6,6 +6,7 @@ var common = {
     {"label": "norsk (nynorsk)", "value": "nn-no"},
     {"label": "engelsk", "value": "en"}
   ],
+  "defaultLang": "nb-no",
   "internalNamespace": "armillaria://internal/",
   "publicGraph": "<http://data.deichman.no/public>",
   "draftsGraph": "<http://data.deichman.no/drafts>"

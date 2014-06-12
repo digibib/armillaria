@@ -300,7 +300,7 @@ listener = ractive.on({
 
     // select language tag if we have one
     if ( langTag ) {
-      ractive.set( kp + '.selected', langTag[1] );
+      ractive.set( kp + '.selectedLang', langTag[1] );
     }
 
     // put value in input field
@@ -371,7 +371,7 @@ listener = ractive.on({
     var value, lang;
     var idx = event.index;
     value = event.node.value.trim();
-    lang = ractive.data.views[idx.i1].elements[idx.i2].selected;
+    lang = ractive.data.views[idx.i1].elements[idx.i2].selectedLang;
 
     // associate language tag if it is chosen
     if ( lang === "") {
@@ -523,8 +523,12 @@ var createSchema = function( newResource ) {
         profile.views[i].elements[j].values = [];
       }
       profile.views[i].elements[j].currentValue = "";
+      // set languageTag to defaultTag on all input fields
+      profile.views[i].elements[j].selectedLang = common.defaultLang;
     });
   });
+
+  // merge data with defaults from _common.js:
   ractive.set(_.extend(profile, common));
 
   if (urlParams.uri) {
@@ -675,7 +679,7 @@ if ( urlParams.profile && !urlParams.uri ) {
   ractive.set('existingResource', false);
   loadScript( '/public/profiles/' + urlParams.profile + ".js", createSchema );
   ractive.set( { 'draftDisabled': true, 'deleteDisabled': true, 'publishDisabled': true } );
-
-
 }
+
+
 
