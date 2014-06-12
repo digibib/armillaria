@@ -23,7 +23,7 @@ deps:
 	@wget https://raw.github.com/ractivejs/ractive-events-keys/master/ractive-events-keys.js -O data/public/js/ractive-events-keys.js
 	@wget http://underscorejs.org/underscore-min.js -O data/public/js/underscore-min.js
 
-build: deps
+build:
 	@export GOBIN=$(shell pwd)
 	@go build
 
@@ -33,4 +33,4 @@ indexes:
 	@curl -XPUT http://localhost:9200/public -d @data/es_settings.json
 
 mappings:
-	go run setupmappings.go indexing.go
+	@go run setupmappings.go indexing.go
