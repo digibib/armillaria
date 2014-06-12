@@ -91,6 +91,11 @@ input {
   min-width: 20em
 }
 
+textarea {
+  min-width: 40em;
+  font-size: 14px;
+}
+
 .tinyText {
   font-size: 50%;
 }
