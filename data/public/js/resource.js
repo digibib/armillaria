@@ -528,11 +528,11 @@ var urlParams;
 })();
 
 // createSchema creates a schema acording to a loaded profile.
-var createSchema = function( newResource ) {
+var createSchema = function( loadRes ) {
   // set values to empty array, if not allready popuated with predefined values.
   profile.views.forEach(function(view, i) {
     view.elements.forEach(function(elem, j) {
-      if ( newResource ) {
+      if ( !loadRes ) {
         if ( !profile.views[i].elements[j].values ) {
           profile.views[i].elements[j].values = [];
         }
@@ -694,7 +694,7 @@ if ( urlParams.uri ) {
 if ( urlParams.profile && !urlParams.uri ) {
   // No URI given; assuming creating a new resource.
   ractive.set('existingResource', false);
-  loadScript( '/public/profiles/' + urlParams.profile + ".js", createSchema );
+  loadScript( '/public/profiles/' + urlParams.profile + ".js",  createSchema);
   ractive.set( { 'draftDisabled': true, 'deleteDisabled': true, 'publishDisabled': true } );
 }
 
