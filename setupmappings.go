@@ -82,7 +82,7 @@ func main() {
 			log.Fatal(err)
 		}
 		if resp.StatusCode > 300 || resp.StatusCode < 200 {
-			fmt.Println("ERROR setting mappings for /public/%s\n", profile)
+			fmt.Printf("ERROR setting mappings for /public/%s\n", profile)
 			fmt.Println(string(b))
 		} else {
 			fmt.Printf("OK set mappings for /public/%s\n", profile)
