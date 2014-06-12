@@ -112,6 +112,10 @@
 									{{>stringInput}}
 								{{/}}
 
+								{{# type == 'text'}}
+									{{>textInput}}
+								{{/}}
+
 								{{# type == 'selectMust'}}
 									{{>selectMustInput}}
 								{{/}}
@@ -221,6 +225,22 @@
 							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
 							<span class="errorInfo">{{errorInfo}}</span>
 				<!-- {{/stringInput}} -->
+
+				<!-- {{>textInput}} -->
+						<textarea id="{{id}}"
+						  value={{currentValue}}
+							rows='2'
+							disabled={{# repeatable == false && values}}true{{/}}
+							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
+							<br/><select class="langTagSelect" value={{.selectedLang}}>
+								{{#languages}}
+									<option value={{value}}>{{label}}</option>
+								{{/languages}}
+							</select>
+							<button class="smallButton monospace" on-click="addText">Legg til</button>
+							<span class="errorInfo">{{errorInfo}}</span>
+				<!-- {{/textInput}} -->
+
 				<!-- {{>selectMustInput}} -->
 						<select class="valSelect" value={{values[0].value}} on-change="selectOption">
 							{{# options}}

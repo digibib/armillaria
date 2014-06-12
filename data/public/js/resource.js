@@ -304,7 +304,7 @@ listener = ractive.on({
     }
 
     // put value in input field
-    ractive.set( kp + ".currentValue", cleanString( event.context.value ) );
+    ractive.set( kp + ".currentValue", cleanString( event.context.value ).replace(/\<br\/\>/g, "\n") );
 
     // set focus on input field
     setTimeout(function() {
@@ -381,6 +381,25 @@ listener = ractive.on({
     }
 
     ractive.fire("newValue", event);
+  },
+  addText: function( event ) {
+    var value, lang, pred;
+    var idx = event.index;
+    value = ractive.data.views[idx.i1].elements[idx.i2].currentValue;
+    lang = ractive.data.views[idx.i1].elements[idx.i2].selectedLang;
+    pred = ractive.data.views[idx.i1].elements[idx.i2].predicate;
+
+    // associate language tag if it is chosen
+    if ( lang === "") {
+      value = "\"" + value + "\"";
+    } else {
+      value = "\"" + value + "\"@" + lang;
+    }
+    ractive.data.views[idx.i1].elements[idx.i2].values.push(
+      {"value": value.replace(/\n/g, "<br/>"), "predicate": pred, "source": "local"});
+
+    ractive.data.views[idx.i1].elements[idx.i2].currentValue = "";
+    ractive.update();
   }
 });
 
