@@ -15,12 +15,7 @@ var profile = {
           "desc": "",
           "required": true,
           "repeatable": false,
-          "predicates": [
-            {
-              "label": "fornavn",
-              "uri": "<http://xmlns.com/foaf/0.1/givenName>"
-            }
-          ],
+          "predicate": "<http://xmlns.com/foaf/0.1/givenName>",
           "type": "string"
         },
         {
@@ -29,12 +24,7 @@ var profile = {
           "desc": "Etternavn kan være så mangt.",
           "required": false,
           "repeatable": false,
-          "predicates": [
-            {
-              "label": "etternavn",
-              "uri": "<http://xmlns.com/foaf/0.1/familyName>"
-            }
-          ],
+          "predicate": "<http://xmlns.com/foaf/0.1/familyName>",
           "type": "string"
         },
         {
@@ -43,12 +33,7 @@ var profile = {
           "desc": "Kongelige titler",
           "required": false,
           "repeatable": true,
-          "predicates": [
-            {
-              "label": "tittel",
-              "uri": "<http://xmlns.com/foaf/0.1/title>"
-            }
-          ],
+          "predicate": "<http://xmlns.com/foaf/0.1/title>",
           "type": "string"
         },
         {
@@ -57,12 +42,7 @@ var profile = {
           "desc": "Ordensnummer for kongelige, paver osv.",
           "required": false,
           "repeatable": false,
-          "predicates": [
-            {
-              "label": "nummer",
-              "uri": "<http://data.deichman.no/ordinal>"
-            }
-          ],
+          "predicate": "<http://data.deichman.no/ordinal>",
           "type": "string"
         },
         {
@@ -71,12 +51,7 @@ var profile = {
           "desc": "Anno domini",
           "required": false,
           "repeatable": false,
-          "predicates": [
-            {
-              "label": "fødselssår",
-              "uri": "<http://dbpedia.org/ontology/birthYear>"
-            }
-          ],
+          "predicate": "<http://dbpedia.org/ontology/birthYear>",
           "type": "integer"
         },
         {
@@ -85,12 +60,7 @@ var profile = {
           "desc": "Anno domini",
           "required": false,
           "repeatable": false,
-          "predicates": [
-            {
-              "label": "dødsår",
-              "uri": "<http://dbpedia.org/ontology/deathYear>"
-            }
-          ],
+          "predicate": "<http://dbpedia.org/ontology/deathYear>",
           "type": "integer"
         },
         {
@@ -99,12 +69,7 @@ var profile = {
           "desc": "En person kan ha flere nasjonaliteter. Fyll inn alle du vet om.",
           "required": false,
           "repeatable": true,
-          "predicates": [
-            {
-              "label": "nasjonalitet",
-              "uri": "<http://dbpedia.org/ontology/nationality>"
-            }
-          ],
+          "predicate": "<http://dbpedia.org/ontology/nationality>",
           "type": "URI",
           "searchTypes": ["sted"]
         },
@@ -114,12 +79,7 @@ var profile = {
           "desc": "Også kjent som...",
           "required": false,
           "repeatable": true,
-          "predicates": [
-            {
-              "label": "pseudonym",
-              "uri": "<http://data.deichman.no/hasPseudonym>"
-            }
-          ],
+          "predicate": "<http://data.deichman.no/hasPseudonym>",
           "type": "URI",
           "searchTypes": ["agent"]
         }
@@ -127,14 +87,13 @@ var profile = {
     }
   ],
   "displayLabel": function( values ) {
-    var label = "";
-    if ( values.firstname[0] && values.lastname[0] ) {
-      label = cleanString( values.firstname[0].value ) + " " +
-              cleanString( values.lastname[0].value );
+    var label = cleanString( values.firstname[0].value );
+    if (  values.lastname[0] ) {
+      label += " " + cleanString( values.lastname[0].value );
       if ( values.birthyear[0] ) {
-        label += " ("+ cleanString( values.birthyear[0].value );
+        label += " ("+ cleanString( values.birthyear[0].value ) + "-";
         if ( values.deathyear[0] ) {
-          label += "-" + cleanString( values.deathyear[0].value ) + ")";
+          label += cleanString( values.deathyear[0].value ) + ")";
         } else {
           label += ")";
         }
@@ -143,10 +102,9 @@ var profile = {
     return '"' + label + '"';
   },
   "searchLabel": function(values) {
-    var label = "";
-    if ( values.firstname[0] && values.lastname[0] ) {
-      label = cleanString( values.firstname[0].value ) + " " +
-              cleanString( values.lastname[0].value );
+    var label = cleanString( values.firstname[0].value );
+    if ( values.lastname[0] ) {
+      label += " " + cleanString( values.lastname[0].value );
     }
     return '"' + label + '"';
   },

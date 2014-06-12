@@ -89,7 +89,7 @@ var doQuery = function( query, callback ) {
   };
 
   req.onerror = function() {
-    console.log( 'Failed to execute SPQRL query' );
+    console.log( 'Failed to execute SPAQRL query' );
   };
 
   req.send( postData );
@@ -191,8 +191,8 @@ listener = ractive.on({
     var value, predicate, predicateLabel, source;
     value = event.node.value.trim();
 
-    predicate = event.context.predicates[0].uri;
-    predicateLabel = event.context.predicates[0].label;
+    predicate = event.context.predicate;
+    predicateLabel = event.context.label;
     source = 'local';
 
 
@@ -258,8 +258,8 @@ listener = ractive.on({
     uri = '<' + event.context._source.uri + '>';
     source = 'local';
     var idx = event.index;
-    predicate = ractive.data.views[idx.i1].elements[idx.i2].predicates[0].uri;
-    predicateLabel = ractive.data.views[idx.i1].elements[idx.i2].predicates[0].label;
+    predicate = ractive.data.views[idx.i1].elements[idx.i2].predicate;
+    predicateLabel = ractive.data.views[idx.i1].elements[idx.i2].label;
     var exsitingURI = _.find(ractive.data.views[idx.i1].elements[idx.i2].values, function( e ) {
       return e.value === uri;
     });
@@ -425,7 +425,7 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
     }
   }
 
-  firstLoad = false; //
+  firstLoad = false; // TODO fix this
   var sl = ractive.data.searchLabel(values);
   var dl = ractive.data.displayLabel(values);
 
@@ -591,11 +591,9 @@ if ( urlParams.uri ) {
           var kp = false;
           ractive.data.views.forEach(function(v, i) {
             v.elements.forEach(function(e, j) {
-              e.predicates.forEach(function(p, k) {
-                if (p.uri === pred) {
-                  kp = "views."+i+".elements."+j;
-                }
-              });
+              if (e.predicate === pred) {
+                kp = "views."+i+".elements."+j;
+              }
             });
           });
           return kp;

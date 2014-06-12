@@ -15,12 +15,7 @@ var profile = {
           "desc": "",
           "required": true,
           "repeatable": false,
-          "predicates": [
-            {
-              "label": "navn",
-              "uri": "<http://purl.org/dc/terms/title>"
-            }
-          ],
+          "predicate": "<http://purl.org/dc/terms/title>",
           "type": "langString"
         },
         {
@@ -29,12 +24,7 @@ var profile = {
           "desc": "Hva skjedde egentlig",
           "required": false,
           "repeatable": false,
-          "predicates": [
-            {
-              "label": "beskrivelse",
-              "uri": "<http://purl.org/dc/terms/description>"
-            }
-          ],
+          "predicate": "<http://purl.org/dc/terms/description>",
           "type": "langString"
         },
         {
@@ -43,12 +33,7 @@ var profile = {
           "desc": "Hvor skjedde det?",
           "required": false,
           "repeatable": true,
-          "predicates": [
-            {
-              "label": "sted",
-              "uri": "<http://purl.org/NET/c4dm/event.owl#place>"
-            }
-          ],
+          "predicate": "<http://purl.org/NET/c4dm/event.owl#place>",
           "type": "URI",
           "searchTypes": ["sted"]
         },
@@ -58,12 +43,7 @@ var profile = {
           "desc": "Når skjedde det?",
           "required": false,
           "repeatable": true,
-          "predicates": [
-            {
-              "label": "tid",
-              "uri": "<http://purl.org/NET/c4dm/event.owl#time>"
-            }
-          ],
+          "predicate": "<http://purl.org/NET/c4dm/event.owl#time>",
           "type": "URI",
           "searchTypes": ["temporalEntitet"]
         },
@@ -73,12 +53,7 @@ var profile = {
           "desc": "Hvem gjorde det?",
           "required": false,
           "repeatable": true,
-          "predicates": [
-            {
-              "label": "aktør",
-              "uri": "<http://purl.org/NET/c4dm/event.owl#agent>"
-            }
-          ],
+          "predicate": "<http://purl.org/NET/c4dm/event.owl#agent>",
           "type": "URI",
           "searchTypes": ["agent"]
         }

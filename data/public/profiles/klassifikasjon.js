@@ -15,12 +15,7 @@ var profile = {
           "desc": "Nummer i Deweys klassifikasjonssystemet",
           "required": true,
           "repeatable": false,
-          "predicates": [
-            {
-              "label": "klassenummer",
-              "uri": "<http://www.w3.org/2004/02/skos/core#notation>"
-            }
-          ],
+          "predicate": "<http://www.w3.org/2004/02/skos/core#notation>",
           "type": "float"
         },
         {
@@ -29,12 +24,7 @@ var profile = {
           "desc": "",
           "required": true,
           "repeatable": false,
-          "predicates": [
-            {
-              "label": "Deweyutgave",
-              "uri": "<http://www.w3.org/2004/02/skos/core#inScheme>"
-            }
-          ],
+          "predicate": "<http://www.w3.org/2004/02/skos/core#inScheme>",
           "values": [
             {
               "predicate": "<http://www.w3.org/2004/02/skos/core#inScheme>",
@@ -68,12 +58,7 @@ var profile = {
           "desc": "Kort (1-3 ord) beskrivelse av dette Dewey-nummeret",
           "required": false,
           "repeatable": false,
-          "predicates": [
-            {
-              "label": "begenelse",
-              "uri": "<http://www.w3.org/2004/02/skos/core#prefLabel>"
-            }
-          ],
+          "predicate": "<http://www.w3.org/2004/02/skos/core#prefLabel>",
           "type": "langString"
         },
         {
@@ -82,12 +67,7 @@ var profile = {
           "desc": "Emne som beskriver dette Dewey-nummeret",
           "required": false,
           "repeatable": true,
-          "predicates": [
-            {
-              "label": "relatert emne",
-              "uri": "<http://www.w3.org/2004/02/skos/core#narrowMatch>"
-            }
-          ],
+          "predicate": "<http://www.w3.org/2004/02/skos/core#narrowMatch>",
           "type": "URI",
           "searchTypes": ["emne"]
         }

@@ -15,12 +15,7 @@ var profile = {
           "desc": "",
           "required": true,
           "repeatable": false,
-          "predicates": [
-            {
-              "label": "emneord",
-              "uri": "<http://www.w3.org/2004/02/skos/core#prefLabel>"
-            }
-          ],
+          "predicate": "<http://www.w3.org/2004/02/skos/core#prefLabel>",
           "type": "langString"
         },
         {
@@ -29,12 +24,7 @@ var profile = {
           "desc": "Alternativ betegnelse på emnet.",
           "required": false,
           "repeatable": true,
-          "predicates": [
-            {
-              "label": "alt. emneord",
-              "uri": "<http://www.w3.org/2004/02/skos/core#altLabel>"
-            }
-          ],
+          "predicate":"<http://www.w3.org/2004/02/skos/core#altLabel>",
           "type": "langString"
         }
       ]
@@ -49,12 +39,7 @@ var profile = {
           "desc": "Overordnet emne",
           "required": false,
           "repeatable": true,
-          "predicates": [
-            {
-              "label": "klassifikasjon",
-              "uri": "<http://www.w3.org/2004/02/skos/core#broadMatch>"
-            }
-          ],
+          "predicate": "<http://www.w3.org/2004/02/skos/core#broadMatch>",
           "type": "URI",
           "searchTypes": ["emne"]
         },
@@ -64,12 +49,7 @@ var profile = {
           "desc": "Underordnet emne?",
           "required": false,
           "repeatable": true,
-          "predicates": [
-            {
-              "label": "underavdeling",
-              "uri": "<http:/data.deichman.no/subdivision>"
-            }
-          ],
+          "predicate": "<http:/data.deichman.no/subdivision>",
           "type": "URI",
           "searchTypes": ["emne"]
         },
@@ -79,12 +59,7 @@ var profile = {
           "desc": "Du vet.. for ekstra kvalitet",
           "required": false,
           "repeatable": true,
-          "predicates": [
-            {
-              "label": "kvalifikator",
-              "uri": "<http://data.deichman.no/qualifier>"
-            }
-          ],
+          "predicate": "<http://data.deichman.no/qualifier>",
           "type": "URI",
           "searchTypes": ["emne"]
         },
@@ -94,12 +69,7 @@ var profile = {
           "desc": "Relatert emne",
           "required": false,
           "repeatable": true,
-          "predicates": [
-            {
-              "label": "se også",
-              "uri": "<http://www.w3.org/2004/02/skos/core#related>"
-            }
-          ],
+          "predicate":"<http://www.w3.org/2004/02/skos/core#related>",
           "type": "URI",
           "searchTypes": ["emne"]
         },
@@ -109,12 +79,7 @@ var profile = {
           "desc": "fokus, fokus, fokus",
           "required": false,
           "repeatable": true,
-          "predicates": [
-            {
-              "label": "fokus",
-              "uri": "<http://xmlns.com/foaf/0.1/focus>"
-            }
-          ],
+          "predicate": "<http://xmlns.com/foaf/0.1/focus>",
           "type": "URI",
           "searchTypes": ["agent", "verk", "sted", "hendelse", "wgs84"]
         }
