@@ -2,7 +2,7 @@ var profile = {
   "overview": {
     "title": "Hendelse",
     "desc": "Beskriver en historisk hendelse",
-    "type": "<http://purl.org/NET/c4dm/event.owl#Event>"
+    "type": ["<http://purl.org/NET/c4dm/event.owl#Event>"]
   },
   "views": [
     {

@@ -2,7 +2,7 @@ var profile = {
   "overview": {
     "title": "Person",
     "desc": "Beskriver en historisk eller nålevende person, aka homo sapiens",
-    "type": "<http://xmlns.com/foaf/0.1/Person>"
+    "type": ["<http://xmlns.com/foaf/0.1/Person>"]
   },
   "views": [
     {

@@ -2,7 +2,7 @@ var profile = {
   "overview": {
     "title": "Klassifikasjon",
     "desc": "bla bla",
-    "type": "<http://www.w3.org/2004/02/skos/core#Concept>"
+    "type": ["<http://www.w3.org/2004/02/skos/core#Concept>"]
   },
   "views": [
     {

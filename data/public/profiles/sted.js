@@ -2,7 +2,7 @@ var profile = {
   "overview": {
     "title": "Sted",
     "desc": "Beskriver et geografisk sted",
-    "type": "<http://www.geonames.org/ontology#Feature>"
+    "type": ["<http://www.geonames.org/ontology#Feature>"]
   },
   "views": [
     {

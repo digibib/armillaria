@@ -2,7 +2,7 @@ var profile = {
   "overview": {
     "title": "Verk",
     "desc": "Beskriver et verk, forklar det om du kan",
-    "type": "<http://purl.org/spar/fabio/Work>"
+    "type": ["<http://purl.org/spar/fabio/Work>"]
   },
   "views": [
     {

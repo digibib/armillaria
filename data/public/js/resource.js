@@ -34,12 +34,14 @@ var insertQuery = function( publish ) {
   var uri = ractive.get( 'overview.uri' );
   var now = new Date();
   var meta = [
-    { 'p': 'a', 'o': ractive.data.overview.type },
     { 'p': internalPred( 'profile' ), 'o': '"' + urlParams.profile + '"' },
     { 'p': internalPred( 'displayLabel' ), 'o': ractive.data.overview.displayLabel },
     { 'p': internalPred( 'searchLabel' ), 'o': ractive.data.overview.searchLabel },
     { 'p': internalPred( 'updated' ), 'o': dateFormat( now.toISOString() ) }
   ];
+  ractive.data.overview.type.forEach( function( i, t ) {
+    meta.push( { 'p': 'a', 'o': t });
+  });
   if ( !ractive.data.uriFn ) {
     meta.push( { 'p': internalPred( 'id' ), 'o': ractive.get( 'overview.idNumber' ) } );
   }
@@ -642,7 +644,7 @@ if ( urlParams.uri ) {
             uriLabels['<' + b.o.value + '>'] = b.l.value;
           }
         });
-
+        ractive.data.overview.type = [];
         rdfRes.results.bindings.forEach(function(b) {
           var pred = "<" + b.p.value + ">";
           var source = 'local';
@@ -677,6 +679,9 @@ if ( urlParams.uri ) {
               case internalPred( 'id' ):
                 ractive.set( 'overview.idNumber', getValue( b.o ) );
                 ractive.set( 'overview.uri', '<' + urlParams.uri + '>' );
+                break;
+              case "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>":
+                ractive.data.overview.type.push( '<' + b.o + '>');
                 break;
             }
           }
