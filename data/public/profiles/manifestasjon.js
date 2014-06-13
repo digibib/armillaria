@@ -354,7 +354,7 @@ var profile = {
         },
         {
           "id": "subject",
-          "label": "Emene",
+          "label": "Emne",
           "desc": "",
           "required": false,
           "repeatable": true,
