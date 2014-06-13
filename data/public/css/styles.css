@@ -77,6 +77,11 @@ h1, h2, h3, h4, h5 {
   margin: 0.6em 0;
 }
 
+h5 {
+  margin:0;
+  letter-spacing: 1px;
+}
+
 a:link, a:visited {
   color: navy;
 }
@@ -258,7 +263,10 @@ select[disabled=disabled] {
 
 .propertyDesc {
   font-size:70%;
+  font-weight: 100;
+  color: #666;
 }
+.propertyDesc:before {content: '/ '}
 
 .removeProperty {
   display: inline-block;

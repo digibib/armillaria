@@ -80,11 +80,13 @@
 
 						{{#elements:i2}}
 
-							<h4 class="relative">{{label}}
+							<h5 class="relative">{{label}}
 								{{#required}}<span class="indicator2 red">*</span>{{/}}
 								{{#repeatable}}<span class="indicator grey">+</span>{{/}}
 								{{#generated}}<span class="indicator2 grey">a</span>{{/}}
-							</h4>
+								<span class="propertyDesc">{{desc}}</span>
+							</h5>
+
 
 							{{^ generated}}
 
