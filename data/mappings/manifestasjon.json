@@ -1,0 +1,311 @@
+{
+  "<http://purl.org/ontology/bibo/number>": {
+    "titlenr": {
+      "type": "integer"
+    }
+  },
+  "<http://purl.org/ontology/bibo/isbn10>": {
+    "isbn10": {
+      "type": "string"
+    }
+  },
+  "<http://purl.org/ontology/bibo/isbn13>": {
+    "isbn10": {
+      "type": "string"
+    }
+  },
+  "<http://purl.org/dc/terms/title>": {
+    "title": {
+      "type": "string"
+    }
+  },
+  "<http://purl.org/spar/fabio/hasSubtitle>": {
+    "subtitle": {
+      "type": "string"
+    }
+  },
+  "<http://purl.org/dc/terms/alternative>": {
+    "altTitle": {
+      "type": "string"
+    }
+  },
+  "<http://purl.org/ontology/bibo/edition>": {
+    "edition": {
+      "type": "integer"
+    }
+  },
+  "<http://purl.org/spar/fabio/hasPublicationYear>": {
+    "pubYear": {
+      "type": "integer"
+    }
+  },
+  "<http://purl.org/ontology/bibo/issuer>": {
+    "issuer": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://data.deichman.no/publicationPlace>": {
+    "pubPlace": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://purl.org/dc/terms/language>": {
+    "language": {
+      "type": "string"
+    }
+  },
+  "<http://purl.org/ontology/bibo/numPages>": {
+    "numPages": {
+      "type": "integer"
+    }
+  },
+  "<http://purl.org/dc/terms/MediaTypeOrExtent>": {
+    "format": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://purl.org/dc/terms/audience>": {
+    "audience": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://purl.org/dc/terms/description>": {
+    "description": {
+      "type": "string"
+    }
+  },
+  "<http://purl.org/dc/terms/abstract>": {
+    "abstract": {
+      "type": "string"
+    }
+  },
+  "<http://purl.org/spar/fabio/isManifestationOf>": {
+    "work": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://purl.org/dc/terms/isPartOf>": {
+    "partOf": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://purl.org/dc/terms/hasPart>": {
+    "hasPart": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://purl.org/ontology/bibo/bind>": {
+    "volume": {
+      "type": "integer"
+    }
+  },
+  "<http://purl.org/ontology/bibo/locator>": {
+    "locator": {
+      "type": "integer"
+    }
+  },
+  "<http://purl.org/dc/terms/creator>": {
+    "creator": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://purl.org/ontology/bibo/translator>": {
+    "translator": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://data.deichman.no/illustrator>": {
+    "illustrator": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://purl.org/ontology/bibo/editor>": {
+    "editor": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://purl.org/dc/terms/contributor>": {
+    "contributor": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http:/data.deichman.no/literaryFormat>": {
+    "litFormat": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://dbpedia.org/ontology/literaryGenre>": {
+    "litGenre": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://purl.org/dc/terms/subject>": {
+    "subject": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://purl.org/dc/terms/subjectDewey>": {
+    "class": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "<http://commontag.org/ns#Tag>": {
+    "tag": {
+      "type": "nested",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  }
+
+}
