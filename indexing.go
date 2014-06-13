@@ -132,13 +132,13 @@ func loadFromProfiles() (map[string]map[string]string, error) {
 		}
 
 		for k, v := range common {
-			for ki, _ := range v {
+			for ki := range v {
 				allMappings[profile][k] = ki
 			}
 		}
 
 		for k, v := range m {
-			for ki, _ := range v {
+			for ki := range v {
 				allMappings[profile][k] = ki
 			}
 		}

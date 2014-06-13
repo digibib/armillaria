@@ -131,7 +131,7 @@ func (w addWorker) Run() {
 						resource[indexMappings[profile][pred]] =
 							append(resource[indexMappings[profile][pred]].([]interface{}), uf)
 					case uriField:
-						s := make([]interface{}, 0)
+						var s []interface{}
 						s = append(s, resource[indexMappings[profile][pred]])
 						resource[indexMappings[profile][pred]] = append(s, uf)
 					default:
@@ -146,7 +146,7 @@ func (w addWorker) Run() {
 					resource[indexMappings[profile][pred]] =
 						append(resource[indexMappings[profile][pred]].([]interface{}), val)
 				case interface{}:
-					s := make([]interface{}, 0)
+					var s []interface{}
 					s = append(s, resource[indexMappings[profile][pred]])
 					resource[indexMappings[profile][pred]] = append(s, val)
 				default:
