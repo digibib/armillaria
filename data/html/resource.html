@@ -89,7 +89,7 @@
 
 
 							{{^ generated}}
-
+							<div class="{{# repeatable == false && values}}hidden{{/}}">
 								{{# type === 'URI' }}
 									{{>URIInput}}
 								{{/}}
@@ -127,23 +127,26 @@
 									{{>selectInput}}
 								{{/}}
 
-							{{/generated}}
+								{{# type == 'multiPredicateURI'}}
+									{{>multiPredInput}}
+									{{>URIInput}}
+								{{/}}
 
-							<div class="propertyDesc">{{desc}}</div>
+							{{/generated}}
 
 							<div class="clearfix row resourceValues">
 							{{^ type == 'selectMust'}}
 								{{#values:i3}}
-									<div class="propertyValue column third">
+									<div class="propertyValue column half">
 
 										{{^URILabel}}<span class="propertyLabel clickable" on-click="editLiteral">{{value}}</span>{{/URILabel}}
-										{{#URILabel}}<span class="propertyLabel">{{value}}</span>{{/URILabel}}
+
 										<span class="removeProperty" on-click='remove'>&times;</span>
 										{{# source !== 'local' }}
 											<span class="tinyText">{{source}}</span>
 										{{/}}
 										{{#URILabel}}
-											<div><strong>{{URILabel}}</strong></div>
+											<div>{{# predicateLabel && predicateLabel !== label}}{{predicateLabel}}: {{/}}<a title="{{value}}" target="blank" href="/resource?uri={{trimURI(value)}}">{{URILabel}}</a></div>
 										{{/URILabel}}
 									</div>
 								{{/values}}
@@ -263,6 +266,14 @@
 						<button class="smallButton monospace" on-click="selectAddOption">Legg til</button>
 						<span class="errorInfo">{{errorInfo}}</span>
 				<!-- {{/selectInput}} -->
+
+				<!-- {{>multiPredInput}} -->
+						<select id="multiPred-{{id}}" class="valSelect" value={{.predicate}}>
+							{{# predicates}}
+								<option value={{uri}}>{{predicateLabel}}</option>
+							{{/predicates}}
+						</select>
+				<!-- {{/multiPredInput}} -->
 			</script>
 		</div>
 		<script src="/public/profiles/_common.js"></script>

@@ -78,7 +78,7 @@ h1, h2, h3, h4, h5 {
 }
 
 h5 {
-  margin:0;
+  margin:0.5em 0 0 0;
   letter-spacing: 1px;
 }
 
@@ -94,6 +94,7 @@ label {
 input, select {
   font-family: monospace;
   font-size:90%;
+  margin-bottom: 1em;
 }
 
 input[type=text] {
@@ -140,6 +141,10 @@ textarea {
 
 .clickable:hover {
   cursor: pointer;
+}
+
+.hidden {
+  display: none
 }
 
 .monospace { font-family: monospace }
@@ -245,18 +250,22 @@ select[disabled=disabled] {
 }
 
 .resourceValues {
-  margin: 1em 0;
+  margin:0;
   font-family: monospace;
   font-size: 90%;
 }
 
 
 .propertyValue {
-  background-color: #dadada;
+  background-color: #eee;
   border: 2px solid #fff;
   border-radius: 3px;
   padding: 0.3em;
   word-wrap: break-word;
+}
+
+.propertyValue:hover {
+  border: 2px solid #ddd;
 }
 
 .valSelect, .resourceData input {
