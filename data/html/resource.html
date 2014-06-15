@@ -88,7 +88,7 @@
 
 
 							{{^ generated}}
-							<div class="{{# repeatable == false && values}}hidden{{/}}">
+							<div class="{{# repeatable == false && values.length > 0 && type !== 'selectMust'}}hidden{{/}}">
 								{{# type === 'URI' }}
 									{{>URIInput}}
 								{{/}}
