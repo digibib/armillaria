@@ -262,8 +262,12 @@ listener = ractive.on({
     var idx = event.index;
     predicate = ractive.data.views[idx.i1].elements[idx.i2].predicate;
     predicateLabel = ractive.data.views[idx.i1].elements[idx.i2].label;
+    var predSelect = document.getElementById("multiPred-" + ractive.data.views[idx.i1].elements[idx.i2].id);
+    if ( predSelect ) {
+      predicateLabel = predSelect.options[predSelect.selectedIndex].innerHTML;
+    }
     var exsitingURI = _.find(ractive.data.views[idx.i1].elements[idx.i2].values, function( e ) {
-      return e.value === uri;
+      return e.value === uri && e.predicate === predicate;
     });
 
     if ( !exsitingURI ) {
@@ -615,6 +619,14 @@ if ( urlParams.uri ) {
               if (e.predicate === pred) {
                 kp = "views."+i+".elements."+j;
               }
+              // find path for multiPredicate inputs
+              if (e.predicates) {
+                e.predicates.forEach(function ( p ) {
+                  if ( p.uri === pred) {
+                    kp = "views."+i+".elements."+j;
+                  }
+                });
+              }
             });
           });
           return kp;
@@ -652,6 +664,15 @@ if ( urlParams.uri ) {
           if ( kp ) {
             var v = getValue(b.o);
             var predLabel = ractive.get(kp).label;
+            if ( ractive.get(kp).type === "multiPredicateURI" ) {
+              // Find the predicateLabel for a multiPredicate input type
+              var predSelect = document.getElementById("multiPred-" + ractive.get(kp).id );
+              for (var i =0; i < predSelect.options.length; i++) {
+                if ( pred === predSelect.options[i].value) {
+                  predLabel = predSelect.options[i].innerHTML;
+                }
+              }
+            }
             var res = {"predicate": pred, "predicateLabel": predLabel, "value": v, "source": source}
             if ( uriLabels[v] ) {
               res.URILabel = uriLabels[v]

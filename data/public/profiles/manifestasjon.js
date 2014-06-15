@@ -23,7 +23,7 @@ var profile = {
           "label": "ISBN10",
           "desc": "",
           "required": false,
-          "repeatable": false,
+          "repeatable": true,
           "predicate": "<http://purl.org/ontology/bibo/isbn10>",
           "type": "string"
         },
@@ -32,9 +32,9 @@ var profile = {
           "label": "ISBN13",
           "desc": "",
           "required": false,
-          "repeatable": false,
+          "repeatable": true,
           "predicate": "<http://purl.org/ontology/bibo/isbn13>",
-          "type": "integer"
+          "type": "string"
         },
         {
           "id": "title",
@@ -104,26 +104,28 @@ var profile = {
         {
           "id": "lang",
           "label": "Språk",
-          "desc": "TODO nedtrekksliste?",
+          "desc": "",
           "required": true,
           "repeatable": true,
           "predicate": "<http://purl.org/dc/terms/language>",
-          "type": "string"
+          "type": "URI",
+          "searchTypes": ["language"]
         },
         {
           "id": "notation",
           "label": "Skriftsystem",
           "desc": "Er dette det samme som alfabet?",
           "required": true,
-          "repeatable": false,
+          "repeatable": true,
           "predicate": "<http://www.ifomis.org/bfo/1.0#notation>",
-          "type": "selectMust",
+          "type": "URI",
+          "searchTypes": ["script"],
           "values": [
             {
               "predicate": "<http://www.ifomis.org/bfo/1.0#notation>",
               "predicateLabel": "Skriftsystem",
-              "value": "<http://data.deichman.no/class/notation/1>",
-              "URILabel": "Latinsk",
+              "value": "<http://lexvo.org/id/script/Latn>",
+              "URILabel": "latinsk",
               "source": "local"
             }
           ],
@@ -273,57 +275,23 @@ var profile = {
       ]
     },
     {
-      "title": "Skapere",
-      "desc": "\"Skapere\" er kanskje ikke det riktige ordet...",
+      "title": "Opphavspersoner",
+      "desc": "",
       "elements": [
         {
-          "id": "creator",
-          "label": "Opphavsperson",
-          "desc": "",
+          "id": "creators",
+          "label": "Opphavspersoner",
+          "desc": "et godt norsk ord for creator",
           "required": false,
           "repeatable": true,
-          "predicate": "<http://purl.org/dc/terms/creator>",
-          "type": "URI",
-          "searchTypes": ["person", "agent", "organisasjon"]
-        },
-        {
-          "id": "translator",
-          "label": "Oversetter",
-          "desc": "",
-          "required": false,
-          "repeatable": true,
-          "predicate": "<http://purl.org/ontology/bibo/translator>",
-          "type": "URI",
-          "searchTypes": ["person", "agent", "organisasjon"]
-        },
-        {
-          "id": "illustrator",
-          "label": "Illustratør",
-          "desc": "",
-          "required": false,
-          "repeatable": true,
-          "predicate": "<http://data.deichman.no/illustrator>",
-          "type": "URI",
-          "searchTypes": ["person", "agent", "organisasjon"]
-        },
-        {
-          "id": "editor",
-          "label": "Redaktør",
-          "desc": "",
-          "required": false,
-          "repeatable": true,
-          "predicate": "<http://purl.org/ontology/bibo/editor>",
-          "type": "URI",
-          "searchTypes": ["person", "agent", "organisasjon"]
-        },
-        {
-          "id": "contributor",
-          "label": "Bidragsyter",
-          "desc": "",
-          "required": false,
-          "repeatable": true,
-          "predicate": "<http://purl.org/dc/terms/contributor>",
-          "type": "URI",
+          "predicates": [
+            {"uri": "<http://purl.org/dc/terms/creator>", "predicateLabel": "opphavsperson"},
+            {"uri": "<http://purl.org/ontology/bibo/translator>", "predicateLabel": "oversetter"},
+            {"uri": "<http://data.deichman.no/illustrator>", "predicateLabel": "illustratør"},
+            {"uri": "<http://purl.org/ontology/bibo/editor>", "predicateLabel": "redaktør"},
+            {"uri": "<http://purl.org/dc/terms/contributor>", "predicateLabel": "bidragsyter"}
+          ],
+          "type": "multiPredicateURI",
           "searchTypes": ["person", "agent", "organisasjon"]
         }
       ]

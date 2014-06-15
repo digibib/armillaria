@@ -9,7 +9,8 @@ var common = {
   "defaultLang": "nb-no",
   "internalNamespace": "armillaria://internal/",
   "publicGraph": "<http://data.deichman.no/public>",
-  "draftsGraph": "<http://data.deichman.no/drafts>"
+  "draftsGraph": "<http://data.deichman.no/drafts>",
+  "trimURI": function(s) { return s.substr(1, s.length -2)}
 };
 
 var cleanString = function(s) {

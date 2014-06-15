@@ -48,11 +48,12 @@ var profile = {
         {
           "id": "lang",
           "label": "Språk",
-          "desc": "TODO nedtrekksliste?",
+          "desc": "",
           "required": true,
           "repeatable": true,
           "predicate": "<http://purl.org/dc/terms/language>",
-          "type": "string"
+          "type": "URI",
+          "searchTypes": ["language"]
         },
         {
           "id": "audience",
@@ -174,48 +175,25 @@ var profile = {
       ]
     },
     {
-      "title": "Skapere",
-      "desc": "\"Skapere\" er kanskje ikke det riktige ordet...",
+      "title": "Opphavspersoner",
+      "desc": "",
       "elements": [
         {
-          "id": "creator",
-          "label": "Opphavsperson",
-          "desc": "",
+
+          "id": "creators",
+          "label": "Opphavspersoner",
+          "desc": "et godt norsk ord for creator",
           "required": false,
           "repeatable": true,
-          "predicate": "<http://purl.org/dc/terms/creator>",
-          "type": "URI",
+          "predicates": [
+            {"uri": "<http://purl.org/dc/terms/creator>", "predicateLabel": "opphavsperson"},
+            {"uri": "<http://data.deichman.no/illustrator>", "predicateLabel": "illustratør"},
+            {"uri": "<http://purl.org/ontology/bibo/editor>", "predicateLabel": "redaktør"},
+            {"uri": "<http://purl.org/dc/terms/contributor>", "predicateLabel": "bidragsyter"}
+          ],
+          "type": "multiPredicateURI",
           "searchTypes": ["person", "agent", "organisasjon"]
-        },
-        {
-          "id": "illustrator",
-          "label": "Illustratør",
-          "desc": "",
-          "required": false,
-          "repeatable": true,
-          "predicate": "<http://data.deichman.no/illustrator>",
-          "type": "URI",
-          "searchTypes": ["person", "agent", "organisasjon"]
-        },
-        {
-          "id": "editor",
-          "label": "Redaktør",
-          "desc": "",
-          "required": false,
-          "repeatable": true,
-          "predicate": "<http://purl.org/ontology/bibo/editor>",
-          "type": "URI",
-          "searchTypes": ["person", "agent", "organisasjon"]
-        },
-        {
-          "id": "contributor",
-          "label": "Bidragsyter",
-          "desc": "",
-          "required": false,
-          "repeatable": true,
-          "predicate": "<http://purl.org/dc/terms/contributor>",
-          "type": "URI",
-          "searchTypes": ["person", "agent", "organisasjon"]
+
         }
       ]
     },
