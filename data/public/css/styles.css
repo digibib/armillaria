@@ -226,7 +226,7 @@ select[disabled=disabled] {
 .indicator2 {
   position: absolute;
   left: -18px;
-  top: -5px;
+  top: 0;
 }
 
 .RDFProfile { margin-bottom: 5em; }
