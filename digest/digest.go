@@ -261,6 +261,13 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if err != nil || resp.StatusCode != 401 {
 		return resp, err
 	}
+	// Read the response body, to enable the connection to be reused.
+	_, err = io.Copy(ioutil.Discard, resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
 	chal := resp.Header.Get("WWW-Authenticate")
 	c, err := parseChallenge(chal)
 	if err != nil {
