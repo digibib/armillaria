@@ -145,11 +145,22 @@ var profile = {
           "searchTypes": ["verk"]
         },
         {
+          "id": "relatedWork",
+          "label": "Relatert verk",
+          "desc": "",
+          "required": false,
+          "repeatable": true,
+          "predicate": "<http://purl.org/vocab/frbr/core#relatedEndeavour>",
+          "type": "URI",
+          "searchTypes": ["verk"]
+        },
+        {
           "id": "bind",
           "label": "Bindnummer",
           "desc": "",
           "required": false,
           "repeatable": false,
+          "hidden": true,
           "predicate": "<http://purl.org/ontology/bibo/volume>",
           "type": "integer"
         },
@@ -159,18 +170,9 @@ var profile = {
           "desc": "",
           "required": false,
           "repeatable": false,
+          "hidden": true,
           "predicate": "<http://purl.org/ontology/bibo/locator>",
           "type": "integer"
-        },
-        {
-          "id": "relatedWork",
-          "label": "Relatert verk",
-          "desc": "",
-          "required": false,
-          "repeatable": true,
-          "predicate": "<http://purl.org/vocab/frbr/core#relatedEndeavour>",
-          "type": "URI",
-          "searchTypes": ["verk"]
         }
       ]
     },

@@ -77,9 +77,8 @@
 					<div class="resourceData">
 						<h3>{{title}}</h3>
 						<p>{{desc}}</p>
-
 						{{#elements:i2}}
-
+						<div class="{{#hidden}}hidden{{/hidden}}">
 							<h5 class="relative">{{label}}
 								{{#required}}<span class="indicator2 red">*</span>{{/}}
 								{{#repeatable}}<span class="indicator grey">+</span>{{/}}
@@ -146,15 +145,20 @@
 											<span class="tinyText">{{source}}</span>
 										{{/}}
 										{{#URILabel}}
-											<div>{{# predicateLabel && predicateLabel !== label}}{{predicateLabel}}: {{/}}<a title="{{value}}" target="blank" href="/resource?uri={{trimURI(value)}}">{{URILabel}}</a></div>
+											<div>{{# predicateLabel && predicateLabel !== label}}{{predicateLabel}}: {{/}}<a title="{{value}}" target="_blank" href="/resource?uri={{trimURI(value)}}">{{URILabel}}</a></div>
 										{{/URILabel}}
 									</div>
 								{{/values}}
 							{{/}}
-
 							</div>
+						</div>
 
 						{{/elements}}
+						{{ #hiddenFields(views[i1]).length > 0}}
+						<strong>Vis felt for</strong> {{#hiddenFields(views[i1])}}
+							| <a class="navy clickable" on-click="showHiddenField" dataValue="{{id}}">{{label}}</a>
+						{{/}}
+						{{/}}
 					</div>
 					{{/views}}
 				</div>

@@ -10,7 +10,8 @@ var common = {
   "internalNamespace": "armillaria://internal/",
   "publicGraph": "<http://data.deichman.no/public>",
   "draftsGraph": "<http://data.deichman.no/drafts>",
-  "trimURI": function(s) { return s.substr(1, s.length -2)}
+  "trimURI": function(s) { return s.substr(1, s.length -2)},
+  "hiddenFields": function( view ) { return _.filter(view.elements, function( e ) { return e.hidden == true && e.values.length == 0})}
 };
 
 var cleanString = function(s) {

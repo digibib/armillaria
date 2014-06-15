@@ -112,7 +112,7 @@ input[type=search] {
 }
 
 textarea {
-  min-width: 40em;
+  min-width: 100%;
   font-size: 14px;
 }
 
@@ -127,6 +127,8 @@ textarea {
 .grey {
   color: #aaa;
 }
+
+.navy {  color: navy; }
 
 .errorInfo {
   font-family: monospace;
@@ -144,7 +146,7 @@ textarea {
 }
 
 .hidden {
-  display: none
+  display: none;
 }
 
 .monospace { font-family: monospace }
@@ -227,6 +229,7 @@ select[disabled=disabled] {
   top: -5px;
 }
 
+.RDFProfile { margin-bottom: 5em; }
 .RDFProfile h3 {
   border-bottom: 2px solid #ccc;
 }

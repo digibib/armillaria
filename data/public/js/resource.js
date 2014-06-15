@@ -406,6 +406,11 @@ listener = ractive.on({
 
     ractive.data.views[idx.i1].elements[idx.i2].currentValue = "";
     ractive.update();
+  },
+  showHiddenField: function( event ) {
+    event.context.hidden = false;
+    ractive.update();
+    // todo focus on input field
   }
 });
 

@@ -28,24 +28,6 @@ var profile = {
           "type": "string"
         },
         {
-          "id": "tittel",
-          "label": "Tittel",
-          "desc": "Kongelige titler",
-          "required": false,
-          "repeatable": true,
-          "predicate": "<http://xmlns.com/foaf/0.1/title>",
-          "type": "string"
-        },
-        {
-          "id": "nummer",
-          "label": "Nummer",
-          "desc": "Ordensnummer for kongelige, paver osv.",
-          "required": false,
-          "repeatable": false,
-          "predicate": "<http://data.deichman.no/ordinal>",
-          "type": "string"
-        },
-        {
           "id": "birthyear",
           "label": "Fødselsår",
           "desc": "Anno domini",
@@ -73,12 +55,33 @@ var profile = {
           "type": "URI",
           "searchTypes": ["sted"]
         },
+                {
+          "id": "tittel",
+          "label": "Tittel",
+          "desc": "Kongelige titler",
+          "required": false,
+          "repeatable": true,
+          "hidden": true,
+          "predicate": "<http://xmlns.com/foaf/0.1/title>",
+          "type": "string"
+        },
+        {
+          "id": "nummer",
+          "label": "Nummer",
+          "desc": "Ordensnummer for kongelige, paver osv.",
+          "required": false,
+          "repeatable": false,
+          "hidden": true,
+          "predicate": "<http://data.deichman.no/ordinal>",
+          "type": "string"
+        },
         {
           "id": "pseudo",
           "label": "Pseudonym",
           "desc": "Også kjent som...",
           "required": false,
           "repeatable": true,
+          "hidden": true,
           "predicate": "<http://data.deichman.no/hasPseudonym>",
           "type": "URI",
           "searchTypes": ["agent"]
