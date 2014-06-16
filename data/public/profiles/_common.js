@@ -11,7 +11,24 @@ var common = {
   "publicGraph": "<http://data.deichman.no/public>",
   "draftsGraph": "<http://data.deichman.no/drafts>",
   "trimURI": function(s) { return s.substr(1, s.length -2)},
-  "hiddenFields": function( view ) { return _.filter(view.elements, function( e ) { return e.hidden == true && e.values.length == 0})}
+  "hiddenFields": function( view ) { return _.filter(view.elements, function( e ) { return e.hidden == true && e.values.length == 0})},
+  "eng2norsk": function( s ) {
+    var translations = {
+      "classification": "klassifikasjon",
+      "event": "hendelse",
+      "location": "sted",
+      "language": "språk",
+      "manifestation": "manifestasjon",
+      "person": "person",
+      "script": "skriftsystem",
+      "subject": "emne",
+      "work": "verk"
+    }
+    if ( translations[s] ) {
+      return translations[s];
+    }
+    return s;
+  }
 };
 
 var cleanString = function(s) {

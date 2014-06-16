@@ -17,7 +17,7 @@
 				<h2>Opprett ny ressurs</h2>
 				<ul class="profileList">
 					{{#profiles}}
-						<li><a href="/resource?profile={{.}}">{{.}}</a></li>
+						<li><a href="/resource?profile={{.}}">{{eng2norsk(.)}}</a></li>
 					{{/profiles}}
 				</ul>
 				<div class="clearfix"></div>
@@ -42,13 +42,14 @@
 				</div>
 			</script>
 		</div>
+		<script src="/public/profiles/_common.js"></script>
 		<script>
 
 			var ractive = new Ractive({
 				el: 'app',
 				template: '#template',
 				data: {
-					"profiles": ["person", "emne", "sted", "verk", "manifestasjon", "klassifikasjon"],
+					"profiles": ["person", "subject", "location", "work", "manifestation", "classification"],
 					"includeDrafts": true,
 					"searchResults": {}
 				}
@@ -96,6 +97,7 @@
 				}
 			});
 
+		ractive.set(_.extend(ractive.data, common));
 		</script>
 	</body>
 </html>
