@@ -328,6 +328,10 @@ select[disabled=disabled] {
   text-decoration: underline;
 }
 
+.hitLabel {
+  display: inline-block;
+  min-width: 20em;
+}
 .hitLabel:hover {
   text-decoration: underline;
 }
