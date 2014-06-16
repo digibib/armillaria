@@ -211,49 +211,107 @@ listener = ractive.on({
     ractive.merge( event.keypath + ".errorInfo", "");
     ractive.set( event.keypath + '.currentValue', "");
   },
-  searchForURI: _.debounce(function( event) {
+  searchForURI: function( event ) {
+    // Blur input field on Esc key.
     if (event.original.keyCode == 27) {
       ractive.fire( "searchBlur", event );
-      return
-    }
-    var q = event.node.value.trim();
-    if (q === "") {
-      ractive.set( event.keypath + ".searching", false);
       return;
     }
 
-    var searchTypes = ractive.get( event.keypath + '.searchTypes' ).join(',');
-    var searchQuery = { "query": { "filtered": { "query": {}, "filter": { "bool": {"must_not": [{"missing": {"field": "published"}}]}}} } };
-    if ( q.length == 1 ) {
-      // Do a prefix query if query string is only one character
-      searchQuery.query.filtered.query.prefix = { "searchLabel": q };
-    } else {
-      // Otherwise normal match query (matches ngram size 2-20)
-     searchQuery.query.filtered.query.match = { "searchLabel": q };
-    }
-    // filter the current URI if we're editing a resource
-    if ( ractive.get( 'existingResource' ) ) {
-      searchQuery.query.filtered.filter.bool.must_not.push( {"ids": {"values": [trimURI( ractive.get( 'overview.uri' ) )]}} );
-    }
-    var queryData = JSON.stringify( searchQuery );
-    var req = new XMLHttpRequest();
-    req.open( 'POST', '/search/public/'+ searchTypes, true) ;
-    req.setRequestHeader( 'Content-Type', 'application/json; charset=UTF-8' );
+    // Handle browsing and selecting search results by arrow keys.
+    if ( ractive.get( event.keypath + '.searching' ) ) {
+      var cur = ractive.get( event.keypath + ".selectedResult");
 
-    req.onerror = function( e ) {
-      console.log( "failed to reach search endoint: " + e.target.status );
+      // Browse search results down
+      if (event.original.keyCode === 40) {
+        if ( cur < ractive.get( 'searchResults').length-1 ) {
+          ractive.add( event.keypath + ".selectedResult");
+        }
+        return;
+      }
+
+      // Browse search resuls up
+      if (event.original.keyCode === 38) {
+        if ( cur > 0 ) {
+          ractive.subtract( event.keypath + ".selectedResult");
+        }
+        return;
+      }
+
+      // Select search result on Enter
+      if (event.original.keyCode === 13) {
+        var label, uri, predicate, predicateLabel, source;
+        var selected = ractive.get( 'searchResults.' + cur);
+        label = selected._source.displayLabel;
+        uri = '<' + selected._source.uri + '>';
+        source = 'local';
+        var idx = event.index;
+        predicate = ractive.data.views[idx.i1].elements[idx.i2].predicate;
+        predicateLabel = ractive.data.views[idx.i1].elements[idx.i2].label;
+        var predSelect = document.getElementById("multiPred-" + ractive.data.views[idx.i1].elements[idx.i2].id);
+        if ( predSelect ) {
+          predicateLabel = predSelect.options[predSelect.selectedIndex].innerHTML;
+        }
+        var exsitingURI = _.find(ractive.data.views[idx.i1].elements[idx.i2].values, function( e ) {
+          return e.value === uri && e.predicate === predicate;
+        });
+
+        if ( !exsitingURI ) {
+          ractive.data.views[idx.i1].elements[idx.i2].values.push(
+            {"predicate": predicate, "predicateLabel": predicateLabel, "value": uri,
+             "URILabel": label, "source": source});
+        }
+        ractive.set( event.keypath + '.searching', false);
+        event.node.value = "";
+        return;
+      }
     }
 
-    req.onload = function( e) {
-      //console.log( e.target.responseText );
-      ractive.set( 'searchResults',
-                   JSON.parse( e.target.responseText).hits.hits );
-    }
+    _.debounce( function( event) {
+      // Trim whitespace from the query string.
+      var q = event.node.value.trim();
+      // Return if empty string
+      if (q === "") {
+        ractive.set( event.keypath + ".searching", false);
+        return;
+      }
 
-    req.send( queryData );
+      // TODO move query creation out to a function
+      var searchTypes = ractive.get( event.keypath + '.searchTypes' ).join(',');
+      var searchQuery = { "query": { "filtered": { "query": {}, "filter": { "bool": {"must_not": [{"missing": {"field": "published"}}]}}} } };
+      if ( q.length == 1 ) {
+        // Do a prefix query if query string is only one character
+        searchQuery.query.filtered.query.prefix = { "searchLabel": q };
+      } else {
+        // Otherwise normal match query (matches ngram size 2-20)
+        searchQuery.query.filtered.query.match = { "searchLabel": q };
+      }
+      // filter the current URI if we're editing a resource
+      if ( ractive.get( 'existingResource' ) ) {
+        searchQuery.query.filtered.filter.bool.must_not.push( {"ids": {"values": [trimURI( ractive.get( 'overview.uri' ) )]}} );
+      }
+      var queryData = JSON.stringify( searchQuery );
+      var req = new XMLHttpRequest();
+      req.open( 'POST', '/search/public/'+ searchTypes, true) ;
+      req.setRequestHeader( 'Content-Type', 'application/json; charset=UTF-8' );
 
-    ractive.merge( event.keypath + ".searching", true);
-  }, 100),
+      req.onerror = function( e ) {
+        console.log( "failed to reach search endoint: " + e.target.status );
+      }
+
+      req.onload = function( e) {
+        //console.log( e.target.responseText );
+        ractive.set( 'searchResults',
+                    JSON.parse( e.target.responseText).hits.hits );
+      }
+
+      req.send( queryData );
+
+      ractive.merge( event.keypath + ".searching", true);
+      ractive.merge( event.keypath + ".selectedResult", 0); // reset
+
+    }, 100)(event);
+  },
   selectURI: function( event ) {
     var label, uri, predicate, predicateLabel, source;
     label = event.context._source.displayLabel;

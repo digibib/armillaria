@@ -323,6 +323,11 @@ select[disabled=disabled] {
   cursor: pointer;
 }
 
+.searchHitSelected {
+  background-color: #fff;
+  text-decoration: underline;
+}
+
 .hitLabel:hover {
   text-decoration: underline;
 }

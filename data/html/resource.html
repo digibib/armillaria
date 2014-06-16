@@ -170,8 +170,8 @@
 						<div class="relative">
 							<div class="URISearchResults">
 								<ul>
-								{{#searchResults}}
-									<li class="searchHit" on-click='selectURI'>
+								{{#searchResults:n}}
+									<li class="searchHit{{# n == selectedResult}} searchHitSelected{{/}}" on-click='selectURI'>
 										<span class="hitLabel">{{_source.displayLabel}}</span>
 										<span class="hitURI grey">{{_source.uri}}</span>
 									</li>
