@@ -203,7 +203,10 @@ listener = ractive.on({
     var exists = _.find( ractive.get( event.keypath ).values, function( e ) {
       return e.value === value;
     } );
-    if (exists) { return }
+    if (exists) {
+      event.node.value = "";
+      return
+    }
 
     var idx = event.index;
     ractive.data.views[idx.i1].elements[idx.i2].values.push(
