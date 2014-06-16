@@ -1,8 +1,8 @@
 var profile = {
   "overview": {
-    "title": "Manifestasjon",
-    "desc": "En manifestasjon av et verk",
-    "type": ["<http://purl.org/spar/fabio/Manifestation>", "<http://purl.org/ontology/bibo/book>"]
+    "title": "Verk",
+    "desc": "Beskriver et verk, forklar det om du kan",
+    "type": ["<http://purl.org/spar/fabio/Work>"]
   },
   "views": [
     {
@@ -10,36 +10,9 @@ var profile = {
       "desc": "",
       "elements": [
         {
-          "id": "tnr",
-          "label": "Tittelnummer",
-          "desc": "",
-          "required": true,
-          "repeatable": false,
-          "predicate": "<http://purl.org/ontology/bibo/number>",
-          "type": "integer"
-        },
-        {
-          "id": "isbn10",
-          "label": "ISBN10",
-          "desc": "",
-          "required": false,
-          "repeatable": true,
-          "predicate": "<http://purl.org/ontology/bibo/isbn10>",
-          "type": "string"
-        },
-        {
-          "id": "isbn13",
-          "label": "ISBN13",
-          "desc": "",
-          "required": false,
-          "repeatable": true,
-          "predicate": "<http://purl.org/ontology/bibo/isbn13>",
-          "type": "string"
-        },
-        {
           "id": "title",
           "label": "Tittel",
-          "desc": "",
+          "desc": "på orginalspråket?",
           "required": true,
           "repeatable": false,
           "predicate": "<http://purl.org/dc/terms/title>",
@@ -64,42 +37,13 @@ var profile = {
           "type": "langString"
         },
         {
-          "id": "edition",
-          "label": "Utgave",
-          "desc": "",
-          "required": true,
-          "repeatable": false,
-          "predicate": "<http://purl.org/ontology/bibo/edition>",
-          "type": "integer"
-        },
-        {
-          "id": "pubYear",
-          "label": "Utgivelsesår",
-          "desc": "",
+          "id": "pubyear",
+          "label": "Førsteutgave",
+          "desc": "Årstall for første utgivelse, dersom kjent.",
           "required": false,
           "repeatable": false,
           "predicate":"<http://purl.org/spar/fabio/hasPublicationYear>",
           "type": "integer"
-        },
-        {
-          "id": "issuer",
-          "label": "Utgiver",
-          "desc": "",
-          "required": false,
-          "repeatable": false,
-          "predicate": "<http://purl.org/ontology/bibo/issuer>",
-          "type": "URI",
-          "searchTypes": ["agent", "person", "organisasjon"]
-        },
-        {
-          "id": "pubPlace",
-          "label": "Utgivelsessted",
-          "desc": "",
-          "required": false,
-          "repeatable": false,
-          "predicate": "<http://data.deichman.no/publicationPlace>",
-          "type": "URI",
-          "searchTypes": ["sted"]
         },
         {
           "id": "lang",
@@ -110,60 +54,6 @@ var profile = {
           "predicate": "<http://purl.org/dc/terms/language>",
           "type": "URI",
           "searchTypes": ["language"]
-        },
-        {
-          "id": "notation",
-          "label": "Skriftsystem",
-          "desc": "Er dette det samme som alfabet?",
-          "required": true,
-          "repeatable": true,
-          "predicate": "<http://www.ifomis.org/bfo/1.0#notation>",
-          "type": "URI",
-          "searchTypes": ["script"],
-          "values": [
-            {
-              "predicate": "<http://www.ifomis.org/bfo/1.0#notation>",
-              "predicateLabel": "Skriftsystem",
-              "value": "<http://lexvo.org/id/script/Latn>",
-              "URILabel": "latinsk",
-              "source": "local"
-            }
-          ],
-          "options": [
-            {
-              "predicate": "<http://www.ifomis.org/bfo/1.0#notation>",
-              "predicateLabel": "Skriftsystem",
-              "value": "<http://data.deichman.no/class/notation/1>",
-              "URILabel": "Latinsk",
-              "source": "local"
-            },
-            {
-              "predicate": "<http://www.ifomis.org/bfo/1.0#notation>",
-              "predicateLabel": "Skriftsystem",
-              "value": "<http://data.deichman.no/class/notation/2>",
-              "URILabel": "Gresk",
-              "source": "local"
-            }
-          ]
-        },
-        {
-          "id": "numPages",
-          "label": "Sidetall",
-          "desc": "",
-          "required": true,
-          "repeatable": false,
-          "predicate": "<http://purl.org/ontology/bibo/numPages>",
-          "type": "integer"
-        },
-        {
-          "id": "format",
-          "label": "Format",
-          "desc": "",
-          "required": false,
-          "repeatable": false,
-          "predicate": "<http://purl.org/dc/terms/MediaTypeOrExtent>",
-          "type": "URI",
-          "searchTypes": ["mediaType"]
         },
         {
           "id": "audience",
@@ -221,28 +111,28 @@ var profile = {
       ]
     },
     {
-      "title": "Verkstilknyttninger",
+      "title": "Manifestasjoner",
       "desc": "",
       "elements": [
         {
-          "id": "work",
-          "label": "Verk",
-          "desc": "Dette er en manifestasjon av følgende verk",
-          "required": true,
+          "id": "edition",
+          "label": "Manifestasjon",
+          "desc": "Manifestasjon/utgave av verket",
+          "required": false,
           "repeatable": true,
-          "predicate": "<http://purl.org/spar/fabio/isManifestationOf>",
+          "predicate": "<http://purl.org/spar/fabio/hasManifestation>",
           "type": "URI",
-          "searchTypes": ["verk"]
+          "searchTypes": ["manifestation"]
         },
         {
           "id": "partOf",
           "label": "Del av",
-          "desc": "Dersom manifestasjonen er en del av en samling, flerbindsverk eller serie",
+          "desc": "Dersom dette verket er en del av et annet verk",
           "required": false,
           "repeatable": true,
           "predicate": "<http://purl.org/dc/terms/isPartOf>",
           "type": "URI",
-          "searchTypes": ["flerbindsverk", "serie", "samling"]
+          "searchTypes": ["work"]
         },
         {
           "id": "hasPart",
@@ -252,7 +142,17 @@ var profile = {
           "repeatable": true,
           "predicate": "<http://purl.org/dc/terms/hasPart>",
           "type": "URI",
-          "searchTypes": ["manifestasjon", "delAvBok"]
+          "searchTypes": ["work"]
+        },
+        {
+          "id": "relatedWork",
+          "label": "Relatert verk",
+          "desc": "",
+          "required": false,
+          "repeatable": true,
+          "predicate": "<http://purl.org/vocab/frbr/core#relatedEndeavour>",
+          "type": "URI",
+          "searchTypes": ["work"]
         },
         {
           "id": "bind",
@@ -260,6 +160,7 @@ var profile = {
           "desc": "",
           "required": false,
           "repeatable": false,
+          "hidden": true,
           "predicate": "<http://purl.org/ontology/bibo/volume>",
           "type": "integer"
         },
@@ -269,6 +170,7 @@ var profile = {
           "desc": "",
           "required": false,
           "repeatable": false,
+          "hidden": true,
           "predicate": "<http://purl.org/ontology/bibo/locator>",
           "type": "integer"
         }
@@ -279,6 +181,7 @@ var profile = {
       "desc": "",
       "elements": [
         {
+
           "id": "creators",
           "label": "Opphavspersoner",
           "desc": "et godt norsk ord for creator",
@@ -286,13 +189,13 @@ var profile = {
           "repeatable": true,
           "predicates": [
             {"uri": "<http://purl.org/dc/terms/creator>", "predicateLabel": "opphavsperson"},
-            {"uri": "<http://purl.org/ontology/bibo/translator>", "predicateLabel": "oversetter"},
             {"uri": "<http://data.deichman.no/illustrator>", "predicateLabel": "illustratør"},
             {"uri": "<http://purl.org/ontology/bibo/editor>", "predicateLabel": "redaktør"},
             {"uri": "<http://purl.org/dc/terms/contributor>", "predicateLabel": "bidragsyter"}
           ],
           "type": "multiPredicateURI",
-          "searchTypes": ["person", "agent", "organisasjon"]
+          "searchTypes": ["person", "agent", "organization"]
+
         }
       ]
     },
@@ -308,7 +211,7 @@ var profile = {
           "repeatable": true,
           "predicate": "<http:/data.deichman.no/literaryFormat>",
           "type": "URI",
-          "searchTypes": ["literærForm"]
+          "searchTypes": ["lieteraryFormat"]
         },
         {
           "id": "genre",
@@ -318,7 +221,7 @@ var profile = {
           "repeatable": true,
           "predicate": "<http://dbpedia.org/ontology/literaryGenre>",
           "type": "URI",
-          "searchTypes": ["sjanger"]
+          "searchTypes": ["genre"]
         },
         {
           "id": "subject",
@@ -328,17 +231,7 @@ var profile = {
           "repeatable": true,
           "predicate": "<http://purl.org/dc/terms/subject>",
           "type": "URI",
-          "searchTypes": ["emne"]
-        },
-        {
-          "id": "class",
-          "label": "Klassifikasjon",
-          "desc": "Deweynummer",
-          "required": false,
-          "repeatable": true,
-          "predicate": "<http://purl.org/dc/terms/subjectDewey>",
-          "type": "URI",
-          "searchTypes": ["klassifikasjon"]
+          "searchTypes": ["subject"]
         },
         {
           "id": "tag",
@@ -348,7 +241,7 @@ var profile = {
           "repeatable": true,
           "predicate": "<http://commontag.org/ns#Tag>",
           "type": "URI",
-          "searchTypes": ["stikkord"]
+          "searchTypes": ["tag"]
         }
       ]
     }

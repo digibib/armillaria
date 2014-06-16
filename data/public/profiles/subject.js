@@ -41,7 +41,7 @@ var profile = {
           "repeatable": true,
           "predicate": "<http://www.w3.org/2004/02/skos/core#broadMatch>",
           "type": "URI",
-          "searchTypes": ["emne"]
+          "searchTypes": ["subject"]
         },
         {
           "id": "subdiv",
@@ -51,7 +51,7 @@ var profile = {
           "repeatable": true,
           "predicate": "<http:/data.deichman.no/subdivision>",
           "type": "URI",
-          "searchTypes": ["emne"]
+          "searchTypes": ["subject"]
         },
         {
           "id": "qualic",
@@ -61,7 +61,7 @@ var profile = {
           "repeatable": true,
           "predicate": "<http://data.deichman.no/qualifier>",
           "type": "URI",
-          "searchTypes": ["emne"]
+          "searchTypes": ["subject"]
         },
         {
           "id": "seealso",
@@ -71,7 +71,7 @@ var profile = {
           "repeatable": true,
           "predicate":"<http://www.w3.org/2004/02/skos/core#related>",
           "type": "URI",
-          "searchTypes": ["emne"]
+          "searchTypes": ["subject"]
         },
         {
           "id": "focus",
@@ -81,7 +81,7 @@ var profile = {
           "repeatable": true,
           "predicate": "<http://xmlns.com/foaf/0.1/focus>",
           "type": "URI",
-          "searchTypes": ["agent", "verk", "sted", "hendelse", "wgs84"]
+          "searchTypes": ["agent", "work", "location", "event", "wgs84"]
         }
       ]
     }

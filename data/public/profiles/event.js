@@ -35,7 +35,7 @@ var profile = {
           "repeatable": true,
           "predicate": "<http://purl.org/NET/c4dm/event.owl#place>",
           "type": "URI",
-          "searchTypes": ["sted"]
+          "searchTypes": ["lnocatio"]
         },
         {
           "id": "time",
@@ -45,7 +45,7 @@ var profile = {
           "repeatable": true,
           "predicate": "<http://purl.org/NET/c4dm/event.owl#time>",
           "type": "URI",
-          "searchTypes": ["temporalEntitet"]
+          "searchTypes": ["temporalEntity"]
         },
         {
           "id": "agent",

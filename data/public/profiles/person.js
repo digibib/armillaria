@@ -53,7 +53,7 @@ var profile = {
           "repeatable": true,
           "predicate": "<http://dbpedia.org/ontology/nationality>",
           "type": "URI",
-          "searchTypes": ["sted"]
+          "searchTypes": ["location"]
         },
                 {
           "id": "tittel",
