@@ -171,6 +171,7 @@
 						<div class="relative">
 							<div class="URISearchResults">
 								<ul>
+									<li style="text-align: right; font-size:70%">{{searchSummary}}</li>
 								{{#searchResults:n}}
 									<li class="searchHit{{# n == selectedResult}} searchHitSelected{{/}}" on-click='selectURI'>
 										<span class="hitLabel">{{_source.displayLabel}}</span>

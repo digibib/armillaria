@@ -187,6 +187,7 @@ listener = ractive.on({
       event.node.value = "";
       ractive.set( event.keypath + ".searching", false);
       ractive.set( 'searchResults', [] );
+      ractive.set( 'searchSummary', '' );
     }, 100 );
   },
   newValue: function(event) {
@@ -301,8 +302,9 @@ listener = ractive.on({
 
       req.onload = function( e) {
         //console.log( e.target.responseText );
-        ractive.set( 'searchResults',
-                    JSON.parse( e.target.responseText).hits.hits );
+        var qRes = JSON.parse( e.target.responseText );
+        ractive.set( 'searchResults', qRes.hits.hits );
+        ractive.set( 'searchSummary', qRes.hits.total + ' treff (' + qRes.took + ' ms)' );
       }
 
       req.send( queryData );
