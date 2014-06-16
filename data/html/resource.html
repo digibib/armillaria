@@ -78,7 +78,7 @@
 						<h3>{{title}}</h3>
 						<p>{{desc}}</p>
 						{{#elements:i2}}
-						<div class="{{#hidden}}hidden{{/hidden}}">
+						<div class="{{# hidden && values.length === 0}}hidden{{/hidden}}">
 							<h5 class="relative">{{label}}
 								{{#required}}<span class="indicator2 red">*</span>{{/}}
 								{{#generated}}<span class="indicator2 grey">a</span>{{/}}
@@ -154,9 +154,10 @@
 
 						{{/elements}}
 						{{ #hiddenFields(views[i1]).length > 0}}
-						<strong>Vis felt for</strong> {{#hiddenFields(views[i1])}}
+						<p class="showHiddenFields">Vis felt for{{#hiddenFields(views[i1])}}
 							| <a class="navy clickable" on-click="showHiddenField" dataValue="{{id}}">{{label}}</a>
 						{{/}}
+						</p>
 						{{/}}
 					</div>
 					{{/views}}

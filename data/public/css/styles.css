@@ -335,3 +335,9 @@ select[disabled=disabled] {
 .newResLink {
   margin: 0 0.3em;
 }
+
+
+.showHiddenFields {
+  border-top: 2px solid #ccc;
+  margin-top: 1em;
+}
