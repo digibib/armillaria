@@ -4,6 +4,34 @@ var profile = {
     "desc": "bla bla",
     "type": ["<http://www.w3.org/2004/02/skos/core#Concept>"]
   },
+  "externalRequired": ["num"],
+  "externalSources": [
+    {
+      "source": "dewey.info",
+      "genRequest": function( values ) {
+        var q =
+            'PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\
+             SELECT DISTINCT ?label WHERE {\
+                _:loc skos:notation ?notation ;\
+                      skos:prefLabel ?label .\
+                FILTER(str(?notation) = "{loc}")\
+                FILTER(langMatches(lang(?label), "no"))\
+             }'.supplant({loc: values.num[0].value });
+        return q;
+      },
+      "parseRequest": function( response ) {
+        res = JSON.parse( response );
+        var v = [];
+        res.results.bindings.forEach(function (b) {
+          v.push({value: '"'+ b.label.value + '"@' + b.label['xml:lang'],
+                       source: "dewey.info",
+                       predicate: "<http://www.w3.org/2004/02/skos/core#prefLabel>"
+          });
+        });
+        return v;
+      }
+    }
+  ],
   "views": [
     {
       "title": "",

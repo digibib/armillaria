@@ -20,6 +20,44 @@ var firstLoad = true;
 
 // utility functions  --------------------------------------------------------
 
+// findElement returns the keypath of a predicate, or false if no match.
+var findElement = function(pred) {
+  var kp = false;
+  ractive.data.views.forEach(function(v, i) {
+    v.elements.forEach(function(e, j) {
+      if (e.predicate === pred) {
+        kp = "views."+i+".elements."+j;
+      }
+      // find path for multiPredicate inputs
+      if (e.predicates) {
+        e.predicates.forEach(function ( p ) {
+          if ( p.uri === pred) {
+            kp = "views."+i+".elements."+j;
+          }
+        });
+      }
+    });
+  });
+  return kp;
+};
+
+// getValue returns the value of a binding, including surrounding quotes
+// for strings and language tag if present.
+var getValue = function(b) {
+  if ( b.type === 'typed-literal' ) {
+    return b.value;
+  }
+  if ( b.type === 'uri' ) {
+    return '<' + b.value + '>';
+  }
+  if ( b.type === 'literal' ) {
+    if ( b['xml:lang'] ) {
+      return '"' + b.value + '"@' + b["xml:lang"];
+    }
+    return '"' + b.value + '"';
+  }
+};
+
 // deleteQuery generates the SPARQL query to remove a resource from the graph.
 var deleteQuery = function( published ) {
   var graph = published ? ractive.data.publicGraph : ractive.data.draftsGraph;
@@ -122,6 +160,44 @@ var removeFromIndex = function( uri) {
 // event handlers ------------------------------------------------------------
 
 listener = ractive.on({
+  queryExternal: function( event ) {
+    console.log("querying external resources");
+    ractive.get( 'externalSources' ).forEach(function ( source ) {
+      var q = source.genRequest( values );
+      var req = new XMLHttpRequest();
+      req.open( 'POST', '/external/'+ source.source, true );
+      req.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+
+      req.onerror = function( event ) {
+        console.log( event );
+        console.log( "failed to send external query to server");
+      }
+
+      req.onload = function( event ) {
+        if ( req.status >= 200 && req.status < 400  ) {
+          var v = source.parseRequest( req.responseText )
+          v.forEach( function( val ) {
+            kp = findElement( val.predicate );
+            if ( kp ) {
+              val.predicateLabel = ractive.get(kp).label;
+              if ( ractive.get(kp).type === "multiPredicateURI" ) {
+                var predSelect = document.getElementById("multiPred-" + ractive.get(kp).id );
+                for (var i =0; i < predSelect.options.length; i++) {
+                  if ( pred === predSelect.options[i].value) {
+                    val.predicateLabel = predSelect.options[i].innerHTML;
+                  }
+                }
+              }
+              ractive.get(kp + ".values").push( val );
+            }
+          });
+        } else {
+          console.log( event.target.responseText )
+        }
+      }
+      req.send( "query=" + encodeURIComponent(q) );
+    });
+  },
   saveDraft: function( event ) {
     var published = ractive.get( 'overview.published' ) ? true : false;
     var q;
@@ -217,7 +293,10 @@ listener = ractive.on({
     if ( !event.context.repeatable ) {
       // If no more values allowed; attempt to focus on next input field.
       // Not sure if this is going to work everywhere.
-      event.node.parentElement.parentElement.nextElementSibling.querySelector('input').focus();
+      var nextInput = event.node.parentElement.parentElement.nextElementSibling.querySelector('input');
+      if ( nextInput ) {
+        nextInput.focus();
+      }
     }
   },
   searchForURI: function( event ) {
@@ -703,43 +782,6 @@ if ( urlParams.uri ) {
     } else {
       loadScript( '/public/profiles/' + p + ".js", function() {
         createSchema(false);
-        // findElement returns the keypath of a predicate, or false if no match.
-        var findElement = function(pred) {
-          var kp = false;
-          ractive.data.views.forEach(function(v, i) {
-            v.elements.forEach(function(e, j) {
-              if (e.predicate === pred) {
-                kp = "views."+i+".elements."+j;
-              }
-              // find path for multiPredicate inputs
-              if (e.predicates) {
-                e.predicates.forEach(function ( p ) {
-                  if ( p.uri === pred) {
-                    kp = "views."+i+".elements."+j;
-                  }
-                });
-              }
-            });
-          });
-          return kp;
-        };
-
-        // getValue returns the value of a binding, including surrounding quotes
-        // for strings and language tag if present.
-        var getValue = function(b) {
-          if ( b.type === 'typed-literal' ) {
-            return b.value;
-          }
-          if ( b.type === 'uri' ) {
-            return '<' + b.value + '>';
-          }
-          if ( b.type === 'literal' ) {
-            if ( b['xml:lang'] ) {
-              return '"' + b.value + '"@' + b["xml:lang"];
-            }
-            return '"' + b.value + '"';
-          }
-        };
 
         // Find bindings which are labels for URIs
         var uriLabels = {};

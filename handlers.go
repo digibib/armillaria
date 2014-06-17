@@ -96,6 +96,8 @@ func queryExternalSource(w http.ResponseWriter, r *http.Request, values httprout
 	source := cfg.ExternalDataSources[sourceName]
 	switch source.Type {
 	case sourceSPARQL:
+		// Query external data source via SPARQL.
+		// The query is sent as a POST request and requesting a response in json.
 		var q = r.FormValue("query")
 		if q == "" {
 			http.Error(w, "missing required parameter: query", http.StatusBadRequest)
@@ -138,10 +140,13 @@ func queryExternalSource(w http.ResponseWriter, r *http.Request, values httprout
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	case sourceGET:
+		// Query external data source by means of a simple GET query.
+		panic("not implemented")
 	case sourceREST:
-		println(sourceName)
+		panic("not implemented")
 	default:
-		println("unknown external source")
+		l.Error("unknown external source type", log.Ctx{"source": sourceName})
 
 	}
 

@@ -34,6 +34,8 @@ func (t *dataSourceType) UnmarshalText(b []byte) error {
 		*t = sourceSPARQL
 	case s == "rest":
 		*t = sourceREST
+	case s == "get":
+		*t = sourceGET
 	default:
 		*t = sourceUnknown
 	}

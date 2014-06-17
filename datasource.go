@@ -25,4 +25,5 @@ const (
 	sourceUnknown = iota
 	sourceSPARQL
 	sourceREST
+	sourceGET
 )
