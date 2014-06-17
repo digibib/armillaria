@@ -11,21 +11,21 @@ type config struct {
 	ServePort           int
 	LogFile             string
 	RDFStore            source
-	ExternalDataSources []source
+	ExternalDataSources map[string]source
 	Elasticsearch       string
 }
 
 type source struct {
-	Name              string
 	Endpoint          string
 	DefaultGraph      string
 	InternalNameSpace string
 	Username          string
 	Password          string
 	Token             string
+	Type              dataSourceType
 }
 
-// UnmarshalText implementation for DataSourceType.
+// UnmarshalText implementation for dataSourceType.
 func (t *dataSourceType) UnmarshalText(b []byte) error {
 	s := strings.ToLower(strings.Trim(string(b), "\""))
 

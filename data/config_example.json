@@ -1,27 +1,25 @@
 {
   "ServePort": 3333,
-  "LogFile": "/var/log/armillaria.log",
+  "LogFile": "/home/boutros/Proj/go/src/github.com/digibib/armillaria/armillaria.log",
   "RDFStore": {
     "Endpoint": "http://localhost:8890/sparql-auth",
     "Username": "dba",
     "Password": "dba"
   },
   "Elasticsearch": "http://localhost:9200",
-  "ExternalDataSources": [
-    {
-      "Name": "dewey.info",
+  "ExternalDataSources":
+  {
+    "dewey.info": {
       "Endpoint": "http://dewey.info/sparql.php",
       "Type": "SPARQL"
     },
-    {
-      "Name": "data.deichman.no",
+    "data.deichman.no": {
       "Endpoint": "http://data.deichman.no/sparql",
       "Type": "SPARQL"
     },
-    {
-      "Name": "Z39.proxy",
+    "Z39.proxy": {
       "Endpoint": "http://datatest.deichman.no:8080",
       "Type": "REST"
     }
-  ]
+  }
 }
