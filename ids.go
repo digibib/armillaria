@@ -9,11 +9,12 @@ import (
 )
 
 const queryGetMax = `
-SELECT DISTINCT ?profile, MAX(?num) AS ?max
+SELECT DISTINCT ?profile, COALESCE(MAX(xsd:int(?num)), 1) AS ?max
 WHERE {
-  _:s  <armillaria://internal/profile> ?profile ;
-       <armillaria://internal/id> ?num .
-}`
+  _:s  <armillaria://internal/profile> ?profile .
+OPTIONAL { _:s <armillaria://internal/id> ?num . }
+}
+`
 
 // idService is responsible for generating integer IDs needed
 // for generating URIs for RDF resources. Each RDF type, or profile,
