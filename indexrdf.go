@@ -28,7 +28,7 @@ import (
 const (
 	qAll          = `SELECT DISTINCT ?res WHERE { ?res <armillaria://internal/profile> "%s" } OFFSET %d LIMIT %d`
 	resourceQuery = `
-SELECT * FROM <http://data.deichman.no/public> WHERE {
+SELECT * FROM <%s> WHERE {
    { <%s> ?p ?o .
      MINUS { <%s> ?p ?o . ?o <armillaria://internal/displayLabel> _:l . } }
    UNION
@@ -50,6 +50,7 @@ func main() {
 	offset := flag.Int("o", 0, "offset")
 	limit := flag.Int("l", 10000, "limit")
 	resType := flag.String("t", "", "resource type to index (the value of the <armillaria://internal/profile> predicate.)")
+	graph := flag.String("g", "http://data.deichman.no/public", "graph from rdfstore to index from")
 
 	flag.Parse()
 
@@ -86,7 +87,7 @@ func main() {
 	for i, r := range res.Results.Bindings {
 		fmt.Printf("%d resources processed\r", i)
 		uri := r["res"].Value
-		rb, err := db.Query(fmt.Sprintf(resourceQuery, uri, uri, uri))
+		rb, err := db.Query(fmt.Sprintf(resourceQuery, graph, uri, uri, uri))
 		if err != nil {
 			log.Fatal(err)
 		}

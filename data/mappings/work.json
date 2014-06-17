@@ -87,16 +87,7 @@
   },
   "<http://purl.org/dc/terms/hasPart>": {
     "hasPart": {
-      "type": "nested",
-      "properties": {
-        "uri": {
-          "type": "string",
-          "index": "not_analyzed"
-        },
-        "label": {
-          "type": "string"
-        }
-      }
+      "type": "string"
     }
   },
   "<http://purl.org/ontology/bibo/bind>": {
