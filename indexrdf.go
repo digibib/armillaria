@@ -87,7 +87,7 @@ func main() {
 	for i, r := range res.Results.Bindings {
 		fmt.Printf("%d resources processed\r", i)
 		uri := r["res"].Value
-		rb, err := db.Query(fmt.Sprintf(resourceQuery, graph, uri, uri, uri))
+		rb, err := db.Query(fmt.Sprintf(resourceQuery, *graph, uri, uri, uri))
 		if err != nil {
 			log.Fatal(err)
 		}
