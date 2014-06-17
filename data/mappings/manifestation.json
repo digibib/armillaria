@@ -31,7 +31,7 @@
   },
   "<http://purl.org/ontology/bibo/edition>": {
     "edition": {
-      "type": "integer"
+      "type": "string"
     }
   },
   "<http://purl.org/spar/fabio/hasPublicationYear>": {
@@ -83,7 +83,7 @@
   },
   "<http://purl.org/ontology/bibo/numPages>": {
     "numPages": {
-      "type": "integer"
+      "type": "string"
     }
   },
   "<http://purl.org/dc/terms/MediaTypeOrExtent>": {
@@ -154,16 +154,7 @@
   },
   "<http://purl.org/dc/terms/hasPart>": {
     "hasPart": {
-      "type": "nested",
-      "properties": {
-        "uri": {
-          "type": "string",
-          "index": "not_analyzed"
-        },
-        "label": {
-          "type": "string"
-        }
-      }
+      "type": "string"
     }
   },
   "<http://purl.org/ontology/bibo/bind>": {
@@ -173,7 +164,7 @@
   },
   "<http://purl.org/ontology/bibo/locator>": {
     "locator": {
-      "type": "integer"
+      "type": "string"
     }
   },
   "<http://purl.org/dc/terms/creator>": {
@@ -316,5 +307,4 @@
       }
     }
   }
-
 }
