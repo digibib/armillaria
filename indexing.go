@@ -176,7 +176,6 @@ func createIndexDoc(mappings map[string]map[string]string, sparqlRes []byte, uri
 	}
 	var pred string
 	uf := uriField{}
-	println(profile)
 
 	for _, b := range res.Results.Bindings {
 		pred = urlify(b["p"].Value)
