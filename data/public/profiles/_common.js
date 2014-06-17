@@ -50,3 +50,12 @@ var dateFormat = function(d) {
 var trimURI = function(s) {
   return s.substr( 1, s.length - 2 );
 }
+
+String.prototype.supplant = function (o) {
+    return this.replace(/{([^{}]*)}/g,
+        function (a, b) {
+            var r = o[b];
+            return typeof r === 'string' || typeof r === 'number' ? r : a;
+        }
+    );
+};
