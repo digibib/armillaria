@@ -214,6 +214,11 @@ listener = ractive.on({
     event.node.value = "";
     ractive.merge( event.keypath + ".errorInfo", "");
     ractive.set( event.keypath + '.currentValue', "");
+    if ( !event.context.repeatable ) {
+      // If no more values allowed; attempt to focus on next input field.
+      // Not sure if this is going to work everywhere.
+      event.node.parentElement.parentElement.nextElementSibling.querySelector('input').focus();
+    }
   },
   searchForURI: function( event ) {
     // Blur input field on Esc key.
