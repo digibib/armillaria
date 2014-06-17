@@ -496,6 +496,7 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
   // keep values in sync
   values = {};
   var missingValues = false;
+  var missingForExternal = false;
   newValue.forEach(function(view, i) {
     view.elements.forEach(function(elem, j) {
       if (!values[elem.id]) {
@@ -504,6 +505,9 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
       // Check if all required attributes in the schema has a value
       if ( elem.required && elem.values.length === 0 ) {
         missingValues = true;
+      }
+      if ( ractive.data.externalRequired && ractive.data.externalRequired.indexOf( elem.id ) >= 0 && elem.values.length === 0 ) {
+        missingForExternal = true;
       }
       elem.values.forEach(function(v) {
         values[elem.id].push(v);
@@ -515,6 +519,13 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
     ractive.set( 'publishDisabled', true );
   } else if ( !ractive.get( 'duplicateURI') ) {
     ractive.set( { 'publishDisabled': false, 'draftDisabled': false } );
+  }
+
+  // Toggle button for querying external sources.
+  if ( missingForExternal || !ractive.data.externalRequired ) {
+    ractive.set( 'externalDisabled', true);
+  } else {
+    ractive.set( 'externalDisabled', false);
   }
 
 
