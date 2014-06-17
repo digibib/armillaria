@@ -1,5 +1,18 @@
 // +build ignore
 
+/*
+
+Basic script to index rdf data, using the mappings in data/mappings
+
+To index all of type work, run:
+go run indexrdf.go rdfstore.go indexing.go -t=work
+
+By default 10,000 uris are fetched at a time
+You can set ofsett & limit with -o & -l:
+go run indexrdf.go rdfstore.go indexing.go -t=work -o=10000, -l=5000
+
+*/
+
 package main
 
 import (
@@ -13,24 +26,25 @@ import (
 )
 
 const (
-	qAll = `SELECT DISTINCT ?res WHERE { ?res <armillaria://internal/profile> "%s" } OFFSET %d LIMIT %d`
-	qOne = `SELECT ?searchLabel, ?displayLabel, ?published
-            WHERE {
-               <%s> <armillaria://internal/searchLabel> ?searchLabel ;
-                    <armillaria://internal/published> ?published ;
-                    <armillaria://internal/displayLabel> ?displayLabel .
-            }`
+	qAll          = `SELECT DISTINCT ?res WHERE { ?res <armillaria://internal/profile> "%s" } OFFSET %d LIMIT %d`
+	resourceQuery = `
+SELECT * FROM <http://data.deichman.no/public> WHERE {
+   { <%s> ?p ?o .
+     MINUS { <%s> ?p ?o . ?o <armillaria://internal/displayLabel> _:l . } }
+   UNION
+   { <%s> ?p ?o .
+     ?o <armillaria://internal/displayLabel> ?l . }
+}`
 	head = `
 { "index" : { "_index" : "public", "_type" : "%s" } }
 `
 )
 
-type Resource struct {
-	Uri          string `json:"uri"`
-	DisplayLabel string `json:"displayLabel"`
-	SearchLabel  string `json:"searchLabel"`
-	Published    string `json:"published"`
-}
+var (
+	db = newLocalRDFStore("http://localhost:8890/sparql-auth", "dba", "dba")
+)
+
+func urlify(s string) string { return fmt.Sprintf("<%s>", s) }
 
 func main() {
 	offset := flag.Int("o", 0, "offset")
@@ -45,7 +59,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	db := newLocalRDFStore("http://localhost:8890/sparql-auth", "dba", "dba")
+	indexMappings, err := loadFromProfiles()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	b, err := db.Query(fmt.Sprintf(qAll, *resType, *offset, *limit))
 	if err != nil {
 		log.Fatal(err)
@@ -64,30 +82,94 @@ func main() {
 	}
 	defer f.Close()
 
-	resource := Resource{}
 	bulkHead := []byte(string(fmt.Sprintf(head, *resType)))
 	for i, r := range res.Results.Bindings {
 		fmt.Printf("%d resources processed\r", i)
-		rb, err := db.Query(fmt.Sprintf(qOne, r["res"].Value))
+		uri := r["res"].Value
+		rb, err := db.Query(fmt.Sprintf(resourceQuery, uri, uri, uri))
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		var res *sparql.Results
 		err = json.Unmarshal(rb, &res)
-		resource.Uri = r["res"].Value
-		resource.DisplayLabel = res.Results.Bindings[0]["displayLabel"].Value
-		resource.SearchLabel = res.Results.Bindings[0]["searchLabel"].Value
-		resource.Published = res.Results.Bindings[0]["published"].Value
+		if err != nil {
+			println(string(rb))
+			log.Fatal(err)
+			break
+		}
+
+		// fetch the resource profile from the SPARQL response
+		var profile string
+		for _, b := range res.Results.Bindings {
+			if b["p"].Value == "armillaria://internal/profile" {
+				profile = b["o"].Value
+				break
+			}
+		}
+		if profile == "" {
+			log.Println("resource lacks profile information:", uri)
+			break
+		}
+
+		resource := make(map[string]interface{})
+		type uriField struct {
+			URI   string `json:"uri"`
+			Label string `json:"label"`
+		}
+		var pred string
+		uf := uriField{}
+
+		for _, b := range res.Results.Bindings {
+			pred = urlify(b["p"].Value)
+			if indexMappings[profile][pred] == "" {
+				continue // if not in mapping, we don't want to index it
+			}
+			if _, ok := b["l"]; ok {
+				uf.URI = b["o"].Value
+				uf.Label = b["l"].Value
+				switch resource[indexMappings[profile][pred]].(type) {
+				case []interface{}:
+					resource[indexMappings[profile][pred]] =
+						append(resource[indexMappings[profile][pred]].([]interface{}), uf)
+				case uriField:
+					var s []interface{}
+					s = append(s, resource[indexMappings[profile][pred]])
+					resource[indexMappings[profile][pred]] = append(s, uf)
+				default:
+					resource[indexMappings[profile][pred]] = uf
+				}
+				continue
+			}
+
+			val := b["o"].Value
+			switch resource[indexMappings[profile][pred]].(type) {
+			case []interface{}:
+				resource[indexMappings[profile][pred]] =
+					append(resource[indexMappings[profile][pred]].([]interface{}), val)
+			case interface{}:
+				var s []interface{}
+				s = append(s, resource[indexMappings[profile][pred]])
+				resource[indexMappings[profile][pred]] = append(s, val)
+			default:
+				resource[indexMappings[profile][pred]] = val
+			}
+
+		}
+
+		resource["uri"] = uri
+
+		resourceBody, err := json.Marshal(resource)
+		if err != nil {
+			log.Println("failed to marshal json", uri)
+		}
 
 		_, err = f.Write(bulkHead)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		rm, err := json.Marshal(resource)
-		if err != nil {
-			log.Fatal(err)
-		}
-		_, err = f.Write(rm)
+		_, err = f.Write(resourceBody)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -95,6 +177,7 @@ func main() {
 
 	_, err = f.Write([]byte("\n"))
 	if err != nil {
+
 		log.Fatal(err)
 	}
 	fmt.Println("\nTo index run:")
