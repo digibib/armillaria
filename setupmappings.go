@@ -13,6 +13,8 @@ import (
 	"strings"
 )
 
+func urlify(s string) string { return fmt.Sprintf("<%s>", s) }
+
 func main() {
 	cb, err := ioutil.ReadFile("data/mappings/_common")
 	if err != nil {

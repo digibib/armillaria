@@ -91,79 +91,10 @@ func main() {
 			log.Fatal(err)
 		}
 
-		var res *sparql.Results
-		err = json.Unmarshal(rb, &res)
+		resourceBody, _, err := createIndexDoc(indexMappings, rb, uri)
 		if err != nil {
-			println(string(rb))
 			log.Fatal(err)
-			break
 		}
-
-		// fetch the resource profile from the SPARQL response
-		var profile string
-		for _, b := range res.Results.Bindings {
-			if b["p"].Value == "armillaria://internal/profile" {
-				profile = b["o"].Value
-				break
-			}
-		}
-		if profile == "" {
-			log.Println("resource lacks profile information:", uri)
-			break
-		}
-
-		resource := make(map[string]interface{})
-		type uriField struct {
-			URI   string `json:"uri"`
-			Label string `json:"label"`
-		}
-		var pred string
-		uf := uriField{}
-
-		for _, b := range res.Results.Bindings {
-			pred = urlify(b["p"].Value)
-			if indexMappings[profile][pred] == "" {
-				continue // if not in mapping, we don't want to index it
-			}
-			if _, ok := b["l"]; ok {
-				uf.URI = b["o"].Value
-				uf.Label = b["l"].Value
-				switch resource[indexMappings[profile][pred]].(type) {
-				case []interface{}:
-					resource[indexMappings[profile][pred]] =
-						append(resource[indexMappings[profile][pred]].([]interface{}), uf)
-				case uriField:
-					var s []interface{}
-					s = append(s, resource[indexMappings[profile][pred]])
-					resource[indexMappings[profile][pred]] = append(s, uf)
-				default:
-					resource[indexMappings[profile][pred]] = uf
-				}
-				continue
-			}
-
-			val := b["o"].Value
-			switch resource[indexMappings[profile][pred]].(type) {
-			case []interface{}:
-				resource[indexMappings[profile][pred]] =
-					append(resource[indexMappings[profile][pred]].([]interface{}), val)
-			case interface{}:
-				var s []interface{}
-				s = append(s, resource[indexMappings[profile][pred]])
-				resource[indexMappings[profile][pred]] = append(s, val)
-			default:
-				resource[indexMappings[profile][pred]] = val
-			}
-
-		}
-
-		resource["uri"] = uri
-
-		resourceBody, err := json.Marshal(resource)
-		if err != nil {
-			log.Println("failed to marshal json", uri)
-		}
-
 		_, err = f.Write(bulkHead)
 		if err != nil {
 			log.Fatal(err)
