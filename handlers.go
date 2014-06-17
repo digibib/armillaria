@@ -2,9 +2,12 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -81,4 +84,65 @@ func searchHandler(p *httputil.ReverseProxy) func(http.ResponseWriter, *http.Req
 func getIdHandler(w http.ResponseWriter, r *http.Request, values httprouter.Params) {
 	n := idGen.NextId(values.ByName("type"))
 	w.Write([]byte(strconv.Itoa(n)))
+}
+
+// queryExternalSource acts as a proxy for querying external sources.
+func queryExternalSource(w http.ResponseWriter, r *http.Request, values httprouter.Params) {
+	sourceName := values.ByName("source")
+	if _, ok := cfg.ExternalDataSources[sourceName]; !ok {
+		http.Error(w, "unknown external source", http.StatusBadRequest)
+		return
+	}
+	source := cfg.ExternalDataSources[sourceName]
+	switch source.Type {
+	case sourceSPARQL:
+		var q = r.FormValue("query")
+		if q == "" {
+			http.Error(w, "missing required parameter: query", http.StatusBadRequest)
+			return
+		}
+		form := url.Values{}
+		form.Set("query", q)
+		form.Set("format", "json") // application/sparql-results+json
+		b := form.Encode()
+
+		req, err := http.NewRequest(
+			"POST",
+			source.Endpoint,
+			bytes.NewBufferString(b))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		req.Header.Set("Content-Length", strconv.Itoa(len(b)))
+
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("SPARQL http request failed: %s", err.Error()), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(res.StatusCode)
+
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer res.Body.Close()
+
+		_, err = w.Write(body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	case sourceREST:
+		println(sourceName)
+	default:
+		println("unknown external source")
+
+	}
+
 }

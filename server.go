@@ -82,6 +82,7 @@ func main() {
 	mux.POST("/RDF/resource", doResourceQuery)
 	mux.POST("/queue/add", addToIndex)
 	mux.POST("/queue/remove", rmFromIndex)
+	mux.POST("/external/:source", queryExternalSource)
 	mux.HandlerFunc("GET", "/resource", serveFile("./data/html/resource.html"))
 	mux.HandlerFunc("GET", "/", serveFile("./data/html/index.html"))
 	mux.ServeFiles("/public/*filepath", http.Dir("./data/public/"))
