@@ -14,7 +14,7 @@ import (
 // Global variables and constants---------------------------------------------
 var (
 	db            *localRDFStore
-	cfg           config
+	cfg           *config
 	l             = log.New()
 	queueAdd      Queue
 	queueRemove   Queue
@@ -25,7 +25,8 @@ var (
 
 func main() {
 	// Load configuration files
-	cfg, err := loadConfig("data/config.json")
+	var err error
+	cfg, err = loadConfig("data/config.json")
 	if err != nil {
 		l.Error("failed to load config.json", log.Ctx{"error": err.Error()})
 		os.Exit(1)
