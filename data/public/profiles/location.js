@@ -4,6 +4,42 @@ var profile = {
     "desc": "Beskriver et geografisk sted",
     "type": ["<http://www.geonames.org/ontology#Feature>"]
   },
+  "externalRequired": ["geoId"],
+  "externalSources": [
+    {
+      "source": "Geonames",
+      "genRequest": function( values ) {
+        return values.geoId[0].value;
+      },
+      "parseRequest": function( response ) {
+        res = JSON.parse( response );
+        if ( !res.lat || !res.lng ) {
+          return [];
+        }
+        return [
+          {
+            "value": res.lat,
+            "predicate": "<http://www.w3.org/2003/01/geo/wgs84pos#lat>",
+            "source": "Geonames.org"
+          },
+          {
+            "value": res.lng,
+            "predicate": "<http://www.w3.org/2003/01/geo/wgs84pos#long>",
+            "source": "Geonames.org"
+          }
+        ];
+      }
+    },
+    {
+      "source": "dummy",
+      "genRequest": function( values ){
+        return "";
+      },
+      "parseRequest": function( response ) {
+        return [];
+      }
+    }
+  ],
   "views": [
     {
       "title": "Beskrivelse",

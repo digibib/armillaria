@@ -20,6 +20,10 @@
     "Z39.proxy": {
       "Endpoint": "http://datatest.deichman.no:8080",
       "Type": "REST"
+    },
+    "Geonames": {
+      "Endpoint": "http://api.geonames.org/getJSON?geonameId=%v&username=yourusername&style=full",
+      "Type": "GET"
     }
   }
 }

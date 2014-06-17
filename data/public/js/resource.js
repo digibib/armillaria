@@ -20,6 +20,18 @@ var firstLoad = true;
 
 // utility functions  --------------------------------------------------------
 
+// log adds a line to the logLines div
+var log = function( msg, isError ) {
+  var now = new Date().toISOString().slice(11, 19);
+  var t = isError ? "error" : "normal";
+  ractive.data.logLines.push({
+    "message": msg,
+    "type": t,
+    "time": now
+  });
+};
+
+
 // findElement returns the keypath of a predicate, or false if no match.
 var findElement = function(pred) {
   var kp = false;
@@ -161,7 +173,7 @@ var removeFromIndex = function( uri) {
 
 listener = ractive.on({
   queryExternal: function( event ) {
-    console.log("querying external resources");
+    log("Querying external resources: " + ractive.get( 'externalSources' ).length, false);
     ractive.get( 'externalSources' ).forEach(function ( source ) {
       var q = source.genRequest( values );
       var req = new XMLHttpRequest();
@@ -170,12 +182,13 @@ listener = ractive.on({
 
       req.onerror = function( event ) {
         console.log( event );
-        console.log( "failed to send external query to server");
+        log( "Failed to send external query to server", true);
       }
 
       req.onload = function( event ) {
         if ( req.status >= 200 && req.status < 400  ) {
           var v = source.parseRequest( req.responseText )
+          log( source.source + ": Query succeded. Number of values obtained: " +v.length, false);
           v.forEach( function( val ) {
             kp = findElement( val.predicate );
             if ( kp ) {
@@ -192,10 +205,11 @@ listener = ractive.on({
             }
           });
         } else {
-          console.log( event.target.responseText )
+          log( source.source + ': Query failed with "' + event.target.responseText + '"', true);
         }
       }
       req.send( "query=" + encodeURIComponent(q) );
+      log( source.source + ": Query sendt.", false);
     });
   },
   saveDraft: function( event ) {

@@ -142,7 +142,33 @@ func queryExternalSource(w http.ResponseWriter, r *http.Request, values httprout
 		}
 	case sourceGET:
 		// Query external data source by means of a simple GET query.
-		panic("not implemented")
+		// The query endpoint will require one value to be interpolated into the adress.
+		// TODO how to make this more flexible, with variable number of arguments?
+		var q = r.FormValue("query")
+		if q == "" {
+			http.Error(w, "missing required parameter: query", http.StatusBadRequest)
+			return
+		}
+		res, err := http.Get(fmt.Sprintf(source.Endpoint, q))
+		if err != nil {
+			http.Error(w, fmt.Sprintf("http request failed: %v", err.Error()), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(res.StatusCode)
+
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer res.Body.Close()
+
+		_, err = w.Write(body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	case sourceREST:
 		panic("not implemented")
 	default:
