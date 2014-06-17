@@ -345,3 +345,17 @@ select[disabled=disabled] {
   border-top: 2px solid #ccc;
   margin-top: 1em;
 }
+
+
+.logg {
+  background: #ffe;
+  border: 2px dashed #ccc;
+  list-style: none;
+  padding: 0.3em;
+  margin: 0;
+  font-size:80%
+}
+
+.error {
+  color: red;
+}

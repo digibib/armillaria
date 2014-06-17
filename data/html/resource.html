@@ -77,6 +77,14 @@
 						</div>
 					</div>
 
+					<div>
+						<ul class="logg monospace{{^logLines}} hidden{{/}}">
+							{{#logLines}}
+								<li class="{{type}}">[{{time}}] {{message}}</li>
+							{{/}}
+						</ul>
+					</div>
+
 					{{#views:i1}}
 					<div class="resourceData">
 						<h3>{{title}}</h3>
