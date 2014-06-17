@@ -433,6 +433,10 @@ listener = ractive.on({
     ractive.fire( "newValue", event );
   },
   validateString: function( event ) {
+    if ( event.node.value.trim() === "" ) {
+      // no action on empty input
+      return
+    }
     event.node.value = '"' + event.node.value + '"';
     ractive.fire( 'newValue', event );
   },
@@ -440,6 +444,10 @@ listener = ractive.on({
     var value, lang;
     var idx = event.index;
     value = event.node.value.trim();
+    if ( value === "" ) {
+      // no action on empty input
+      return
+    }
     lang = ractive.data.views[idx.i1].elements[idx.i2].selectedLang;
 
     // associate language tag if it is chosen
