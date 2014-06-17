@@ -1,10 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 
-	"github.com/digibib/armillaria/sparql"
 	log "gopkg.in/inconshreveable/log15.v2"
 )
 
@@ -84,83 +82,18 @@ func (w addWorker) Run() {
 
 		select {
 		case uri := <-w.Work:
+			// Get RDF resource to be indexed
 			r, err := db.Query(fmt.Sprintf(resourceQuery, uri, uri, uri))
 			if err != nil {
 				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, uri, uri, uri)})
 				break
 			}
 
-			var res *sparql.Results
-			err = json.Unmarshal(r, &res)
+			// Generate JSON document to be sent to Elasticsearch
+			resourceBody, profile, err := createIndexDoc(indexMappings, r, string(uri[1:len(uri)-1]))
 			if err != nil {
-				l.Error("failed to parse sparql response", log.Ctx{"error": err.Error(), "uri": uri})
+				l.Error("failed to create indexable json doc from RDF resource", log.Ctx{"error": err.Error(), "uri": uri})
 				break
-			}
-
-			// fetch the resource profile from the SPARQL response
-			var profile string
-			for _, b := range res.Results.Bindings {
-				if b["p"].Value == "armillaria://internal/profile" {
-					profile = b["o"].Value
-					break
-				}
-			}
-			if profile == "" {
-				l.Error("resource lacks profile information", log.Ctx{"uri": uri})
-				break
-			}
-
-			resource := make(map[string]interface{})
-			type uriField struct {
-				URI   string `json:"uri"`
-				Label string `json:"label"`
-			}
-			var pred string
-			uf := uriField{}
-
-			for _, b := range res.Results.Bindings {
-				pred = urlify(b["p"].Value)
-				if indexMappings[profile][pred] == "" {
-					continue // if not in mapping, we don't want to index it
-				}
-				if _, ok := b["l"]; ok {
-					uf.URI = b["o"].Value
-					uf.Label = b["l"].Value
-					switch resource[indexMappings[profile][pred]].(type) {
-					case []interface{}:
-						resource[indexMappings[profile][pred]] =
-							append(resource[indexMappings[profile][pred]].([]interface{}), uf)
-					case uriField:
-						var s []interface{}
-						s = append(s, resource[indexMappings[profile][pred]])
-						resource[indexMappings[profile][pred]] = append(s, uf)
-					default:
-						resource[indexMappings[profile][pred]] = uf
-					}
-					continue
-				}
-
-				val := b["o"].Value
-				switch resource[indexMappings[profile][pred]].(type) {
-				case []interface{}:
-					resource[indexMappings[profile][pred]] =
-						append(resource[indexMappings[profile][pred]].([]interface{}), val)
-				case interface{}:
-					var s []interface{}
-					s = append(s, resource[indexMappings[profile][pred]])
-					resource[indexMappings[profile][pred]] = append(s, val)
-				default:
-					resource[indexMappings[profile][pred]] = val
-				}
-
-			}
-
-			// We want to use the URI as the elasticsearch document ID
-			resource["uri"] = string(uri[1 : len(uri)-1])
-
-			resourceBody, err := json.Marshal(resource)
-			if err != nil {
-				l.Error("failed to marshal json", log.Ctx{"error": err.Error(), "uri": uri})
 			}
 
 			err = esIndexer.Add("public", profile, resourceBody)

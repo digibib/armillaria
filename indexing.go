@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+
+	"github.com/digibib/armillaria/sparql"
 )
 
 // esError represents an error returned from a Elasticsearch REST endpoint.
@@ -144,4 +146,82 @@ func loadFromProfiles() (map[string]map[string]string, error) {
 		}
 	}
 	return allMappings, nil
+}
+
+// createIndexedDoc creates a json document for a RDF resource, given
+// a set of predicate to field mappings and a sparql json result.
+func createIndexDoc(mappings map[string]map[string]string, sparqlRes []byte, uri string) ([]byte, string, error) {
+	var res *sparql.Results
+	var profile string
+	err := json.Unmarshal(sparqlRes, &res)
+	if err != nil {
+		return nil, profile, errors.New("failed to parse sparql response")
+
+	}
+	// fetch the resource profile from the SPARQL responsevar profile string
+	for _, b := range res.Results.Bindings {
+		if b["p"].Value == "armillaria://internal/profile" {
+			profile = b["o"].Value
+			break
+		}
+	}
+	if profile == "" {
+		return nil, profile, errors.New("resource lacks profile information")
+	}
+
+	resource := make(map[string]interface{})
+	type uriField struct {
+		URI   string `json:"uri"`
+		Label string `json:"label"`
+	}
+	var pred string
+	uf := uriField{}
+	println(profile)
+
+	for _, b := range res.Results.Bindings {
+		pred = urlify(b["p"].Value)
+		if mappings[profile][pred] == "" {
+			continue // if not in mapping, we don't want to index it
+		}
+		if _, ok := b["l"]; ok {
+			uf.URI = b["o"].Value
+			uf.Label = b["l"].Value
+			switch resource[mappings[profile][pred]].(type) {
+			case []interface{}:
+				resource[mappings[profile][pred]] =
+					append(resource[mappings[profile][pred]].([]interface{}), uf)
+			case uriField:
+				var s []interface{}
+				s = append(s, resource[mappings[profile][pred]])
+				resource[mappings[profile][pred]] = append(s, uf)
+			default:
+				resource[mappings[profile][pred]] = uf
+			}
+			continue
+		}
+
+		val := b["o"].Value
+		switch resource[mappings[profile][pred]].(type) {
+		case []interface{}:
+			resource[mappings[profile][pred]] =
+				append(resource[mappings[profile][pred]].([]interface{}), val)
+		case interface{}:
+			var s []interface{}
+			s = append(s, resource[mappings[profile][pred]])
+			resource[mappings[profile][pred]] = append(s, val)
+		default:
+			resource[mappings[profile][pred]] = val
+		}
+
+	}
+
+	// We want to use the URI as the elasticsearch document ID
+	resource["uri"] = uri
+
+	resourceBody, err := json.Marshal(resource)
+	if err != nil {
+		return nil, profile, errors.New("failed to marshal json")
+	}
+
+	return resourceBody, profile, nil
 }
