@@ -116,7 +116,7 @@ var profile = {
 
         if ( book.number_of_pages ) {
           values.push({
-            "value": parseInt( book.number_of_pages ),
+            "value": '' + parseInt( book.number_of_pages ),
             "predicate": "<http://purl.org/ontology/bibo/numPages>",
             "source": "Open Library"
           });
@@ -124,7 +124,7 @@ var profile = {
 
         if ( book.publish_date ) {
           values.push({
-            "value": parseInt( book.publish_date ),
+            "value": '' + parseInt( book.publish_date ),
             "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>",
             "source": "Open Library"
           });
@@ -167,7 +167,7 @@ var profile = {
 
         if ( book.publishedDate ) {
           values.push({
-            "value": parseInt( book.publishedDate ),
+            "value": '' + parseInt( book.publishedDate ),
             "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>",
             "source": "Google Books"
           });
@@ -175,7 +175,7 @@ var profile = {
 
         if ( book.pageCount ) {
           values.push({
-            "value": parseInt( book.pageCount ),
+            "value": '' + parseInt( book.pageCount ),
             "predicate": "<http://purl.org/ontology/bibo/numPages>",
             "source": "Google Books"
           });
