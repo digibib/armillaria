@@ -9,10 +9,10 @@ import (
 )
 
 const queryGetMax = `
-SELECT DISTINCT ?profile, COALESCE(MAX(xsd:int(?num)), 1) AS ?max
+SELECT DISTINCT ?profile, MAX(xsd:int(?num)) AS ?max
 WHERE {
-  _:s  <armillaria://internal/profile> ?profile .
-OPTIONAL { _:s <armillaria://internal/id> ?num . }
+  _:s  <armillaria://internal/profile> ?profile ;
+       <armillaria://internal/id> ?num .
 }
 `
 
