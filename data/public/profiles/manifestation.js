@@ -132,7 +132,7 @@ var profile = {
 
         if ( book.title ) {
           values.push({
-            "value": book.title,
+            "value": '"' + book.title + '"',
             "predicate": "<http://purl.org/dc/terms/title>",
             "source": "Open Library"
           });
@@ -159,7 +159,7 @@ var profile = {
 
         if ( book.title ) {
           values.push({
-            "value": book.title,
+            "value": '"' + book.title + '"',
             "predicate": "<http://purl.org/dc/terms/title>",
              "source": "Google Books"
           });
