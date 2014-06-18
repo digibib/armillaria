@@ -147,7 +147,7 @@
 							<div class="clearfix row resourceValues">
 							{{^ type == 'selectMust'}}
 								{{#values:i3}}
-									<div class="propertyValue column half">
+									<div class="propertyValue column{{# type !== "text"}} half{{/}}{{# type === "text"}} full{{/}}">
 
 										{{^URILabel}}<span class="propertyLabel{{^generated}} clickable{{/}}" on-click="{{^generated}}editLiteral{{/}}">{{value}}</span>{{/URILabel}}
 
