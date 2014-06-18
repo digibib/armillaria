@@ -89,10 +89,10 @@ var profile = {
               break;
           }
         }
-
         return values;
       }
-    },
+    }
+  ],
   "views": [
     {
       "title": "Basisopplysninger",
