@@ -271,6 +271,12 @@ select[disabled=disabled] {
   border: 2px solid #ddd;
 }
 
+.source {
+  background: #ddd;
+  padding: 3px;
+  border-radius: 2px;
+}
+
 .valSelect, .resourceData input {
     width: 22em;
 }

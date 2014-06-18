@@ -153,7 +153,7 @@
 
 										<span class="removeProperty" on-click='remove'>&times;</span>
 										{{# source !== 'local' }}
-											<span class="tinyText">{{source}}</span>
+											<span class="source tinyText">{{source}}</span>
 										{{/}}
 										{{#URILabel}}
 											<div>{{# predicateLabel && predicateLabel !== label}}{{predicateLabel}}: {{/}}<a title="{{value}}" target="_blank" href="/resource?uri={{trimURI(value)}}">{{URILabel}}</a></div>
