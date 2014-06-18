@@ -9,7 +9,7 @@ var profile = {
     {
       "source": "bibsentralen",
       "genRequest": function( values ) {
-        return values.isbn13[0].value;
+        return cleanString( values.isbn13[0].value );
       },
       "parseRequest": function( response ) {
         // parse the marcxml response
