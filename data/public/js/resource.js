@@ -564,6 +564,10 @@ listener = ractive.on({
     lang = ractive.data.views[idx.i1].elements[idx.i2].selectedLang;
     pred = ractive.data.views[idx.i1].elements[idx.i2].predicate;
 
+    if ( value.trim() === "" ) {
+      return;
+    }
+
     // associate language tag if it is chosen
     if ( lang === "") {
       value = "\"" + value + "\"";
