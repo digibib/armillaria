@@ -24,6 +24,10 @@
     "Geonames": {
       "Endpoint": "http://api.geonames.org/getJSON?geonameId=%v&username=yourusername&style=full",
       "Type": "GET"
+    },
+    "OpenLibrary": {
+      "Endpoint": "https://openlibrary.org/api/books?bibkeys=ISBN:%v&format=json&jscmd=data",
+      "Type": "GET"
     }
   }
 }

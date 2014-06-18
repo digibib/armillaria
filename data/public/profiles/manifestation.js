@@ -96,6 +96,50 @@ var profile = {
         }
         return values;
       }
+    },
+    {
+      "source": "OpenLibrary",
+      "genRequest": function( values ) {
+        return cleanString( values.isbn13[0].value );
+      },
+      "parseRequest": function( response ) {
+        var data = JSON.parse(response);
+
+        // Return if none, or more than one result.
+        if ( Object.keys( data ).length != 1 ) {
+          return [];
+        }
+
+        var key = Object.keys( data )[0];
+        var book = data[key];
+        var values = [];
+
+        if ( book.number_of_pages ) {
+          values.push({
+            "value": parseInt( book.number_of_pages ),
+            "predicate": "<http://purl.org/ontology/bibo/numPages>",
+             "source": "Open Library"
+          });
+        }
+
+         if ( book.publish_date ) {
+          values.push({
+            "value": parseInt( book.publish_date ),
+            "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>",
+             "source": "Open Library"
+          });
+        }
+
+        if ( book.title ) {
+          values.push({
+            "value": book.title,
+            "predicate": "<http://purl.org/dc/terms/title>",
+             "source": "Open Library"
+          });
+        }
+
+        return values;
+      }
     }
   ],
   "views": [
