@@ -29,8 +29,8 @@ var profile = {
 
         var getSubfield = function( dataField, code ) {
           for (var i=0; i<dataField.children.length; i++) {
-            if ( dataField.children[0].getAttribute("code") === code) {
-              return dataField.children[0].firstChild.nodeValue;
+            if ( dataField.children[i].getAttribute("code") === code) {
+              return dataField.children[i].firstChild.nodeValue;
             }
           }
           return false;
@@ -121,8 +121,8 @@ var profile = {
 
         var getSubfield = function( dataField, code ) {
           for (var i=0; i<dataField.children.length; i++) {
-            if ( dataField.children[0].getAttribute("code") === code) {
-              return dataField.children[0].firstChild.nodeValue;
+            if ( dataField.children[i].getAttribute("code") === code) {
+              return dataField.children[i].firstChild.nodeValue;
             }
           }
           return false;
@@ -134,12 +134,21 @@ var profile = {
           var dataField = xml.getElementsByTagNameNS(ns, "datafield")[i];
 
           switch ( dataField.getAttribute("tag") ) {
-            case "245": // title
+            case "245": // title, subtitle
               var v = getSubfield( dataField, "a");
               if ( v ) {
                 values.push({
                   "value": '"' + v + '"',
                   "predicate": "<http://purl.org/dc/terms/title>",
+                  "source": "Bibsys"
+                });
+              }
+
+              v = getSubfield( dataField, "b");
+              if ( v ) {
+                values.push({
+                  "value": '"' + v + '"',
+                  "predicate": "<http://purl.org/spar/fabio/hasSubtitle>",
                   "source": "Bibsys"
                 });
               }
