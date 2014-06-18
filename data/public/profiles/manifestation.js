@@ -46,7 +46,7 @@ var profile = {
               var v = getSubfield( dataField, "a");
               if ( v ) {
                 values.push({
-                  "value": v,
+                  "value": '"' + v + '"',
                   "predicate": "<http://purl.org/dc/terms/title>",
                   "source": "BS"
                 });
@@ -56,7 +56,7 @@ var profile = {
               var v = getSubfield( dataField, "a");
               if ( v ) {
                 values.push({
-                  "value": v,
+                  "value": '"' + v + '"',
                   "predicate": "<http://purl.org/dc/terms/alternative>",
                   "source": "BS"
                 });
@@ -66,7 +66,7 @@ var profile = {
               var v = getSubfield( dataField, "c");
               if ( parseInt( v ) ) {
                 values.push({
-                  "value": parseInt( v ),
+                  "value": '' + parseInt( v ),
                   "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>",
                   "source": "BS"
                 });
@@ -76,7 +76,7 @@ var profile = {
               var v = getSubfield( dataField, "a");
               if ( parseInt( v ) ) {
                 values.push({
-                  "value": parseInt( v ),
+                  "value": '' + parseInt( v ),
                   "predicate": "<http://purl.org/ontology/bibo/numPages>",
                   "source": "BS"
                 });
@@ -86,7 +86,7 @@ var profile = {
               var v = getSubfield( dataField, "a");
               if ( parseInt( v ) ) {
                 values.push({
-                  "value": parseInt( v ),
+                  "value": '' + parseInt( v ),
                   "predicate": "<http://purl.org/ontology/bibo/edition>",
                   "source": "BS"
                 });
