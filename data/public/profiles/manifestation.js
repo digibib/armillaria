@@ -22,6 +22,11 @@ var profile = {
           return [];
         }
 
+        if ( xml.getElementsByTagName("record").length > 1 ) {
+          // Don't know how to handle multiple hits
+          return [];
+        }
+
         var getSubfield = function( dataField, code ) {
           for (var i=0; i<dataField.children.length; i++) {
             if ( dataField.children[0].getAttribute("code") === code) {
