@@ -32,6 +32,10 @@
     "GoogleBooks": {
       "Endpoint": "https://www.googleapis.com/books/v1/volumes?q=isbn:%v",
       "Type": "GET"
+    },
+    "Bibsys": {
+      "Endpoint": "http://sru.bibsys.no/search/biblio?version=1.2&operation=searchRetrieve&startRecord=1&maximumRecords=1&query=isbn=&v&recordSchema=marcxchange",
+      "Type": "GET"
     }
   }
 }

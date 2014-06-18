@@ -98,6 +98,88 @@ var profile = {
       }
     },
     {
+      "source": "Bibsys",
+      "genRequest": function( values ) {
+        return cleanString( values.isbn13[0].value );
+      },
+      "parseRequest": function( response ) {
+        // parse the marcxml response
+        var parser = new DOMParser();
+        var xml = parser.parseFromString( response, "text/xml")
+        var root = xml.documentElement.nodeName;
+        var ns = "info:lc/xmlns/marcxchange-v1";
+
+        // return on xml parse error
+        if ( root  === "parseerror" || root === "error while parsing" ) {
+          return [];
+        }
+
+        if ( xml.getElementsByTagNameNS(ns, "record").length != 1 ) {
+          // Don't know how to handle multiple (or none) hits
+          return [];
+        }
+
+        var getSubfield = function( dataField, code ) {
+          for (var i=0; i<dataField.children.length; i++) {
+            if ( dataField.children[0].getAttribute("code") === code) {
+              return dataField.children[0].firstChild.nodeValue;
+            }
+          }
+          return false;
+        };
+
+        var values = [];
+
+        for (var i=0; i<xml.getElementsByTagNameNS(ns, "datafield").length; i++) {
+          var dataField = xml.getElementsByTagNameNS(ns, "datafield")[i];
+
+          switch ( dataField.getAttribute("tag") ) {
+            case "245": // title
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                values.push({
+                  "value": '"' + v + '"',
+                  "predicate": "<http://purl.org/dc/terms/title>",
+                  "source": "Bibsys"
+                });
+              }
+              break;
+            case "260": // publication issuer, place & year
+              var v = getSubfield( dataField, "c");
+              if ( parseInt( v ) ) {
+                values.push({
+                  "value": '' + parseInt( v ),
+                  "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>",
+                  "source": "Bibsys"
+                });
+              }
+              break;
+            case "300": // number of pages
+              var v = getSubfield( dataField, "a");
+              if ( parseInt( v ) ) {
+                values.push({
+                  "value": '' + parseInt( v ),
+                  "predicate": "<http://purl.org/ontology/bibo/numPages>",
+                  "source": "Bibsys"
+                });
+              }
+              break;
+            case "250": // edition
+              var v = getSubfield( dataField, "a");
+              if ( parseInt( v ) ) {
+                values.push({
+                  "value": '' + parseInt( v ),
+                  "predicate": "<http://purl.org/ontology/bibo/edition>",
+                  "source": "Bibsys"
+                });
+              }
+              break;
+          }
+        }
+        return values;
+      }
+    },
+    {
       "source": "OpenLibrary",
       "genRequest": function( values ) {
         return cleanString( values.isbn13[0].value );
@@ -114,7 +196,7 @@ var profile = {
         var book = data[key];
         var values = [];
 
-        if ( book.number_of_pages ) {
+        if ( parseInt ( book.number_of_pages ) ) {
           values.push({
             "value": '' + parseInt( book.number_of_pages ),
             "predicate": "<http://purl.org/ontology/bibo/numPages>",
@@ -122,7 +204,7 @@ var profile = {
           });
         }
 
-        if ( book.publish_date ) {
+        if ( parseInt( book.publish_date ) ) {
           values.push({
             "value": '' + parseInt( book.publish_date ),
             "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>",
