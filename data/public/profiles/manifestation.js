@@ -4,6 +4,95 @@ var profile = {
     "desc": "En manifestasjon av et verk",
     "type": ["<http://purl.org/spar/fabio/Manifestation>", "<http://purl.org/ontology/bibo/book>"]
   },
+  "externalRequired": ["isbn13"],
+  "externalSources": [
+    {
+      "source": "bibsentralen",
+      "genRequest": function( values ) {
+        return values.isbn13[0].value;
+      },
+      "parseRequest": function( response ) {
+        // parse the marcxml response
+        var parser = new DOMParser();
+        var xml = parser.parseFromString( response, "text/xml")
+        var root = xml.documentElement.nodeName;
+
+        // return on xml parse error
+        if ( root  === "parseerror" || root === "error while parsing" ) {
+          return [];
+        }
+
+        var getSubfield = function( dataField, code ) {
+          for (var i=0; i<dataField.children.length; i++) {
+            if ( dataField.children[0].getAttribute("code") === code) {
+              return dataField.children[0].firstChild.nodeValue;
+            }
+          }
+          return false;
+        };
+
+        var values = [];
+
+        for (var i=0; i<xml.getElementsByTagName("datafield").length; i++) {
+          var dataField = xml.getElementsByTagName("datafield")[i];
+
+          switch ( dataField.getAttribute("tag") ) {
+            case "245": // title
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                values.push({
+                  "value": v,
+                  "predicate": "<http://purl.org/dc/terms/title>",
+                  "source": "BS"
+                });
+              }
+              break;
+            case "740": // alternative title
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                values.push({
+                  "value": v,
+                  "predicate": "<http://purl.org/dc/terms/alternative>",
+                  "source": "BS"
+                });
+              }
+              break;
+            case "260": // publication issuer, place & year
+              var v = getSubfield( dataField, "c");
+              if ( parseInt( v ) ) {
+                values.push({
+                  "value": parseInt( v ),
+                  "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>",
+                  "source": "BS"
+                });
+              }
+              break;
+            case "300": // number of pages
+              var v = getSubfield( dataField, "a");
+              if ( parseInt( v ) ) {
+                values.push({
+                  "value": parseInt( v ),
+                  "predicate": "<http://purl.org/ontology/bibo/numPages>",
+                  "source": "BS"
+                });
+              }
+              break;
+            case "250": // edition
+              var v = getSubfield( dataField, "a");
+              if ( parseInt( v ) ) {
+                values.push({
+                  "value": parseInt( v ),
+                  "predicate": "<http://purl.org/ontology/bibo/edition>",
+                  "source": "BS"
+                });
+              }
+              break;
+          }
+        }
+
+        return values;
+      }
+    },
   "views": [
     {
       "title": "Basisopplysninger",

@@ -17,9 +17,9 @@
       "Endpoint": "http://data.deichman.no/sparql",
       "Type": "SPARQL"
     },
-    "Z39.proxy": {
-      "Endpoint": "http://datatest.deichman.no:8080",
-      "Type": "REST"
+    "bibsentralen": {
+      "Endpoint": "http://z39proxy:8080?apikey=yourapikey&base=bibbi&isbn=%s",
+      "Type": "GET"
     },
     "Geonames": {
       "Endpoint": "http://api.geonames.org/getJSON?geonameId=%v&username=yourusername&style=full",
