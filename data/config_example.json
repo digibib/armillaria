@@ -28,6 +28,10 @@
     "OpenLibrary": {
       "Endpoint": "https://openlibrary.org/api/books?bibkeys=ISBN:%v&format=json&jscmd=data",
       "Type": "GET"
+    },
+    "GoogleBooks": {
+      "Endpoint": "https://www.googleapis.com/books/v1/volumes?q=isbn:%v",
+      "Type": "GET"
     }
   }
 }

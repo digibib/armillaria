@@ -118,15 +118,15 @@ var profile = {
           values.push({
             "value": parseInt( book.number_of_pages ),
             "predicate": "<http://purl.org/ontology/bibo/numPages>",
-             "source": "Open Library"
+            "source": "Open Library"
           });
         }
 
-         if ( book.publish_date ) {
+        if ( book.publish_date ) {
           values.push({
             "value": parseInt( book.publish_date ),
             "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>",
-             "source": "Open Library"
+            "source": "Open Library"
           });
         }
 
@@ -134,11 +134,62 @@ var profile = {
           values.push({
             "value": book.title,
             "predicate": "<http://purl.org/dc/terms/title>",
-             "source": "Open Library"
+            "source": "Open Library"
           });
         }
 
         return values;
+      }
+    },
+    {
+      "source": "GoogleBooks",
+      "genRequest": function( values ) {
+        return cleanString( values.isbn13[0].value );
+      },
+      "parseRequest": function( response ) {
+        var data = JSON.parse( response );
+
+        // Return earyl if none, or more than 1 hits.
+        if ( data.totalItems != 1) {
+          return [];
+        }
+
+        var book = data.items[0].volumeInfo;
+        var values = [];
+
+        if ( book.title ) {
+          values.push({
+            "value": book.title,
+            "predicate": "<http://purl.org/dc/terms/title>",
+             "source": "Google Books"
+          });
+        }
+
+        if ( book.publishedDate ) {
+          values.push({
+            "value": parseInt( book.publishedDate ),
+            "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>",
+            "source": "Google Books"
+          });
+        }
+
+        if ( book.pageCount ) {
+          values.push({
+            "value": parseInt( book.pageCount ),
+            "predicate": "<http://purl.org/ontology/bibo/numPages>",
+            "source": "Google Books"
+          });
+        }
+
+        if ( book.description ) {
+          values.push({
+            "value": '"' + book.description + '"@en',
+            "predicate": "<http://purl.org/dc/terms/description>",
+            "source": "Google Books"
+          });
+        }
+
+       return values;
       }
     }
   ],
