@@ -201,7 +201,20 @@ listener = ractive.on({
                   }
                 }
               }
-              ractive.get(kp + ".values").push( val );
+              // Check if value allready exists:
+              var allreadyExists = false;
+              for ( var i=0; i<ractive.get( kp + '.values' ).length; i++) {
+                var exVal = ractive.get( kp + '.values.' + i );
+
+                if ( exVal.value === val.value ) {
+                  allreadyExists = true;
+                  // If the value allready exists, simply add external source nome to source
+                  ractive.set( kp + '.values.' + i + '.source', exVal.source + ', ' + val.source);
+                }
+              }
+              if ( !allreadyExists ) {
+                ractive.get(kp + ".values").push( val );
+              }
             }
           });
         } else {
