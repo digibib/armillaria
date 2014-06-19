@@ -12,8 +12,9 @@
 	</head>
 
 	<body>
-		<div class="container" id="app">
+		<div class="container clearfix" id="app">
 			<script id='template' type='text/ractive'>
+				<div class="column fourth">
 				<div class="resourceMenu">
 					&nbsp;&nbsp;<a href="/">Armillaria</a><br/>
 					<button
@@ -32,8 +33,17 @@
 					{{#existingResource}}
 						<button on-click="delResource" disabled='{{deleteDisabled}}'>Slett</button>
 					{{/existingResource}}
+				<div>
+						<ul class="logg monospace{{^logLines}} hidden{{/}}">
+							{{#logLines}}
+								<li class="{{type}}">[{{time}}] {{message}}</li>
+							{{/}}
+						</ul>
+					</div>
 				</div>
-				<div class="RDFProfile">
+				<p></p>
+				</div>
+				<div class="RDFProfile column three-fourths">
 
 					<h2>{{overview.title}}</h2>
 					<p class="grey monospace">{{#overview.type}}{{.}}<br/>{{/}}</p>
@@ -77,13 +87,7 @@
 						</div>
 					</div>
 
-					<div>
-						<ul class="logg monospace{{^logLines}} hidden{{/}}">
-							{{#logLines}}
-								<li class="{{type}}">[{{time}}] {{message}}</li>
-							{{/}}
-						</ul>
-					</div>
+
 
 					{{#views:i1}}
 					<div class="resourceData">

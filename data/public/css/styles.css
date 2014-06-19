@@ -17,8 +17,8 @@ html {
 
 .container {
   margin: 0 auto;
-  max-width: 53rem;
-  width: 90%;
+  /*max-width: 53rem;*/
+  width: 98%;
 }
 
 .column { margin-bottom: 1.5rem; }
@@ -36,6 +36,10 @@ html {
   .column.half { width: 50%; }
   .column.third { width: 33.3%; }
   .column.fourth { width: 25%; }
+  .column.three-fourths { width: 75%; }
+  .column.fifth { width: 20%; }
+  .column.two-fifths { width: 60%; }
+  .column.three-fifths { width: 80%; }
   .column.flow-opposite { float: right; }
 }
 
@@ -197,16 +201,15 @@ textarea {
 .resourceMenu {
   position: fixed;
   top: 1em;
-  left: 3em;
-  width: 200px;
+  left: 1em;
+  width: 22%;
   font-family: monospace;
 }
 
 .resourceMenu button {
-
-  width: 80%;
+  width: 99.8%;
   padding: 0.2em;
-  margin: 0.6em;
+  margin: 0.6em 0;
 }
 
 button[disabled=disabled], button:disabled {
@@ -359,7 +362,7 @@ select[disabled=disabled] {
   list-style: none;
   padding: 0.3em;
   margin: 0;
-  font-size:80%
+  font-size:60%
 }
 
 .error {
