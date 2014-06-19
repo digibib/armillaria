@@ -212,7 +212,9 @@ listener = ractive.on({
                 if ( exVal.value === val.value ) {
                   allreadyExists = true;
                   // If the value allready exists, simply add external source nome to source
-                  ractive.set( kp + '.values.' + i + '.source', exVal.source + ', ' + val.source);
+                  if ( exVal.source.indexOf(val.source) == -1) {
+                    ractive.set( kp + '.values.' + i + '.source', exVal.source + ', ' + val.source);
+                  }
                 }
               }
               if ( !allreadyExists ) {
