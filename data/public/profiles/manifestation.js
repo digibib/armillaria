@@ -256,6 +256,16 @@ var profile = {
                 });
               }
               break;
+            case "100": // hovedforfatter
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                suggestions.push({
+                  "value": v,
+                  "id": "creators",
+                  "source": "Bibsys"
+                });
+              }
+              break
             case "245": // title, subtitle, statementOfResponosibility
               var v = getSubfield( dataField, "a");
               if ( v ) {
