@@ -84,6 +84,7 @@ h1, h2, h3, h4, h5 {
 h5 {
   margin:0.5em 0 0 0;
   letter-spacing: 1px;
+  border-top: 1px solid #eee;
 }
 
 a:link, a:visited {
@@ -98,7 +99,6 @@ label {
 input, select {
   font-family: monospace;
   font-size:90%;
-  margin-bottom: 1em;
 }
 
 input[type=text],input[type=search] {
@@ -394,4 +394,11 @@ select[disabled=disabled] {
 
 .suggestion:hover {
   border: 2px solid #ddd;
+}
+
+
+.sugsource {
+  background: #ddb;
+  padding: 3px;
+  border-radius: 2px;
 }
