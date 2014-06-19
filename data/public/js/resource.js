@@ -24,6 +24,9 @@ var firstLoad = true;
 var log = function( msg, isError ) {
   var now = new Date().toISOString().slice(11, 19);
   var t = isError ? "error" : "normal";
+  if ( msg.length > 120 ) {
+    msg = msg.substr(0, 120) + "...";
+  }
   ractive.data.logLines.push({
     "message": msg,
     "type": t,
