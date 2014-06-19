@@ -191,7 +191,7 @@ listener = ractive.on({
       req.onload = function( event ) {
         if ( req.status >= 200 && req.status < 400  ) {
           var v = source.parseRequest( req.responseText )
-          log( source.source + ": Query succeded. Number of values obtained: " +v.length, false);
+          log( source.source + ": Query OK. Values: " +v.length, false);
           v.forEach( function( val ) {
             kp = findElement( val.predicate );
             if ( kp ) {
@@ -223,7 +223,7 @@ listener = ractive.on({
             }
           });
         } else {
-          log( source.source + ': Query failed with "' + event.target.responseText + '"', true);
+          log( source.source + ': Query failed: "' + event.target.responseText + '"', true);
         }
       }
       req.send( "query=" + encodeURIComponent(q) );
