@@ -57,6 +57,28 @@ var profile = {
                 });
               }
               break;
+            case "100": // Forfatter
+              var v = getSubfield( dataField, "a" );
+              if ( v ) {
+                var lifespan = getSubfield( dataField, "d" );
+                var nationality = getSubfield( dataField, "j" );
+                if ( lifespan || nationality ) {
+                  v = v + " (";
+                  if ( nationality ) {
+                    v = v + nationality + " ";
+                  }
+                  if ( lifespan ) {
+                    v = v + lifespan;
+                  }
+                  v = v + ")";
+                }
+              }
+              suggestions.push({
+                "value": v,
+                "source": "BS",
+                "id": "creators",
+              });
+              break
             case "245": // title
               var v = getSubfield( dataField, "a");
               if ( v ) {
@@ -135,6 +157,28 @@ var profile = {
                 });
               }
               break;
+            case "650": // generelt emneord
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                var overordnet = getSubfield( dataField, "0");
+                var underordnet = getSubfield( dataField, "x");
+                var dewey = getSubfield( dataField, "1");
+                if ( overordnet ) {
+                  v = overordnet + " > " + v;
+                }
+                if ( underordnet ) {
+                  v = v + " > " + underordnet;
+                }
+                if ( dewey ) {
+                  v = v + " (" + dewey + ")";
+                }
+              }
+              suggestions.push({
+                  "value": v,
+                  "id": "subject",
+                  "source": "BS"
+                });
+              break;
             case "440": // serie
               var v = getSubfield( dataField, "a");
               if ( v ) {
@@ -202,7 +246,17 @@ var profile = {
           var dataField = xml.getElementsByTagNameNS(ns, "datafield")[i];
 
           switch ( dataField.getAttribute("tag") ) {
-            case "245": // title, subtitle
+            case "082": // Dewey
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                suggestions.push({
+                  "value": v,
+                  "id": "class",
+                  "source": "Bibsys"
+                });
+              }
+              break;
+            case "245": // title, subtitle, statementOfResponosibility
               var v = getSubfield( dataField, "a");
               if ( v ) {
                 values.push({
@@ -220,6 +274,15 @@ var profile = {
                   "source": "Bibsys"
                 });
               }
+
+              v = getSubfield( dataField, "c");
+              if ( v ) {
+                suggestions.push({
+                  "value": v,
+                  "id": "creators",
+                  "source": "Bibsys"
+                });
+              }
               break;
             case "260": // publication issuer, place & year
               var v = getSubfield( dataField, "c");
@@ -227,6 +290,24 @@ var profile = {
                 values.push({
                   "value": '' + parseInt( v ),
                   "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>",
+                  "source": "Bibsys"
+                });
+              }
+
+              v = getSubfield( dataField, "a");
+              if ( v ) {
+                suggestions.push({
+                  "value": v,
+                  "id": "pubPlace",
+                  "source": "Bibsys"
+                });
+              }
+
+              v = getSubfield( dataField, "b");
+              if ( v ) {
+                suggestions.push({
+                  "value": v,
+                  "id": "issuer",
                   "source": "Bibsys"
                 });
               }
@@ -247,6 +328,41 @@ var profile = {
                 values.push({
                   "value": '' + parseInt( v ),
                   "predicate": "<http://purl.org/ontology/bibo/edition>",
+                  "source": "Bibsys"
+                });
+              }
+              break;
+            case "830":
+            case "490": // serie
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                suggestions.push({
+                  "value": v,
+                  "id": "partOf",
+                  "source": "Bibsys"
+                });
+              }
+              break;
+            case "650": // subject
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                suggestions.push({
+                  "value": v,
+                  "id": "subject",
+                  "source": "Bibsys"
+                });
+              }
+              break;
+            case "700": // Biinførsler
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                var role = getSubfield( dataField, "e");
+                if ( role ) {
+                  v = v +  " (" + role + ")";
+                }
+                suggestions.push({
+                  "value": v,
+                  "id": "creators",
                   "source": "Bibsys"
                 });
               }
@@ -297,6 +413,30 @@ var profile = {
             "source": "Open Library"
           });
         }
+
+        book.authors.forEach(function(author) {
+          suggestions.push({
+            "value": author.name,
+            "source": "Open Library",
+            "id": "creators"
+          });
+        });
+
+        book.publish_places.forEach(function( place ) {
+          suggestions.push({
+            "value": place.name,
+            "source": "Open Library",
+            "id": "pubPlace"
+          });
+        });
+
+        book.publishers.forEach(function( issuer ) {
+          suggestions.push({
+            "value": issuer.name,
+            "source": "Open Library",
+            "id": "issuer"
+          });
+        });
 
         return [values, suggestions];
       }
@@ -349,6 +489,14 @@ var profile = {
             "source": "Google Books"
           });
         }
+
+        book.authors.forEach(function( author ) {
+          suggestions.push({
+            "value": author,
+            "source": "Google Books",
+            "id": "creators"
+          });
+        });
 
        return [values, suggestions];
       }
