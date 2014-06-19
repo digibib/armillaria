@@ -132,6 +132,10 @@ textarea {
   color: #aaa;
 }
 
+.yellow {
+  background: yellow;
+}
+
 .navy {  color: navy; }
 
 .errorInfo {
@@ -220,10 +224,14 @@ select[disabled=disabled] {
   /* how? */
 }
 
-.indicator {
+.warning {
   position: absolute;
   left: -20px;
-  top:5px;
+  top: 2px;
+  font-size: 30px;
+  height: 30px;
+  line-height:30px;
+
 }
 
 .indicator2 {

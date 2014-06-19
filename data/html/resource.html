@@ -101,7 +101,6 @@
 								<span class="propertyDesc">{{desc}}</span>
 							</h5>
 
-
 							{{^ generated}}
 							<div class="{{# repeatable == false && values.length > 0 && type !== 'selectMust'}}hidden{{/}}">
 								{{# type === 'URI' }}
@@ -148,8 +147,9 @@
 
 							{{/generated}}
 
-							<div class="clearfix row resourceValues">
+							<div class="clearfix resourceValues relative">
 							{{^ type == 'selectMust'}}
+								{{# (repeatable ? false : ( values.length > 1))}}<div class="warning yellow" title="For mange verdier i dette feltet; redusér til 1 verdi.">&#9888;</div>{{/}}
 								{{#values:i3}}
 									<div class="propertyValue column{{# type !== "text"}} half{{/}}{{# type === "text"}} full{{/}}">
 
