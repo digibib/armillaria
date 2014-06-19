@@ -424,29 +424,36 @@ var profile = {
           });
         }
 
-        book.authors.forEach(function(author) {
-          suggestions.push({
-            "value": author.name,
-            "source": "Open Library",
-            "id": "creators"
+        if ( book.authors ) {
+          book.authors.forEach(function(author) {
+            suggestions.push({
+              "value": author.name,
+              "source": "Open Library",
+              "id": "creators"
+            });
           });
-        });
+        }
 
-        book.publish_places.forEach(function( place ) {
-          suggestions.push({
-            "value": place.name,
-            "source": "Open Library",
-            "id": "pubPlace"
+        if ( book.publish_places ) {
+          book.publish_places.forEach(function( place ) {
+            suggestions.push({
+              "value": place.name,
+              "source": "Open Library",
+              "id": "pubPlace"
+            });
           });
-        });
+        }
 
-        book.publishers.forEach(function( issuer ) {
-          suggestions.push({
-            "value": issuer.name,
-            "source": "Open Library",
-            "id": "issuer"
+        if ( book.publishers ) {
+          book.publishers.forEach(function( issuer ) {
+            suggestions.push({
+              "value": issuer.name,
+              "source": "Open Library",
+              "id": "issuer"
+            });
           });
-        });
+        }
+
 
         return [values, suggestions];
       }
