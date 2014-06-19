@@ -149,7 +149,7 @@
 								{{#values:i3}}
 									<div class="propertyValue column{{# type !== "text"}} half{{/}}{{# type === "text"}} full{{/}}">
 
-										{{^URILabel}}<span class="propertyLabel{{^generated}} clickable{{/}}" on-click="{{^generated}}editLiteral{{/}}">{{value}}</span>{{/URILabel}}
+										{{^URILabel}}<span class="propertyLabel{{# generated != true && (repeatable ? true : ( values.length == 1))}} clickable{{/}}" on-click="{{# generated != true && (repeatable ? true : ( values.length == 1))}}editLiteral{{/}}">{{value}}</span>{{/URILabel}}
 
 										<span class="removeProperty" on-click='remove'>&times;</span>
 										{{# source !== 'local' }}
