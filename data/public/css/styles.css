@@ -101,8 +101,9 @@ input, select {
   margin-bottom: 1em;
 }
 
-input[type=text] {
-  min-width: 20em
+input[type=text],input[type=search] {
+  width: 100%;
+  border: 1px solid #aaa;
 }
 
 input[type=checkbox] {
@@ -116,7 +117,7 @@ input[type=search] {
 }
 
 textarea {
-  min-width: 100%;
+  width: 100%;
   font-size: 14px;
 }
 
@@ -375,4 +376,20 @@ select[disabled=disabled] {
 
 .error {
   color: red;
+}
+
+.suggestion {
+  display: inline-block;
+  float: left;
+  margin: 0 0.2em;
+  background: #ffd;
+  border: 2px solid #fff;
+  font-size: 70%;
+  border-radius: 3px;
+  padding: 0.3em;
+  word-wrap: break-word;
+}
+
+.suggestion:hover {
+  border: 2px solid #ddd;
 }

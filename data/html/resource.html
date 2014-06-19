@@ -88,19 +88,19 @@
 					</div>
 
 
-
 					{{#views:i1}}
 					<div class="resourceData">
 						<h3>{{title}}</h3>
 						<p>{{desc}}</p>
 						{{#elements:i2}}
-						<div class="{{# hidden && values.length === 0}}hidden{{/hidden}}">
+						<div class="clearfix {{# hidden && values.length === 0}}hidden{{/hidden}}">
 							<h5 class="relative">{{label}}
 								{{#required}}<span class="indicator2 red">*</span>{{/}}
 								{{#generated}}<span class="indicator2 grey">a</span>{{/}}
 								<span class="propertyDesc">{{desc}}</span>
 							</h5>
 
+							<div class="column two-thirds">
 							{{^ generated}}
 							<div class="{{# repeatable == false && values.length > 0 && type !== 'selectMust'}}hidden{{/}}">
 								{{# type === 'URI' }}
@@ -167,6 +167,13 @@
 							{{/}}
 							</div>
 						</div>
+						<div class="suggestions column third monospace">
+							{{#suggestions}}
+								<div class="suggestion">{{value}}{{#source}} <span class="source tinyText">{{source}}</span>{{/}}</div>
+							{{/suggestions}}
+						</div>
+					</div>
+
 
 						{{/elements}}
 						{{ #hiddenFields(views[i1]).length > 0}}

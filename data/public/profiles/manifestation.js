@@ -19,12 +19,12 @@ var profile = {
 
         // return on xml parse error
         if ( root  === "parseerror" || root === "error while parsing" ) {
-          return [];
+          return [[],[]];
         }
 
         if ( xml.getElementsByTagName("record").length > 1 ) {
           // Don't know how to handle multiple hits
-          return [];
+          return [[],[]];
         }
 
         var getSubfield = function( dataField, code ) {
@@ -37,17 +37,42 @@ var profile = {
         };
 
         var values = [];
+        var suggestions = [];
 
         for (var i=0; i<xml.getElementsByTagName("datafield").length; i++) {
           var dataField = xml.getElementsByTagName("datafield")[i];
 
           switch ( dataField.getAttribute("tag") ) {
+            case "082": // Dewey
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                /*var utgv = getSubfield( dataField, "2");
+                if ( utgv ) {
+                  v = v +  " (DDK" + utgv + ")";
+                }*/
+                suggestions.push({
+                  "value": v,
+                  "id": "class",
+                  "source": "BS"
+                });
+              }
+              break;
             case "245": // title
               var v = getSubfield( dataField, "a");
               if ( v ) {
                 values.push({
                   "value": '"' + v + '"',
                   "predicate": "<http://purl.org/dc/terms/title>",
+                  "source": "BS"
+                });
+              }
+
+              // ansvarsangivelse; statementOfResponsibility
+              var v = getSubfield( dataField, "c");
+              if ( v ) {
+                suggestions.push({
+                  "value": v,
+                  "id": "creators",
                   "source": "BS"
                 });
               }
@@ -68,6 +93,24 @@ var profile = {
                 values.push({
                   "value": '' + parseInt( v ),
                   "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>",
+                  "source": "BS"
+                });
+              }
+
+              v = getSubfield( dataField, "a");
+              if ( v ) {
+                suggestions.push({
+                  "value": v,
+                  "id": "pubPlace",
+                  "source": "BS"
+                });
+              }
+
+              v = getSubfield( dataField, "b");
+              if ( v ) {
+                suggestions.push({
+                  "value": v,
+                  "id": "issuer",
                   "source": "BS"
                 });
               }
@@ -92,9 +135,33 @@ var profile = {
                 });
               }
               break;
+            case "440": // serie
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                suggestions.push({
+                  "value": v,
+                  "id": "partOf",
+                  "source": "BS"
+                });
+              }
+              break;
+            case "700": // Biinførsler
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                var role = getSubfield( dataField, "e");
+                if ( role ) {
+                  v = v +  " (" + role + ")";
+                }
+                suggestions.push({
+                  "value": v,
+                  "id": "creators",
+                  "source": "BS"
+                });
+              }
+              break;
           }
         }
-        return values;
+        return [values, suggestions];
       }
     },
     {
@@ -111,12 +178,12 @@ var profile = {
 
         // return on xml parse error
         if ( root  === "parseerror" || root === "error while parsing" ) {
-          return [];
+          return [[],[]];
         }
 
         if ( xml.getElementsByTagNameNS(ns, "record").length != 1 ) {
           // Don't know how to handle multiple (or none) hits
-          return [];
+          return [[],[]];
         }
 
         var getSubfield = function( dataField, code ) {
@@ -129,6 +196,7 @@ var profile = {
         };
 
         var values = [];
+        var suggestions = [];
 
         for (var i=0; i<xml.getElementsByTagNameNS(ns, "datafield").length; i++) {
           var dataField = xml.getElementsByTagNameNS(ns, "datafield")[i];
@@ -185,7 +253,7 @@ var profile = {
               break;
           }
         }
-        return values;
+        return [values, suggestions];
       }
     },
     {
@@ -198,12 +266,13 @@ var profile = {
 
         // Return if none, or more than one result.
         if ( Object.keys( data ).length != 1 ) {
-          return [];
+          return [[],[]];
         }
 
         var key = Object.keys( data )[0];
         var book = data[key];
         var values = [];
+        var suggestions = [];
 
         if ( parseInt ( book.number_of_pages ) ) {
           values.push({
@@ -229,7 +298,7 @@ var profile = {
           });
         }
 
-        return values;
+        return [values, suggestions];
       }
     },
     {
@@ -242,11 +311,12 @@ var profile = {
 
         // Return earyl if none, or more than 1 hits.
         if ( data.totalItems != 1) {
-          return [];
+          return [[],[]];
         }
 
         var book = data.items[0].volumeInfo;
         var values = [];
+        var suggestions = [];
 
         if ( book.title ) {
           values.push({
@@ -280,7 +350,7 @@ var profile = {
           });
         }
 
-       return values;
+       return [values, suggestions];
       }
     }
   ],

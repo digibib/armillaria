@@ -56,6 +56,19 @@ var findElement = function(pred) {
   return kp;
 };
 
+// findElementById returns the keypath of an id, or false if no match.
+var findElementById = function( id ) {
+  var kp = false;
+  ractive.data.views.forEach(function(v, i) {
+    v.elements.forEach(function(e, j) {
+      if (e.id === id) {
+        kp = "views."+i+".elements."+j;
+      }
+    });
+  });
+  return kp;
+};
+
 // getValue returns the value of a binding, including surrounding quotes
 // for strings and language tag if present.
 var getValue = function(b) {
@@ -190,10 +203,14 @@ listener = ractive.on({
 
       req.onload = function( event ) {
         if ( req.status >= 200 && req.status < 400  ) {
-          var v = source.parseRequest( req.responseText )
-          log( source.source + ": Query OK. Values: " +v.length, false);
+          var parsedResponse = source.parseRequest( req.responseText );
+          var v = parsedResponse[0]; // values
+          var s = parsedResponse[1]; // suggestions
+          log( source.source + ": OK. Values: " +v.length + ", suggestions: " + s.length, false);
+
+          // 1. populate values
           v.forEach( function( val ) {
-            kp = findElement( val.predicate );
+            var kp = findElement( val.predicate );
             if ( kp ) {
               val.predicateLabel = ractive.get(kp).label;
               if ( ractive.get(kp).type === "multiPredicateURI" ) {
@@ -222,8 +239,32 @@ listener = ractive.on({
               }
             }
           });
-        } else {
-          log( source.source + ': Query failed: "' + event.target.responseText + '"', true);
+
+          // 2.populate suggestions
+          s.forEach( function( sug ) {
+            var kp = findElementById( sug.id );
+            if ( kp ) {
+              // Check if suggestion allready exists:
+              var allreadyExists = false;
+              for ( var i=0; i<ractive.get( kp + '.suggestions' ).length; i++) {
+                var exVal = ractive.get( kp + '.suggestions.' + i );
+
+                if ( exVal.value === sug.value ) {
+                  allreadyExists = true;
+                  // If the value allready exists, simply add external source nome to source
+                  if ( exVal.source.indexOf(sug.source) == -1) {
+                    ractive.set( kp + '.suggestions.' + i + '.source', exVal.source + ', ' + sug.source);
+                  }
+                }
+              }
+              if ( !allreadyExists ) {
+                ractive.get(kp + ".suggestions").push( sug );
+              }
+            }
+          });
+
+        } else { // query status != 200 || 300
+          log( source.source + ': Failed: "' + event.target.responseText + '"', true);
         }
       }
       req.send( "query=" + encodeURIComponent(q) );
@@ -745,6 +786,8 @@ var createSchema = function( loadRes ) {
   // set values to empty array, if not allready popuated with predefined values.
   profile.views.forEach(function(view, i) {
     view.elements.forEach(function(elem, j) {
+      // suggestions from external sources (where target values are URIs)
+      profile.views[i].elements[j].suggestions = [];
       if ( !loadRes ) {
         if ( !profile.views[i].elements[j].values ) {
           profile.views[i].elements[j].values = [];

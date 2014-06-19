@@ -28,7 +28,7 @@ var profile = {
                        predicate: "<http://www.w3.org/2004/02/skos/core#prefLabel>"
           });
         });
-        return v;
+        return [v,[]];
       }
     }
   ],
