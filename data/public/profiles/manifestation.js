@@ -294,6 +294,16 @@ var profile = {
                 });
               }
               break;
+            case "246": // originalutgave (paralelltittel)
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                suggestions.push({
+                  "value": v,
+                  "id": "work",
+                  "source": "Bibsys"
+                });
+              }
+              break;
             case "260": // publication issuer, place & year
               var v = getSubfield( dataField, "c");
               if ( parseInt( v ) ) {
