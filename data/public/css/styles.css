@@ -367,11 +367,13 @@ select[disabled=disabled] {
 
 .logg {
   background: #ffe;
-  border: 2px dashed #ccc;
+  border: 2px solid #ccc;
   list-style: none;
   padding: 0.3em;
   margin: 0;
-  font-size:60%
+  font-size:60%;
+  max-height: 200px;
+  overflow: auto;
 }
 
 .error {
