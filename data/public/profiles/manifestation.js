@@ -87,7 +87,7 @@ var profile = {
               }
 
               // ansvarsangivelse; statementOfResponsibility
-              var v = getSubfield( dataField, "c");
+              v = getSubfield( dataField, "c");
               if ( v ) {
                 suggestions.push({
                   "value": v,
@@ -184,6 +184,96 @@ var profile = {
                 if ( role ) {
                   v = v +  " (" + role + ")";
                 }
+                suggestions.push({
+                  "value": v,
+                  "id": "creators"
+                });
+              }
+              break;
+          }
+        }
+        return [values, suggestions];
+      }
+    },
+    {
+      "source": "LOC",
+      "genRequest": function( values ) {
+        return cleanString( values.isbn13[0].value );
+      },
+      "parseRequest": function( response ) {
+        // parse the marcxml response
+        var parser = new DOMParser();
+        var xml = parser.parseFromString( response, "text/xml")
+        var root = xml.documentElement.nodeName;
+
+        // return on xml parse error
+        if ( root  === "parseerror" || root === "error while parsing" ) {
+          return [[],[]];
+        }
+
+        if ( xml.getElementsByTagName("record").length > 1 ) {
+          // Don't know how to handle multiple hits
+          return [[],[]];
+        }
+
+        var getSubfield = function( dataField, code ) {
+          for (var i=0; i<dataField.children.length; i++) {
+            if ( dataField.children[i].getAttribute("code") === code) {
+              return dataField.children[i].firstChild.nodeValue;
+            }
+          }
+          return false;
+        };
+
+        var values = [];
+        var suggestions = [];
+
+        for (var i=0; i<xml.getElementsByTagName("datafield").length; i++) {
+          var dataField = xml.getElementsByTagName("datafield")[i];
+
+          switch ( dataField.getAttribute("tag") ) {
+            case "100": // Forfatter
+              var v = getSubfield( dataField, "a" );
+              if ( v ) {
+                var lifespan = getSubfield( dataField, "d" );
+                var nationality = getSubfield( dataField, "j" );
+                if ( lifespan || nationality ) {
+                  v = v + " (";
+                  if ( nationality ) {
+                    v = v + nationality + " ";
+                  }
+                  if ( lifespan ) {
+                    v = v + lifespan;
+                  }
+                  v = v + ")";
+                }
+              }
+              suggestions.push({
+                "value": v,
+                "id": "creators",
+              });
+              break;
+            case "240": // original title
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                suggestions.push({
+                  "value": v,
+                  "id": "work"
+                });
+              }
+              break;
+            case "245": // title
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                values.push({
+                  "value": '"' + v + '"',
+                  "predicate": "<http://purl.org/dc/terms/title>"
+                });
+              }
+
+              // ansvarsangivelse; statementOfResponsibility
+              v = getSubfield( dataField, "c");
+              if ( v ) {
                 suggestions.push({
                   "value": v,
                   "id": "creators"

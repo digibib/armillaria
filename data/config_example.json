@@ -21,6 +21,10 @@
       "Endpoint": "http://z39proxy:8080?apikey=yourapikey&base=bibbi&isbn=%s",
       "Type": "GET"
     },
+    "LOC": {
+      "Endpoint": "http://z39proxy:8080?apikey=yourapikey&base=loc&isbn=%v",
+      "Type": "GET"
+    },
     "Geonames": {
       "Endpoint": "http://api.geonames.org/getJSON?geonameId=%v&username=yourusername&style=full",
       "Type": "GET"
