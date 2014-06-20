@@ -280,6 +280,16 @@ var profile = {
                 });
               }
               break;
+            case "520": // summary
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                values.push({
+                  "value": '"' + v + '"@en',
+                  "predicate": "<http://purl.org/dc/terms/abstract>"
+                });
+              }
+
+              break;
           }
         }
         return [values, suggestions];
