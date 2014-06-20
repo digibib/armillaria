@@ -20,13 +20,11 @@ var profile = {
           [
             {
               "value": res.lat,
-              "predicate": "<http://www.w3.org/2003/01/geo/wgs84pos#lat>",
-              "source": "Geonames.org"
+              "predicate": "<http://www.w3.org/2003/01/geo/wgs84pos#lat>"
             },
             {
               "value": res.lng,
-              "predicate": "<http://www.w3.org/2003/01/geo/wgs84pos#long>",
-              "source": "Geonames.org"
+              "predicate": "<http://www.w3.org/2003/01/geo/wgs84pos#long>"
             }
           ],
           []

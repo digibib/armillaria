@@ -23,8 +23,7 @@ var profile = {
         res = JSON.parse( response );
         var v = [];
         res.results.bindings.forEach(function (b) {
-          v.push({value: '"'+ b.label.value + '"@' + b.label['xml:lang'],
-                       source: "dewey.info",
+          v.push({value: '"'+ b.label.value + '"@' + b.label['xml:lang']
                        predicate: "<http://www.w3.org/2004/02/skos/core#prefLabel>"
           });
         });

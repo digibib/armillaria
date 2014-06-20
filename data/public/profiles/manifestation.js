@@ -7,7 +7,7 @@ var profile = {
   "externalRequired": ["isbn13"],
   "externalSources": [
     {
-      "source": "bibsentralen",
+      "source": "BS",
       "genRequest": function( values ) {
         return cleanString( values.isbn13[0].value );
       },
@@ -52,8 +52,7 @@ var profile = {
                 }*/
                 suggestions.push({
                   "value": v,
-                  "id": "class",
-                  "source": "BS"
+                  "id": "class"
                 });
               }
               break;
@@ -75,7 +74,6 @@ var profile = {
               }
               suggestions.push({
                 "value": v,
-                "source": "BS",
                 "id": "creators",
               });
               break
@@ -84,8 +82,7 @@ var profile = {
               if ( v ) {
                 values.push({
                   "value": '"' + v + '"',
-                  "predicate": "<http://purl.org/dc/terms/title>",
-                  "source": "BS"
+                  "predicate": "<http://purl.org/dc/terms/title>"
                 });
               }
 
@@ -94,8 +91,7 @@ var profile = {
               if ( v ) {
                 suggestions.push({
                   "value": v,
-                  "id": "creators",
-                  "source": "BS"
+                  "id": "creators"
                 });
               }
               break;
@@ -104,8 +100,7 @@ var profile = {
               if ( v ) {
                 values.push({
                   "value": '"' + v + '"',
-                  "predicate": "<http://purl.org/dc/terms/alternative>",
-                  "source": "BS"
+                  "predicate": "<http://purl.org/dc/terms/alternative>"
                 });
               }
               break;
@@ -114,8 +109,7 @@ var profile = {
               if ( parseInt( v ) ) {
                 values.push({
                   "value": '' + parseInt( v ),
-                  "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>",
-                  "source": "BS"
+                  "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>"
                 });
               }
 
@@ -123,8 +117,7 @@ var profile = {
               if ( v ) {
                 suggestions.push({
                   "value": v,
-                  "id": "pubPlace",
-                  "source": "BS"
+                  "id": "pubPlace"
                 });
               }
 
@@ -132,8 +125,7 @@ var profile = {
               if ( v ) {
                 suggestions.push({
                   "value": v,
-                  "id": "issuer",
-                  "source": "BS"
+                  "id": "issuer"
                 });
               }
               break;
@@ -142,8 +134,7 @@ var profile = {
               if ( parseInt( v ) ) {
                 values.push({
                   "value": '' + parseInt( v ),
-                  "predicate": "<http://purl.org/ontology/bibo/numPages>",
-                  "source": "BS"
+                  "predicate": "<http://purl.org/ontology/bibo/numPages>"
                 });
               }
               break;
@@ -152,8 +143,7 @@ var profile = {
               if ( parseInt( v ) ) {
                 values.push({
                   "value": '' + parseInt( v ),
-                  "predicate": "<http://purl.org/ontology/bibo/edition>",
-                  "source": "BS"
+                  "predicate": "<http://purl.org/ontology/bibo/edition>"
                 });
               }
               break;
@@ -175,8 +165,7 @@ var profile = {
               }
               suggestions.push({
                   "value": v,
-                  "id": "subject",
-                  "source": "BS"
+                  "id": "subject"
                 });
               break;
             case "440": // serie
@@ -184,8 +173,7 @@ var profile = {
               if ( v ) {
                 suggestions.push({
                   "value": v,
-                  "id": "partOf",
-                  "source": "BS"
+                  "id": "partOf"
                 });
               }
               break;
@@ -198,8 +186,7 @@ var profile = {
                 }
                 suggestions.push({
                   "value": v,
-                  "id": "creators",
-                  "source": "BS"
+                  "id": "creators"
                 });
               }
               break;
@@ -251,8 +238,7 @@ var profile = {
               if ( v ) {
                 suggestions.push({
                   "value": v,
-                  "id": "class",
-                  "source": "Bibsys"
+                  "id": "class"
                 });
               }
               break;
@@ -261,8 +247,7 @@ var profile = {
               if ( v ) {
                 suggestions.push({
                   "value": v,
-                  "id": "creators",
-                  "source": "Bibsys"
+                  "id": "creators"
                 });
               }
               break
@@ -271,8 +256,7 @@ var profile = {
               if ( v ) {
                 values.push({
                   "value": '"' + v + '"',
-                  "predicate": "<http://purl.org/dc/terms/title>",
-                  "source": "Bibsys"
+                  "predicate": "<http://purl.org/dc/terms/title>"
                 });
               }
 
@@ -280,8 +264,7 @@ var profile = {
               if ( v ) {
                 values.push({
                   "value": '"' + v + '"',
-                  "predicate": "<http://purl.org/spar/fabio/hasSubtitle>",
-                  "source": "Bibsys"
+                  "predicate": "<http://purl.org/spar/fabio/hasSubtitle>"
                 });
               }
 
@@ -289,8 +272,7 @@ var profile = {
               if ( v ) {
                 suggestions.push({
                   "value": v,
-                  "id": "creators",
-                  "source": "Bibsys"
+                  "id": "creators"
                 });
               }
               break;
@@ -299,8 +281,7 @@ var profile = {
               if ( v ) {
                 suggestions.push({
                   "value": v,
-                  "id": "work",
-                  "source": "Bibsys"
+                  "id": "work"
                 });
               }
               break;
@@ -309,8 +290,7 @@ var profile = {
               if ( parseInt( v ) ) {
                 values.push({
                   "value": '' + parseInt( v ),
-                  "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>",
-                  "source": "Bibsys"
+                  "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>"
                 });
               }
 
@@ -318,8 +298,7 @@ var profile = {
               if ( v ) {
                 suggestions.push({
                   "value": v,
-                  "id": "pubPlace",
-                  "source": "Bibsys"
+                  "id": "pubPlace"
                 });
               }
 
@@ -327,8 +306,7 @@ var profile = {
               if ( v ) {
                 suggestions.push({
                   "value": v,
-                  "id": "issuer",
-                  "source": "Bibsys"
+                  "id": "issuer"
                 });
               }
               break;
@@ -337,8 +315,7 @@ var profile = {
               if ( parseInt( v ) ) {
                 values.push({
                   "value": '' + parseInt( v ),
-                  "predicate": "<http://purl.org/ontology/bibo/numPages>",
-                  "source": "Bibsys"
+                  "predicate": "<http://purl.org/ontology/bibo/numPages>"
                 });
               }
               break;
@@ -347,8 +324,7 @@ var profile = {
               if ( parseInt( v ) ) {
                 values.push({
                   "value": '' + parseInt( v ),
-                  "predicate": "<http://purl.org/ontology/bibo/edition>",
-                  "source": "Bibsys"
+                  "predicate": "<http://purl.org/ontology/bibo/edition>"
                 });
               }
               break;
@@ -358,8 +334,7 @@ var profile = {
               if ( v ) {
                 suggestions.push({
                   "value": v,
-                  "id": "partOf",
-                  "source": "Bibsys"
+                  "id": "partOf"
                 });
               }
               break;
@@ -368,8 +343,7 @@ var profile = {
               if ( v ) {
                 suggestions.push({
                   "value": v,
-                  "id": "subject",
-                  "source": "Bibsys"
+                  "id": "subject"
                 });
               }
               break;
@@ -382,8 +356,7 @@ var profile = {
                 }
                 suggestions.push({
                   "value": v,
-                  "id": "creators",
-                  "source": "Bibsys"
+                  "id": "creators"
                 });
               }
               break;
@@ -393,7 +366,7 @@ var profile = {
       }
     },
     {
-      "source": "OpenLibrary",
+      "source": "Open Library",
       "genRequest": function( values ) {
         return cleanString( values.isbn13[0].value );
       },
@@ -413,24 +386,21 @@ var profile = {
         if ( parseInt ( book.number_of_pages ) ) {
           values.push({
             "value": '' + parseInt( book.number_of_pages ),
-            "predicate": "<http://purl.org/ontology/bibo/numPages>",
-            "source": "Open Library"
+            "predicate": "<http://purl.org/ontology/bibo/numPages>"
           });
         }
 
         if ( parseInt( book.publish_date ) ) {
           values.push({
             "value": '' + parseInt( book.publish_date ),
-            "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>",
-            "source": "Open Library"
+            "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>"
           });
         }
 
         if ( book.title ) {
           values.push({
             "value": '"' + book.title + '"',
-            "predicate": "<http://purl.org/dc/terms/title>",
-            "source": "Open Library"
+            "predicate": "<http://purl.org/dc/terms/title>"
           });
         }
 
@@ -438,7 +408,6 @@ var profile = {
           book.authors.forEach(function(author) {
             suggestions.push({
               "value": author.name,
-              "source": "Open Library",
               "id": "creators"
             });
           });
@@ -448,7 +417,6 @@ var profile = {
           book.publish_places.forEach(function( place ) {
             suggestions.push({
               "value": place.name,
-              "source": "Open Library",
               "id": "pubPlace"
             });
           });
@@ -458,7 +426,6 @@ var profile = {
           book.publishers.forEach(function( issuer ) {
             suggestions.push({
               "value": issuer.name,
-              "source": "Open Library",
               "id": "issuer"
             });
           });
@@ -469,7 +436,7 @@ var profile = {
       }
     },
     {
-      "source": "GoogleBooks",
+      "source": "Google Books",
       "genRequest": function( values ) {
         return cleanString( values.isbn13[0].value );
       },
@@ -488,16 +455,14 @@ var profile = {
         if ( book.title ) {
           values.push({
             "value": '"' + book.title + '"',
-            "predicate": "<http://purl.org/dc/terms/title>",
-             "source": "Google Books"
+            "predicate": "<http://purl.org/dc/terms/title>"
           });
         }
 
         if ( book.publishedDate ) {
           values.push({
             "value": '' + parseInt( book.publishedDate ),
-            "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>",
-            "source": "Google Books"
+            "predicate": "<http://purl.org/spar/fabio/hasPublicationYear>"
           });
         }
 
@@ -505,7 +470,6 @@ var profile = {
           values.push({
             "value": '' + parseInt( book.pageCount ),
             "predicate": "<http://purl.org/ontology/bibo/numPages>",
-            "source": "Google Books"
           });
         }
 
@@ -513,14 +477,12 @@ var profile = {
           values.push({
             "value": '"' + book.description + '"@en',
             "predicate": "<http://purl.org/dc/terms/description>",
-            "source": "Google Books"
           });
         }
 
         book.authors.forEach(function( author ) {
           suggestions.push({
             "value": author,
-            "source": "Google Books",
             "id": "creators"
           });
         });

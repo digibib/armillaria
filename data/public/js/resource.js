@@ -210,6 +210,7 @@ listener = ractive.on({
 
           // 1. populate values
           v.forEach( function( val ) {
+            val.source = source.source;
             var kp = findElement( val.predicate );
             if ( kp ) {
               val.predicateLabel = ractive.get(kp).label;
@@ -242,6 +243,7 @@ listener = ractive.on({
 
           // 2.populate suggestions
           s.forEach( function( sug ) {
+            sug.source = source.source;
             var kp = findElementById( sug.id );
             if ( kp ) {
               // Check if suggestion allready exists:

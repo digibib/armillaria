@@ -17,7 +17,7 @@
       "Endpoint": "http://data.deichman.no/sparql",
       "Type": "SPARQL"
     },
-    "bibsentralen": {
+    "BS": {
       "Endpoint": "http://z39proxy:8080?apikey=yourapikey&base=bibbi&isbn=%s",
       "Type": "GET"
     },
@@ -25,11 +25,11 @@
       "Endpoint": "http://api.geonames.org/getJSON?geonameId=%v&username=yourusername&style=full",
       "Type": "GET"
     },
-    "OpenLibrary": {
+    "Open Library": {
       "Endpoint": "https://openlibrary.org/api/books?bibkeys=ISBN:%v&format=json&jscmd=data",
       "Type": "GET"
     },
-    "GoogleBooks": {
+    "Google Books": {
       "Endpoint": "https://www.googleapis.com/books/v1/volumes?q=isbn:%v",
       "Type": "GET"
     },
