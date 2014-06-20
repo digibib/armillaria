@@ -158,6 +158,10 @@ textarea {
   display: none;
 }
 
+.wait {
+  cursor: wait !important;
+}
+
 .monospace { font-family: monospace }
 
 .textRight { text-align: right}

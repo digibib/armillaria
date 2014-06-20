@@ -6,6 +6,7 @@ var common = {
     {"label": "norsk (nynorsk)", "value": "nn-no"},
     {"label": "engelsk", "value": "en"}
   ],
+  "externalQueriesPending": 0,
   "logLines": [],
   "defaultLang": "nb-no",
   "internalNamespace": "armillaria://internal/",

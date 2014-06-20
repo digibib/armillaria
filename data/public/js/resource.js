@@ -20,6 +20,23 @@ var firstLoad = true;
 
 // utility functions  --------------------------------------------------------
 
+var addClass = function( el, className ) {
+  if (el.classList) {
+    el.classList.add(className);
+  }  else {
+    el.className += ' ' + className;
+  }
+
+}
+
+var removeClass = function( el, className ) {
+  if (el.classList) {
+    el.classList.remove(className);
+  } else {
+    el.className = el.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+  }
+}
+
 // log adds a line to the logLines div
 var log = function( msg, isError ) {
   var now = new Date().toISOString().slice(11, 19);
@@ -197,11 +214,23 @@ listener = ractive.on({
       req.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
 
       req.onerror = function( event ) {
+        // decrement pending counter
+        ractive.subtract( 'externalQueriesPending' );
+        if ( ractive.get( 'externalQueriesPending') == 0 ) {
+          removeClass( document.body, 'wait' );
+        }
+
         console.log( event );
         log( "Failed to send external query to server", true);
       }
 
       req.onload = function( event ) {
+        // decrement pending counter
+        ractive.subtract( 'externalQueriesPending' );
+        if ( ractive.get( 'externalQueriesPending') == 0 ) {
+          removeClass( document.body, 'wait' );
+        }
+
         if ( req.status >= 200 && req.status < 400  ) {
           var parsedResponse = source.parseRequest( req.responseText );
           var v = parsedResponse[0]; // values
@@ -269,7 +298,15 @@ listener = ractive.on({
           log( source.source + ': Failed: "' + event.target.responseText + '"', true);
         }
       }
+
       req.send( "query=" + encodeURIComponent(q) );
+
+      // inc pending counter
+      ractive.add( 'externalQueriesPending' );
+
+      // show waiting cursor
+      addClass( document.body, 'wait' );
+
       log( source.source + ": Query sendt.", false);
     });
   },
