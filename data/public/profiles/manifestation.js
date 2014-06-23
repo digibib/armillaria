@@ -196,6 +196,68 @@ var profile = {
       }
     },
     {
+      "source": "OCLC",
+      "genRequest": function( values ) {
+        return cleanString( values.isbn13[0].value );
+      },
+      "parseRequest": function( response ) {
+        // http://classify.oclc.org/classify2/api_docs/classify.html#examples
+        var parser = new DOMParser();
+        var xml = parser.parseFromString( response, "text/xml")
+        var root = xml.documentElement.nodeName;
+
+        // return on xml parse error
+        if ( root  === "parseerror" || root === "error while parsing" ) {
+          return [[],[]];
+        }
+
+        if ( xml.getElementsByTagName("response")[0].getAttribute("code") != "0" ) {
+          // Currently we only want single-work responses.
+          // 0:	Success. Single-work summary response provided.
+          // 2:	Success. Single-work detail response provided.
+          // 4:	Success. Multi-work response provided.
+          return [[],[]];
+        }
+
+        var values = [];
+        var suggestions = [];
+
+        // Title
+        var title = xml.getElementsByTagName("work")[0].getAttribute("title");
+        if ( title ) {
+          values.push({
+            "value": '"' + title + '"',
+            "predicate": "<http://purl.org/dc/terms/title>"
+          });
+        }
+
+        // Authors
+        for (var i=0; i<xml.getElementsByTagName("author").length; i++) {
+          var author = xml.getElementsByTagName("author")[i];
+          var v = author.firstChild.nodeValue;
+          if ( author.getAttribute("viaf") ) {
+            v = v + ' (viaf: ' + author.getAttribute("viaf") + ')';
+          }
+          suggestions.push({
+            "value": v,
+            "id": "creators"
+          })
+        }
+
+        // Most popular classification
+        // TODO what is the difference sfa/nsfa
+        var mp = xml.getElementsByTagName("ddc")[0].getElementsByTagName("mostPopular")[0];
+        if ( mp ) {
+          suggestions.push({
+            "value": mp.getAttribute("sfa"),
+            "id": "class"
+          });
+        }
+
+        return [values, suggestions]
+      }
+    },
+    {
       "source": "LOC",
       "genRequest": function( values ) {
         return cleanString( values.isbn13[0].value );

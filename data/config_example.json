@@ -40,6 +40,10 @@
     "Bibsys": {
       "Endpoint": "http://sru.bibsys.no/search/biblio?version=1.2&operation=searchRetrieve&startRecord=1&maximumRecords=1&query=isbn=&v&recordSchema=marcxchange",
       "Type": "GET"
+    },
+    "OCLC": {
+      "Endpoint": "http://classify.oclc.org/classify2/Classify?isbn=%v&summary=true",
+      "Type": "GET"
     }
   }
 }
