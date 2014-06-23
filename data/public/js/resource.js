@@ -201,6 +201,52 @@ var removeFromIndex = function( uri) {
   enqueue( "remove", uri );
 }
 
+// searchES queries ElasticSearch for URIs with searchLabel q
+var searchES = _.debounce( function( q, kp) {
+  // Trim whitespace from the query string.
+  q = q.trim();
+  // Return if empty string
+  if (q === "") {
+    ractive.set( kp + ".searching", false);
+    return;
+  }
+
+  var searchTypes = ractive.get( kp + '.searchTypes' ).join(',');
+  var searchQuery = { "query": { "filtered": { "query": {}, "filter": { "bool": {"must_not": [{"missing": {"field": "published"}}]}}} } };
+  if ( q.length == 1 ) {
+    // Do a prefix query if query string is only one character
+    searchQuery.query.filtered.query.prefix = { "searchLabel": q };
+  } else {
+    // Otherwise normal match query (matches ngram size 2-20)
+    searchQuery.query.filtered.query.match = { "searchLabel": { "query": q, "operator": "and" } };
+  }
+  // filter the current URI if we're editing a resource
+  if ( ractive.get( 'existingResource' ) ) {
+    searchQuery.query.filtered.filter.bool.must_not.push( {"ids": {"values": [trimURI( ractive.get( 'overview.uri' ) )]}} );
+  }
+  var queryData = JSON.stringify( searchQuery );
+  var req = new XMLHttpRequest();
+  req.open( 'POST', '/search/public/'+ searchTypes, true) ;
+  req.setRequestHeader( 'Content-Type', 'application/json; charset=UTF-8' );
+
+  req.onerror = function( e ) {
+    console.log( "failed to reach search endoint: " + e.target.status );
+  }
+
+  req.onload = function( e) {
+    //console.log( e.target.responseText );
+    var qRes = JSON.parse( e.target.responseText );
+    ractive.set( 'searchResults', qRes.hits.hits );
+    ractive.set( 'searchSummary', qRes.hits.total + ' treff (' + qRes.took + ' ms)' );
+  }
+
+  req.send( queryData );
+
+  ractive.merge( kp + ".searching", true);
+  ractive.merge( kp + ".selectedResult", 0); // reset
+
+}, 100); // debounce 100 ms
+
 
 // event handlers ------------------------------------------------------------
 
@@ -467,51 +513,8 @@ listener = ractive.on({
       }
     }
 
-    _.debounce( function( event) {
-      // Trim whitespace from the query string.
-      var q = event.node.value.trim();
-      // Return if empty string
-      if (q === "") {
-        ractive.set( event.keypath + ".searching", false);
-        return;
-      }
+    searchES( event.node.value, event.keypath );
 
-      // TODO move query creation out to a function
-      var searchTypes = ractive.get( event.keypath + '.searchTypes' ).join(',');
-      var searchQuery = { "query": { "filtered": { "query": {}, "filter": { "bool": {"must_not": [{"missing": {"field": "published"}}]}}} } };
-      if ( q.length == 1 ) {
-        // Do a prefix query if query string is only one character
-        searchQuery.query.filtered.query.prefix = { "searchLabel": q };
-      } else {
-        // Otherwise normal match query (matches ngram size 2-20)
-        searchQuery.query.filtered.query.match = { "searchLabel": { "query": q, "operator": "and" } };
-      }
-      // filter the current URI if we're editing a resource
-      if ( ractive.get( 'existingResource' ) ) {
-        searchQuery.query.filtered.filter.bool.must_not.push( {"ids": {"values": [trimURI( ractive.get( 'overview.uri' ) )]}} );
-      }
-      var queryData = JSON.stringify( searchQuery );
-      var req = new XMLHttpRequest();
-      req.open( 'POST', '/search/public/'+ searchTypes, true) ;
-      req.setRequestHeader( 'Content-Type', 'application/json; charset=UTF-8' );
-
-      req.onerror = function( e ) {
-        console.log( "failed to reach search endoint: " + e.target.status );
-      }
-
-      req.onload = function( e) {
-        //console.log( e.target.responseText );
-        var qRes = JSON.parse( e.target.responseText );
-        ractive.set( 'searchResults', qRes.hits.hits );
-        ractive.set( 'searchSummary', qRes.hits.total + ' treff (' + qRes.took + ' ms)' );
-      }
-
-      req.send( queryData );
-
-      ractive.merge( event.keypath + ".searching", true);
-      ractive.merge( event.keypath + ".selectedResult", 0); // reset
-
-    }, 100)(event);
   },
   selectURI: function( event ) {
     var label, uri, predicate, predicateLabel, source;
@@ -545,16 +548,8 @@ listener = ractive.on({
         input.focus();
       }, 10);
 
-      // fire a keyup event, so that search is triggered
-      var e = new KeyboardEvent("keyup", {
-        bubbles : false,
-        cancelable : true,
-        char : "",
-        key : "",
-        shiftKey : false,
-        keyCode : 39
-      });
-      input.dispatchEvent(e);
+      var idx = event.index;
+      searchES( event.context.value, 'views.' + idx.i1 + '.elements.' + idx.i2 );
     }
   },
   selectOption: function( event ) {
