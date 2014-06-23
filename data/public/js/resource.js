@@ -536,6 +536,27 @@ listener = ractive.on({
     }
 
   },
+  searchSuggestion: function( event ) {
+    var input = event.node.parentElement.parentElement.querySelector('input');
+    if ( input ) {
+
+      setTimeout( function( ) {
+        input.value = event.context.value;
+        input.focus();
+      }, 10);
+
+      // fire a keyup event, so that search is triggered
+      var e = new KeyboardEvent("keyup", {
+        bubbles : false,
+        cancelable : true,
+        char : "",
+        key : "",
+        shiftKey : false,
+        keyCode : 39
+      });
+      input.dispatchEvent(e);
+    }
+  },
   selectOption: function( event ) {
     var v = event.node.value;
     selected = _.find( ractive.get( event.keypath + '.options' ), function( o ) {

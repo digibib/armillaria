@@ -352,8 +352,10 @@ select[disabled=disabled] {
 
 .hitLabel {
   display: inline-block;
-  min-width: 20em;
+  word-wrap: break-word;
+  width: 20em;
 }
+
 .hitLabel:hover {
   text-decoration: underline;
 }
@@ -394,6 +396,7 @@ select[disabled=disabled] {
   border-radius: 3px;
   padding: 0.3em;
   word-wrap: break-word;
+  cursor: pointer;
 }
 
 .suggestion:hover {

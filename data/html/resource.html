@@ -169,7 +169,7 @@
 						</div>
 						<div class="suggestions column third monospace">
 							{{#suggestions}}
-								<div class="suggestion">{{value}}{{#source}} <span class="sugsource tinyText">{{source}}</span>{{/}}</div>
+								<div on-click="searchSuggestion" class="suggestion">{{value}}{{#source}} <span class="sugsource tinyText" >{{source}}</span>{{/}}</div>
 							{{/suggestions}}
 						</div>
 					</div>
