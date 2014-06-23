@@ -42,7 +42,7 @@
       "Type": "GET"
     },
     "OCLC": {
-      "Endpoint": "http://classify.oclc.org/classify2/Classify?isbn=%v&summary=true",
+      "Endpoint": "http://classify.oclc.org/classify2/Classify?isbn=%v",
       "Type": "GET"
     }
   }

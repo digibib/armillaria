@@ -211,7 +211,7 @@ var profile = {
           return [[],[]];
         }
 
-        if ( xml.getElementsByTagName("response")[0].getAttribute("code") != "0" ) {
+        if ( xml.getElementsByTagName("response")[0].getAttribute("code") != "2" ) {
           // Currently we only want single-work responses.
           // 0:	Success. Single-work summary response provided.
           // 2:	Success. Single-work detail response provided.
@@ -253,6 +253,20 @@ var profile = {
             "id": "class"
           });
         }
+
+        // Headings (subjects) with fast identificators
+        for (var i=0; i<xml.getElementsByTagName("heading").length; i++) {
+          var subject = xml.getElementsByTagName("heading")[i];
+          var v = subject.firstChild.nodeValue;
+          if ( subject.getAttribute("ident") ) {
+            v = v + ' (fast: fst' + subject.getAttribute("ident") + ')';
+          }
+          suggestions.push({
+            "value": v,
+            "id": "subject"
+          });
+        }
+
 
         return [values, suggestions]
       }
