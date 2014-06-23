@@ -484,7 +484,7 @@ listener = ractive.on({
         searchQuery.query.filtered.query.prefix = { "searchLabel": q };
       } else {
         // Otherwise normal match query (matches ngram size 2-20)
-        searchQuery.query.filtered.query.match = { "searchLabel": q };
+        searchQuery.query.filtered.query.match = { "searchLabel": { "query": q, "operator": "and" } };
       }
       // filter the current URI if we're editing a resource
       if ( ractive.get( 'existingResource' ) ) {
