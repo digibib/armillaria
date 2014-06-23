@@ -542,9 +542,14 @@ listener = ractive.on({
   searchSuggestion: function( event ) {
     var input = event.node.parentElement.parentElement.querySelector('input');
     if ( input ) {
-
+      var v = event.context.value;
+      if ( v.match(/^(.*)\((.*\))$/) ) {
+        // Strip pharentehes with identificator info, we don't want it
+        // to be part of search query
+        v = v.match(/^(.*)\((.*\))$/)[1];
+      }
       setTimeout( function( ) {
-        input.value = event.context.value;
+        input.value = v.trim();
         input.focus();
       }, 10);
 
