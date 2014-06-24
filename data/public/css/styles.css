@@ -7,7 +7,7 @@
 }
 
 html {
-  font: 100%/1.5 serif;
+  font: 100%/1.5 Arial, sans-serif;
   font-weight: 400;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -82,9 +82,10 @@ h1, h2, h3, h4, h5 {
 }
 
 h5 {
-  margin:0.5em 0 0 0;
-  letter-spacing: 1px;
-  border-top: 1px solid #eee;
+  padding: 0;
+  color: #222;
+  margin:0 0;
+
 }
 
 a:link, a:visited {
@@ -99,10 +100,12 @@ label {
 input, select {
   font-family: monospace;
   font-size:90%;
+  height: 1.5em;
+  margin: 0.5em 0;
 }
 
 input[type=text],input[type=search] {
-  width: 100%;
+  width: 50%;
   border: 1px solid #aaa;
 }
 
@@ -114,6 +117,7 @@ input[type=search] {
   background: url('/public/img/search.png') no-repeat;
   padding-left: 20px;
   background-position:4px 5px;
+  box-sizing: border-box;
 }
 
 textarea {
@@ -212,7 +216,6 @@ textarea {
   top: 1em;
   left: 1em;
   width: 22%;
-  font-family: monospace;
 }
 
 .resourceMenu button {
@@ -271,7 +274,7 @@ select[disabled=disabled] {
 .resourceValues {
   margin:0;
   font-family: monospace;
-  font-size: 90%;
+  font-size: 85%;
 }
 
 
@@ -293,20 +296,15 @@ select[disabled=disabled] {
   border-radius: 2px;
 }
 
-.valSelect, .resourceData input {
-    width: 22em;
-}
-
 .smallButton {
   font-size:12px;
 }
 
 .propertyDesc {
-  font-size:70%;
+  font-size:60%;
   font-weight: 100;
   color: #666;
 }
-.propertyDesc:before {content: '/ '}
 
 .removeProperty {
   display: inline-block;

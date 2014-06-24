@@ -97,8 +97,8 @@
 							<h5 class="relative">{{label}}
 								{{#required}}<span class="indicator2 red">*</span>{{/}}
 								{{#generated}}<span class="indicator2 grey">a</span>{{/}}
-								<span class="propertyDesc">{{desc}}</span>
 							</h5>
+							<div class="propertyDesc">{{desc}}</div>
 
 							<div class="column two-thirds">
 							{{^ generated}}
@@ -212,6 +212,7 @@
 
 				<!-- {{>floatInput}} -->
 						<input id="{{id}}"
+							type="text"
 						  value='{{currentValue}}'
 							on-enter='validateFloat'
 							disabled={{# repeatable == false && values}}true{{/}}
@@ -221,6 +222,7 @@
 
 				<!-- {{>integerInput}} -->
 						<input id="{{id}}"
+						  type="text"
 						  value={{currentValue}}
 							on-enter='validateInteger'
 							disabled={{# repeatable == false && values}}true{{/}}
@@ -230,6 +232,7 @@
 
 				<!-- {{>gYearInput}} -->
 						<input id="{{id}}"
+						  type="text"
 						  value={{currentValue}}
 							on-enter='validateGYear'
 							disabled={{# repeatable == false && values}}true{{/}}
@@ -239,6 +242,7 @@
 
 				<!-- {{>langStringInput}} -->
 						<input id="{{id}}"
+							type="text"
 						  value={{currentValue}}
 							on-enter='validateLangString'
 							disabled={{# repeatable == false && values}}true{{/}}
@@ -253,6 +257,7 @@
 
 				<!-- {{>stringInput}} -->
 						<input id="{{id}}"
+						  type="text"
 						  value={{currentValue}}
 							on-enter='validateString'
 							disabled={{# repeatable == false && values}}true{{/}}
