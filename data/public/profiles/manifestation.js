@@ -703,7 +703,7 @@ var profile = {
           "id": "title",
           "label": "Tittel",
           "desc": "",
-          "required": true,
+          "required": false,
           "repeatable": false,
           "predicate": "<http://purl.org/dc/terms/title>",
           "type": "langString"
@@ -730,7 +730,7 @@ var profile = {
           "id": "edition",
           "label": "Utgave",
           "desc": "",
-          "required": true,
+          "required": false,
           "repeatable": false,
           "predicate": "<http://purl.org/ontology/bibo/edition>",
           "type": "integer"
@@ -768,7 +768,7 @@ var profile = {
           "id": "lang",
           "label": "Språk",
           "desc": "",
-          "required": true,
+          "required": false,
           "repeatable": true,
           "predicate": "<http://purl.org/dc/terms/language>",
           "type": "URI",
@@ -777,8 +777,7 @@ var profile = {
         {
           "id": "notation",
           "label": "Skriftsystem",
-          "desc": "Er dette det samme som alfabet?",
-          "required": true,
+          "required": false,
           "repeatable": true,
           "predicate": "<http://www.ifomis.org/bfo/1.0#notation>",
           "type": "URI",
