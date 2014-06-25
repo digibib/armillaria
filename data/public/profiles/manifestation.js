@@ -77,6 +77,15 @@ var profile = {
                 "id": "creators",
               });
               break
+            case "240": // originaltittel
+              var v = getSubfield( dataField, "a");
+              if ( v ) {
+                suggestions.push({
+                  "value": v,
+                  "id": "work"
+                });
+              }
+              break;
             case "245": // title
               var v = getSubfield( dataField, "a");
               if ( v ) {
