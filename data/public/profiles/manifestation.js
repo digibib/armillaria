@@ -890,7 +890,7 @@ var profile = {
           "id": "work",
           "label": "Verk",
           "desc": "Dette er en manifestasjon av følgende verk",
-          "required": true,
+          "required": false,
           "repeatable": true,
           "predicate": "<http://purl.org/spar/fabio/isManifestationOf>",
           "type": "URI",
