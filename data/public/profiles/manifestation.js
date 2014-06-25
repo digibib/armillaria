@@ -879,7 +879,23 @@ var profile = {
           "repeatable": true,
           "predicate": "<http://purl.org/dc/terms/abstract>",
           "type": "text"
-        }
+        },
+        {
+          "id": "picture",
+          "label": "Omslagsbilde",
+          "required": false,
+          "repeatable": true,
+          "predicate": "<http://xmlns.com/foaf/0.1/depiction>",
+          "type": "URL"
+        },
+        {
+          "id": "elversion",
+          "label": "Elektronisk utgave",
+          "required": false,
+          "repeatable": true,
+          "predicate": "<http://purl.org/spar/fabio/hasURL>",
+          "type": "URL"
+        },
       ]
     },
     {

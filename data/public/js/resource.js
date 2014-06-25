@@ -676,6 +676,24 @@ listener = ractive.on({
 
     ractive.fire("newValue", event);
   },
+  validateURL: function( event ) {
+    // no action on empty input
+    var url = event.node.value.trim();
+    if ( url === "" ) { return }
+
+    // validate URL
+    if ( !isURL( url ) ) {
+      ractive.merge( event.keypath + ".errorInfo",
+                    "ugyldig URL" );
+      setTimeout( function () {
+        event.node.focus();
+      }, 0 );
+      return;
+    }
+
+    event.node.value = '<' + url + '>';
+    ractive.fire( 'newValue', event );
+  },
   addText: function( event ) {
     var value, lang, pred;
     var idx = event.index;

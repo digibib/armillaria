@@ -107,6 +107,10 @@
 									{{>URIInput}}
 								{{/}}
 
+								{{# type === 'URL' }}
+									{{>URLInput}}
+								{{/}}
+
 								{{# type === 'float'}}
 									{{>floatInput}}
 								{{/}}
@@ -209,6 +213,14 @@
 						</div>
 					{{/}}
 				<!-- {{/URIInput}} -->
+
+				<!-- {{>URLInput}} -->
+						<input id="{{id}}"
+						  type="text"
+						  value={{currentValue}}
+							on-enter='validateURL'/>
+								<span class="errorInfo">{{errorInfo}}</span>
+				<!-- {{/URLInput}} -->
 
 				<!-- {{>floatInput}} -->
 						<input id="{{id}}"

@@ -33,6 +33,10 @@ var common = {
   }
 };
 
+var isURL = function( s ) {
+  return /(http|ftp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?/.test(s);
+};
+
 var cleanString = function(s) {
   var m = s.match(/"(.)+"/);
   if ( m ) {
