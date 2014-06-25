@@ -589,8 +589,13 @@ listener = ractive.on({
       ractive.set( kp + '.selectedLang', langTag[1] );
     }
 
+    // remove < > from URLs
+    if ( ractive.get( kp ).type === "URL" ) {
+      v = v.match(/^<(.*)>$/)[1];
+    }
+
     // put value in input field
-    ractive.set( kp + ".currentValue", cleanString( event.context.value ).replace(/\<br\/\>/g, "\n") );
+    ractive.set( kp + ".currentValue", cleanString( v ).replace(/\<br\/\>/g, "\n") );
 
     // set focus on input field
     setTimeout(function() {
