@@ -214,9 +214,7 @@
 						<input id="{{id}}"
 							type="text"
 						  value='{{currentValue}}'
-							on-enter='validateFloat'
-							disabled={{# repeatable == false && values}}true{{/}}
-							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
+							on-enter='validateFloat'/>
 							<span class="errorInfo">{{errorInfo}}</span>
 				<!-- {{/floatInput}} -->
 
@@ -224,9 +222,7 @@
 						<input id="{{id}}"
 						  type="text"
 						  value={{currentValue}}
-							on-enter='validateInteger'
-							disabled={{# repeatable == false && values}}true{{/}}
-							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
+							on-enter='validateInteger'/>
 							<span class="errorInfo">{{errorInfo}}</span>
 				<!-- {{/integerInput}} -->
 
@@ -234,9 +230,7 @@
 						<input id="{{id}}"
 						  type="text"
 						  value={{currentValue}}
-							on-enter='validateGYear'
-							disabled={{# repeatable == false && values}}true{{/}}
-							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
+							on-enter='validateGYear'/>
 							<span class="errorInfo">{{errorInfo}}</span>
 				<!-- {{/gYearInput}} -->
 
@@ -244,9 +238,7 @@
 						<input id="{{id}}"
 							type="text"
 						  value={{currentValue}}
-							on-enter='validateLangString'
-							disabled={{# repeatable == false && values}}true{{/}}
-							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
+							on-enter='validateLangString'/>
 							<span class="errorInfo">{{errorInfo}}</span>
 							<select class="langTagSelect" value={{.selectedLang}}>
 								{{#languages}}
@@ -259,18 +251,15 @@
 						<input id="{{id}}"
 						  type="text"
 						  value={{currentValue}}
-							on-enter='validateString'
-							disabled={{# repeatable == false && values}}true{{/}}
-							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
+							on-enter='validateString'/>
 							<span class="errorInfo">{{errorInfo}}</span>
 				<!-- {{/stringInput}} -->
+
 
 				<!-- {{>textInput}} -->
 						<textarea id="{{id}}"
 						  value={{currentValue}}
-							rows='2'
-							disabled={{# repeatable == false && values}}true{{/}}
-							placeholder="{{# repeatable == false && values}}kun én verdi tillatt{{/}}"/>
+							rows='2'/>
 							<br/><select class="langTagSelect" value={{.selectedLang}}>
 								{{#languages}}
 									<option value={{value}}>{{label}}</option>
@@ -290,7 +279,6 @@
 				<!-- {{/selectMustInput}} -->
 				<!-- {{>selectInput}} -->
 						<select
-							disabled={{# repeatable == false && values}}true{{/}}
 							class="valSelect" value={{.selected}}>
 							{{# options}}
 								<option value={{value}}>{{URILabel || value}}</option>
