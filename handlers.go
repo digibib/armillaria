@@ -105,18 +105,19 @@ func queryExternalSource(w http.ResponseWriter, r *http.Request, values httprout
 		}
 		form := url.Values{}
 		form.Set("query", q)
-		form.Set("format", "json") // application/sparql-results+json
 		b := form.Encode()
 
 		req, err := http.NewRequest(
 			"POST",
 			source.Endpoint,
 			bytes.NewBufferString(b))
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		req.Header.Set("Accept", "application/sparql-results+json")
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		req.Header.Set("Content-Length", strconv.Itoa(len(b)))
 
