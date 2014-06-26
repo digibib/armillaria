@@ -610,6 +610,8 @@ listener = ractive.on({
     // select language tag if we have one
     if ( langTag ) {
       ractive.set( kp + '.selectedLang', langTag[1] );
+    } else {
+      ractive.set( kp + '.selectedLang', "" );
     }
 
     // remove < > from URLs
