@@ -10,7 +10,7 @@
     }
   },
   "<http://purl.org/ontology/bibo/isbn13>": {
-    "isbn10": {
+    "isbn13": {
       "type": "string"
     }
   },

@@ -1,11 +1,6 @@
 {
-    "<http://xmlns.com/foaf/0.1/givenName>": {
-        "firstname": {
-            "type": "string"
-        }
-    },
-    "<http://xmlns.com/foaf/0.1/familyName>": {
-        "familyname": {
+    "<http://xmlns.com/foaf/0.1/name>": {
+        "name": {
             "type": "string"
         }
     },
