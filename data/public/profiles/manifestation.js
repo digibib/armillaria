@@ -682,15 +682,6 @@ var profile = {
       "desc": "",
       "elements": [
         {
-          "id": "tnr",
-          "label": "Tittelnummer",
-          "desc": "",
-          "required": true,
-          "repeatable": false,
-          "predicate": "<http://purl.org/ontology/bibo/number>",
-          "type": "integer"
-        },
-        {
           "id": "isbn",
           "label": "ISBN",
           "desc": "ISBN-10 eller ISBN-13",
