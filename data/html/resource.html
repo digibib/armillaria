@@ -132,6 +132,10 @@
 									{{>stringInput}}
 								{{/}}
 
+								{{# type == 'isbn' }}
+									{{>isbnInput}}
+								{{/}}
+
 								{{# type == 'text'}}
 									{{>textInput}}
 								{{/}}
@@ -266,6 +270,14 @@
 							on-enter='validateString'/>
 							<span class="errorInfo">{{errorInfo}}</span>
 				<!-- {{/stringInput}} -->
+
+				<!-- {{>isbnInput}} -->
+						<input id="{{id}}"
+						  type="text"
+						  value={{currentValue}}
+							on-enter='validateISBN'/>
+							<span class="errorInfo">{{errorInfo}}</span>
+				<!-- {{/isbnInput}} -->
 
 
 				<!-- {{>textInput}} -->

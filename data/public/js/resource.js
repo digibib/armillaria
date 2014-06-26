@@ -68,6 +68,14 @@ var findElement = function(pred) {
           }
         });
       }
+      // find path of inferred predicates
+      if ( e.predicateInferred ) {
+        e.predicateOptions.forEach(function ( p ) {
+          if ( p === pred) {
+            kp = "views."+i+".elements."+j;
+          }
+        });
+      }
     });
   });
   return kp;
@@ -434,7 +442,11 @@ listener = ractive.on({
     var value, predicate, predicateLabel, source;
 
     value = event.node.value.trim();
-    predicate = event.context.predicate;
+    if ( event.context.predicateInferred ) {
+      predicate = event.context.predicateFn( value );
+    } else {
+      predicate = event.context.predicate;
+    }
     predicateLabel = event.context.label;
     source = 'local';
 
@@ -677,6 +689,24 @@ listener = ractive.on({
     // add xsd:gYear datatype
     event.node.value = '"' + event.node.value + '"^^xsd:gYear';
 
+    ractive.fire( "newValue", event );
+  },
+  validateISBN: function( event ) {
+    if ( event.node.value.trim() === "" ) {
+      return
+    }
+
+    // validate ISBN
+    if ( !isValidISBN( event.node.value ) ) {
+      ractive.merge( event.keypath + ".errorInfo",
+                    "ugyldig ISBN-nummer" );
+      setTimeout( function () {
+        event.node.focus();
+      }, 0 );
+      return;
+    }
+
+    event.node.value = '"' + event.node.value + '"';
     ractive.fire( "newValue", event );
   },
   validateString: function( event ) {
@@ -1002,6 +1032,10 @@ if ( urlParams.uri ) {
                   predLabel = predSelect.options[i].innerHTML;
                 }
               }
+            }
+            // If predicate is inferred from value:
+            if ( ractive.get( kp ).predicateInferred ) {
+              pred = ractive.get( kp ).predicateFn( v );
             }
             var res = {"predicate": pred, "predicateLabel": predLabel, "value": v, "source": source}
             if ( uriLabels[v] ) {

@@ -4,12 +4,12 @@ var profile = {
     "desc": "En manifestasjon av et litterært verk",
     "type": ["<http://purl.org/spar/fabio/Manifestation>", "<http://purl.org/ontology/bibo/book>"]
   },
-  "externalRequired": ["isbn13"],
+  "externalRequired": ["isbn"],
   "externalSources": [
     {
       "source": "BS",
       "genRequest": function( values ) {
-        return cleanString( values.isbn13[0].value );
+        return cleanString( values.isbn[0].value );
       },
       "parseRequest": function( response ) {
         // parse the marcxml response
@@ -207,7 +207,7 @@ var profile = {
     {
       "source": "OCLC",
       "genRequest": function( values ) {
-        return cleanString( values.isbn13[0].value );
+        return cleanString( values.isbn[0].value );
       },
       "parseRequest": function( response ) {
         // http://classify.oclc.org/classify2/api_docs/classify.html#examples
@@ -283,7 +283,7 @@ var profile = {
     {
       "source": "LOC",
       "genRequest": function( values ) {
-        return cleanString( values.isbn13[0].value );
+        return cleanString( values.isbn[0].value );
       },
       "parseRequest": function( response ) {
         // parse the marcxml response
@@ -383,7 +383,7 @@ var profile = {
     {
       "source": "Bibsys",
       "genRequest": function( values ) {
-        return cleanString( values.isbn13[0].value );
+        return cleanString( values.isbn[0].value );
       },
       "parseRequest": function( response ) {
         // parse the marcxml response
@@ -553,7 +553,7 @@ var profile = {
     {
       "source": "Open Library",
       "genRequest": function( values ) {
-        return cleanString( values.isbn13[0].value );
+        return cleanString( values.isbn[0].value );
       },
       "parseRequest": function( response ) {
         var data = JSON.parse(response);
@@ -623,7 +623,7 @@ var profile = {
     {
       "source": "Google Books",
       "genRequest": function( values ) {
-        return cleanString( values.isbn13[0].value );
+        return cleanString( values.isbn[0].value );
       },
       "parseRequest": function( response ) {
         var data = JSON.parse( response );
@@ -691,22 +691,26 @@ var profile = {
           "type": "integer"
         },
         {
-          "id": "isbn10",
-          "label": "ISBN10",
-          "desc": "",
+          "id": "isbn",
+          "label": "ISBN",
+          "desc": "ISBN-10 eller ISBN-13",
           "required": false,
           "repeatable": true,
-          "predicate": "<http://purl.org/ontology/bibo/isbn10>",
-          "type": "string"
-        },
-        {
-          "id": "isbn13",
-          "label": "ISBN13",
-          "desc": "",
-          "required": false,
-          "repeatable": true,
-          "predicate": "<http://purl.org/ontology/bibo/isbn13>",
-          "type": "string"
+          "predicateInferred": true,
+          "predicateOptions": ["<http://purl.org/ontology/bibo/isbn10>", "<http://purl.org/ontology/bibo/isbn13>"],
+          "predicateFn": function( value ) {
+            value = value.replace(/[- ]/g,'');
+            // We have to add 2 to length, becuase
+            // the value is surrounded by quotes
+            if ( value.length == 10 + 2 ) {
+              return "<http://purl.org/ontology/bibo/isbn10>";
+            }
+            if ( value.length == 13 + 2 ) {
+              return "<http://purl.org/ontology/bibo/isbn13>";
+            }
+            return false;
+          },
+          "type": "isbn"
         },
         {
           "id": "title",
@@ -1041,11 +1045,17 @@ var profile = {
     }
   ],
   "displayLabel": function( values ) {
-    var label = cleanString(values.title[0].value);
+    var label = "";
+    if ( values.title[0] ) {
+      label = cleanString(values.title[0].value);
+    }
     return '"' + label + '"';
   },
   "searchLabel": function( values ) {
-    var label = cleanString(values.title[0].value);
+    var label = "";
+    if ( values.title[0] ) {
+      label = cleanString(values.title[0].value);
+    }
     return '"' + label + '"';
   },
   "rules": [

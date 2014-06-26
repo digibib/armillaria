@@ -37,6 +37,37 @@ var isURL = function( s ) {
   return /(http|ftp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?/.test(s);
 };
 
+var isValidISBN = function( value ) {
+  // lifted from dojo toolkit (BSD)
+
+  var len, sum = 0, weight;
+  value = value.replace(/[- ]/g,''); //ignore dashes and whitespaces
+  len = value.length;
+
+  switch(len){
+    case 10:
+      weight = len;
+      // ISBN-10 validation algorithm
+      for(var i = 0; i < 9; i++){
+        sum += parseInt(value.charAt(i)) * weight;
+        weight--;
+      }
+      var t = value.charAt(9).toUpperCase();
+      sum += t == 'X' ? 10 : parseInt(t);
+      return sum % 11 == 0; // Boolean
+      break;
+    case 13:
+      weight = -1;
+      for(var i = 0; i< len; i++){
+        sum += parseInt(value.charAt(i)) * (2 + weight);
+        weight *= -1;
+      }
+      return sum % 10 == 0; // Boolean
+      break;
+  }
+  return false;
+};
+
 var cleanString = function(s) {
   var m = s.match(/"(.)+"/);
   if ( m ) {
