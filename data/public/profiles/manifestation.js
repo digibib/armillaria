@@ -1,7 +1,7 @@
 var profile = {
   "overview": {
     "title": "Manifestasjon",
-    "desc": "En manifestasjon av et verk",
+    "desc": "En manifestasjon av et litterært verk",
     "type": ["<http://purl.org/spar/fabio/Manifestation>", "<http://purl.org/ontology/bibo/book>"]
   },
   "externalRequired": ["isbn13"],

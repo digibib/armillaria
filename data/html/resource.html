@@ -93,7 +93,7 @@
 						<h3>{{title}}</h3>
 						<p>{{desc}}</p>
 						{{#elements:i2}}
-						<div class="clearfix {{# hidden && values.length === 0}}hidden{{/hidden}}">
+						<div class="clearfix {{# ( hidden && values.length === 0 ) || ( dependsOn && values.length == 0 && !currentValue)}}hidden{{/hidden}}">
 							<h5 class="relative">{{label}}
 								{{#required}}<span class="indicator2 red">*</span>{{/}}
 								{{#generated}}<span class="indicator2 grey">a</span>{{/}}
