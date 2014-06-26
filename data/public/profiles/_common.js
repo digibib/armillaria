@@ -68,6 +68,20 @@ var isValidISBN = function( value ) {
   return false;
 };
 
+var convertISBN10To13 = function( isbn10 ) {
+  var chars = isbn10.split("");
+  chars.unshift( "9", "7", "8");
+  chars.pop();
+
+  var sum = 0;
+  for ( i=0; i < 12; i++) {
+    sum += chars[i] * ( (i % 2) ? 3 : 1);
+  }
+  chars.push( (10 - ( sum % 10 ) ) % 10 );
+  var isbn13 = chars.join("");
+  return isbn13;
+};
+
 var cleanString = function(s) {
   var m = s.match(/"(.)+"/);
   if ( m ) {

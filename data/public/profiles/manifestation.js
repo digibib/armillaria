@@ -1058,8 +1058,14 @@ var profile = {
     }
     return '"' + label + '"';
   },
-  "rules": [
-    "SPARQL ditt",
-    "SPARQL datt"
+  "generatedValues": [
+    function( values ) {
+      var isbn = values.isbn[0]
+      if ( isbn && isbn.predicate == "<http://purl.org/ontology/bibo/isbn10>" ) {
+        isbn = cleanString( isbn.value );
+        return '<http://purl.org/ontology/bibo/isbn13> "' + convertISBN10To13( isbn ) +'"';
+      }
+      return false;
+    }
   ]
 };

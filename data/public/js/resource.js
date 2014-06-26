@@ -149,6 +149,15 @@ var insertQuery = function( publish ) {
   if ( publish && !ractive.data.overview.published ) {
     meta.push( {'p': internalPred( 'published' ), 'o': dateFormat( now.toISOString() ) } );
   }
+  var generated = "";
+  if ( ractive.data.generatedValues ) {
+    ractive.data.generatedValues.forEach( function( g ) {
+      var gv = g(values);
+      if ( gv ) {
+        generated = generated + uri + ' ' + gv + " .\n";
+      }
+    });
+  }
   metaPreds = _.reduce(meta, function(s, e) {
     return s + uri + " " + e.p + " " + e.o + " .\n";
   }, "");
@@ -161,7 +170,7 @@ var insertQuery = function( publish ) {
     });
   });
   var graph = publish ? ractive.data.publicGraph : ractive.data.draftsGraph;
-  return 'INSERT { GRAPH ' + graph + ' {\n' + metaPreds + preds + '} }';
+  return 'INSERT { GRAPH ' + graph + ' {\n' + metaPreds + preds + generated + '} }';
 };
 
 // doQuery sends a SPARQL query the endpoint, and takes a success callback function.
