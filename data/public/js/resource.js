@@ -131,7 +131,7 @@ var insertQuery = function( publish ) {
     { 'p': internalPred( 'updated' ), 'o': dateFormat( now.toISOString() ) }
   ];
   for (var i=0; i<ractive.data.overview.type.length; i++) {
-    meta.push( { 'p': 'a', 'o': ractive.data.overview.type[i] });
+    meta.push( { 'p': 'a', 'o': ractive.get( 'overview.type.'+ i) });
   }
   if ( !ractive.data.uriFn ) {
     meta.push( { 'p': internalPred( 'id' ), 'o': ractive.get( 'overview.idNumber' ) } );
