@@ -1007,7 +1007,7 @@ if ( urlParams.uri ) {
       console.log( 'ERROR: no profile in resource.' );
     } else {
       loadScript( '/public/profiles/' + p + ".js", function() {
-        createSchema(false);
+        createSchema( true );
 
         // Find bindings which are labels for URIs
         var uriLabels = {};
