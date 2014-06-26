@@ -122,9 +122,9 @@ var insertQuery = function( publish ) {
     { 'p': internalPred( 'searchLabel' ), 'o': ractive.data.overview.searchLabel },
     { 'p': internalPred( 'updated' ), 'o': dateFormat( now.toISOString() ) }
   ];
-  ractive.data.overview.type.forEach( function( i, t ) {
-    meta.push( { 'p': 'a', 'o': t });
-  });
+  for (var i=0; i<ractive.data.overview.type.length; i++) {
+    meta.push( { 'p': 'a', 'o': ractive.data.overview.type[i] });
+  }
   if ( !ractive.data.uriFn ) {
     meta.push( { 'p': internalPred( 'id' ), 'o': ractive.get( 'overview.idNumber' ) } );
   }
@@ -414,6 +414,12 @@ listener = ractive.on({
   remove: function( event ) {
     var idx = event.index;
     ractive.data.views[idx.i1].elements[idx.i2].values.splice(idx.i3, 1);
+
+    // Also delete dependant, if exists:
+    if ( ractive.data.views[idx.i1].elements[idx.i2].dependant ) {
+      var kp = findElementById( ractive.data.views[idx.i1].elements[idx.i2].dependant );
+      ractive.get( kp+'.values').splice(0, 1);
+    }
   },
   searchBlur: function ( event ) {
     // delay a bit so that the on-click event has time to fire in case of searchhit select
@@ -424,14 +430,13 @@ listener = ractive.on({
       ractive.set( 'searchSummary', '' );
     }, 100 );
   },
-  newValue: function(event) {
+  newValue: function( event ) {
     var value, predicate, predicateLabel, source;
-    value = event.node.value.trim();
 
+    value = event.node.value.trim();
     predicate = event.context.predicate;
     predicateLabel = event.context.label;
     source = 'local';
-
 
     // Don't add allow duplicate values:
     var exists = _.find( ractive.get( event.keypath ).values, function( e ) {
@@ -442,15 +447,33 @@ listener = ractive.on({
       return
     }
 
+    // Push to values array
     var idx = event.index;
     ractive.data.views[idx.i1].elements[idx.i2].values.push(
       {"predicate": predicate, "predicateLabel": predicateLabel, "value": value, "source": source});
+
+    // Generate depdant values, if any
+    if ( event.context.dependant ) {
+      var depv = event.context.dependantTransform( value );
+      if ( depv ) {
+        var kp = findElementById( event.context.dependant );
+        var dep = ractive.get( kp );
+
+        ractive.set( kp + '.values.0', {
+          "predicate": dep.predicate, "predicateLabel": dep.label,
+          "value": depv, "source": source
+        });
+        ractive.update( kp + '.values' );
+      }
+    }
+
+    // Reset, clear input field
     event.node.value = "";
     ractive.merge( event.keypath + ".errorInfo", "");
     ractive.set( event.keypath + '.currentValue', "");
+
+    // If no more values allowed; attempt to focus on next input field.
     if ( !event.context.repeatable ) {
-      // If no more values allowed; attempt to focus on next input field.
-      // Not sure if this is going to work everywhere.
       var nextInput = event.node.parentElement.parentElement.parentElement.nextElementSibling.querySelector('input');
       if ( nextInput ) {
         nextInput.focus();

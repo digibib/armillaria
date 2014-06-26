@@ -10,27 +10,41 @@ var profile = {
       "desc": "Her fyller du inn personalia. Sett i gang.",
       "elements": [
         {
-          "id": "firstname",
-          "label": "Fornavn",
-          "desc": "",
+          "id": "name",
+          "label": "Navn",
+          "desc": "Fylles inn på katalogform (siste etternavn, andre navn). Normalform genereres automatisk.",
           "required": true,
           "repeatable": false,
-          "predicate": "<http://xmlns.com/foaf/0.1/givenName>",
-          "type": "string"
+          "predicate": "<http://def.bibsys.no/xmlns/radatana/1.0#catalogueName>",
+          "type": "string",
+          "dependant": "nameNormalized",
+          "dependantTransform": function( value ) {
+            var name = cleanString( value );
+            if ( name ) {
+              var last, first;
+              var split = name.match(/^(.*),\s?(.*)$/);
+              if ( split && split.length == 3) {
+                return '"' + split[2] + ' ' + split[1] + '"';
+              }
+              return name
+            }
+            return false
+          }
         },
         {
-          "id": "lastname",
-          "label": "Etternavn",
-          "desc": "Etternavn kan være så mangt.",
+          "id": "nameNormalized",
+          "label": "Navn (normalisert)",
+          "desc": "Genereres automatisk, men kan endres",
           "required": false,
           "repeatable": false,
-          "predicate": "<http://xmlns.com/foaf/0.1/familyName>",
-          "type": "string"
+          "predicate": "<http://xmlns.com/foaf/0.1/name>",
+          "type": "string",
+          "dependsOn": "name"
         },
         {
           "id": "birthyear",
           "label": "Fødselsår",
-          "desc": "Anno domini",
+          "desc": "",
           "required": false,
           "repeatable": false,
           "predicate": "<http://dbpedia.org/ontology/birthYear>",
@@ -39,7 +53,7 @@ var profile = {
         {
           "id": "deathyear",
           "label": "Dødsår",
-          "desc": "Anno domini",
+          "desc":"",
           "required": false,
           "repeatable": false,
           "predicate": "<http://dbpedia.org/ontology/deathYear>",
@@ -90,25 +104,19 @@ var profile = {
     }
   ],
   "displayLabel": function( values ) {
-    var label = cleanString( values.firstname[0].value );
-    if (  values.lastname[0] ) {
-      label += " " + cleanString( values.lastname[0].value );
-      if ( values.birthyear[0] ) {
-        label += " ("+ cleanString( values.birthyear[0].value ) + "-";
-        if ( values.deathyear[0] ) {
-          label += cleanString( values.deathyear[0].value ) + ")";
-        } else {
-          label += ")";
-        }
+    var label = cleanString( values.nameNormalized[0].value );
+    if ( values.birthyear[0] ) {
+      label += " ("+ cleanString( values.birthyear[0].value ) + "-";
+      if ( values.deathyear[0] ) {
+        label += cleanString( values.deathyear[0].value ) + ")";
+      } else {
+        label += ")";
       }
     }
     return '"' + label + '"';
   },
   "searchLabel": function(values) {
-    var label = cleanString( values.firstname[0].value );
-    if ( values.lastname[0] ) {
-      label += " " + cleanString( values.lastname[0].value );
-    }
+    var label = cleanString( values.name[0].value );
     return '"' + label + '"';
   },
   "rules": [
