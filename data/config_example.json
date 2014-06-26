@@ -44,6 +44,10 @@
     "OCLC": {
       "Endpoint": "http://classify.oclc.org/classify2/Classify?isbn=%v",
       "Type": "GET"
+    },
+    "British Library": {
+      "Endpoint": "http://bnb.data.bl.uk/sparql",
+      "Type": "SPARQL"
     }
   }
 }

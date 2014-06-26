@@ -7,6 +7,66 @@ var profile = {
   "externalRequired": ["isbn"],
   "externalSources": [
     {
+      "source": "British Library",
+      "genRequest": function( values ) {
+        var isbn = false;
+        values.isbn.forEach( function( v ) {
+          if ( cleanString( v.value ).length == 13 ) {
+            isbn = cleanString( v.value );
+          }
+          if ( !isbn ) {
+            isbn = cleanString( v.value );
+          }
+        });
+        var q =
+            'PREFIX bibo:<http://purl.org/ontology/bibo/>\
+             SELECT * WHERE {\
+                 ?s ?p ?o ;\
+                     bibo:{isbnX} "{isbn}" .\
+                 OPTIONAL { ?o ?op ?oo }\
+            }'.supplant({isbn: isbn, isbnX: isbn.length == 13 ? "isbn13" : "isbn10" });
+        return q;
+      },
+      "parseRequest": function( response ) {
+        res = JSON.parse( response );
+        var values = [];
+        var suggestions = [];
+        res.results.bindings.forEach( function( binding ) {
+          switch ( binding.p.value ) {
+            case "http://purl.org/dc/terms/title":
+              values.push({
+                "value": '"' + binding.o.value + '"',
+                "predicate": "<http://purl.org/dc/terms/title>",
+              });
+              break;
+            case "http://purl.org/dc/terms/language":
+              values.push({
+                "value": '<' + binding.o.value + '>',
+                "URILabel": '<' + binding.o.value + '>',
+                "predicate": "<http://purl.org/dc/terms/language>",
+              });
+            case "http://purl.org/dc/terms/contributor":
+              if ( binding.op && binding.op.value === "http://xmlns.com/foaf/0.1/name" ) {
+                suggestions.push({
+                  "value": binding.oo.value,
+                  "id": "creators"
+                });
+              }
+              break;
+            case "http://purl.org/dc/terms/subject":
+              if ( binding.op.value === "http://www.w3.org/2000/01/rdf-schema#label" ) {
+                suggestions.push({
+                  "value": binding.oo.value,
+                  "id": "subject"
+                });
+              }
+              break;
+          }
+        });
+        return [values, suggestions];
+      }
+    },
+    {
       "source": "BS",
       "genRequest": function( values ) {
         return cleanString( values.isbn[0].value );
