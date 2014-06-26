@@ -410,6 +410,10 @@ var profile = {
             case "245": // title
               var v = getSubfield( dataField, "a");
               if ( v ) {
+                if ( /\s\/$/.test( v ) ) {
+                  // Strip trailing /, seems to be present in all titles from LOC
+                  v = v.substr(0, v.length - 2);
+                }
                 values.push({
                   "value": '"' + v + '"',
                   "predicate": "<http://purl.org/dc/terms/title>"
