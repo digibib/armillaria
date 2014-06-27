@@ -26,10 +26,7 @@
 						{{^overview.published}}Lagre kladd{{/overview.published}}
 						{{#overview.published}}Trekk tilbake til kladd{{/overview.published}}
 					</button>
-  					<button on-click="publish" disabled='{{publishDisabled}}'>
-							{{^overview.published}}Publisér{{/overview.published}}
-							{{#overview.published}}Lagre{{/overview.published}}
-						</button>
+  					<button on-click="publish" disabled='{{publishDisabled}}'>Lagre</button>
 					{{#existingResource}}
 						<button on-click="delResource" disabled='{{deleteDisabled}}'>Slett</button>
 					{{/existingResource}}
