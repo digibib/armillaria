@@ -596,10 +596,11 @@ listener = ractive.on({
       setTimeout( function( ) {
         input.value = v.trim();
         input.focus();
-      }, 10);
+        var idx = event.index;
+        searchES( event.context.value, 'views.' + idx.i1 + '.elements.' + idx.i2 );
+      }, 210);
 
-      var idx = event.index;
-      searchES( event.context.value, 'views.' + idx.i1 + '.elements.' + idx.i2 );
+
     }
   },
   selectOption: function( event ) {
