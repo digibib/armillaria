@@ -18,6 +18,7 @@ var (
 	l             = log.New()
 	queueAdd      Queue
 	queueRemove   Queue
+	queueKohaSync Queue
 	indexMappings map[string]map[string]string // indexMappings[profile]map[predicate] = property
 	esIndexer     = Indexer{host: "http://localhost:9200", client: http.DefaultClient}
 	idGen         = newIdService()
@@ -67,6 +68,8 @@ func main() {
 	go queueAdd.runDispatcher()
 	queueRemove = newQueue("rmFromIndex", 100, 1, newRmWorker)
 	go queueRemove.runDispatcher()
+	queueKohaSync = newQueue("syncToKoha", 1000, 1, newKohaSyncWorker)
+	go queueKohaSync.runDispatcher()
 
 	// Routing
 	esHost, err := url.Parse(cfg.Elasticsearch)

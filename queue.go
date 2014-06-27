@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 
+	"github.com/digibib/armillaria/sparql"
 	log "gopkg.in/inconshreveable/log15.v2"
 )
 
@@ -14,6 +16,14 @@ SELECT * WHERE {
    { %s ?p ?o .
      ?o <armillaria://internal/displayLabel> ?l . }
 }`
+
+const affectedResourcesQuery = `
+SELECT ?resource
+WHERE {
+	{ ?resource _:p %s } UNION { %s _:p ?resource }
+	?resource <armillaria://internal/profile> "manifestation" .
+}
+`
 
 // indexRequest holds the URI which should be indexed or removed from an index.
 type indexRequest string
@@ -86,6 +96,7 @@ func (w addWorker) Run() {
 			r, err := db.Query(fmt.Sprintf(resourceQuery, uri, uri, uri))
 			if err != nil {
 				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, uri, uri, uri)})
+				// TODO uri should be stored for retry
 				break
 			}
 
@@ -93,16 +104,40 @@ func (w addWorker) Run() {
 			resourceBody, profile, err := createIndexDoc(indexMappings, r, string(uri[1:len(uri)-1]))
 			if err != nil {
 				l.Error("failed to create indexable json doc from RDF resource", log.Ctx{"error": err.Error(), "uri": uri})
+				// TODO uri should be stored for retry
 				break
 			}
 
+			// Index document
 			err = esIndexer.Add("public", profile, resourceBody)
 			if err != nil {
 				log.Error("failed to index resource", log.Ctx{"error": err.Error(), "uri": uri})
+				// TODO uri should be stored for retry
 				break
 			}
 
 			l.Info("indexed resource", log.Ctx{"uri": uri, "workerID": w.Who(), "index": "public", "profile": profile})
+
+			// Send uri for sync to Koha
+			queueKohaSync.WorkQueue <- uri
+
+			// Check if there are other resources which are affected by this resource.
+			r, err = db.Query(fmt.Sprintf(affectedResourcesQuery, uri, uri))
+			if err != nil {
+				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, uri, uri, uri)})
+				// TODO uri should be stored for retry
+				break
+			}
+			var res *sparql.Results
+
+			err = json.Unmarshal(r, &res)
+			if err != nil {
+				l.Error("failed to parse sparql response", log.Ctx{"error": err.Error(), "uri": uri})
+			}
+			for _, b := range res.Results.Bindings {
+				queueKohaSync.WorkQueue <- indexRequest("<" + b["resource"].Value + ">")
+			}
+
 		case <-w.Quit:
 			println(w.Who(), "quitting")
 			return
@@ -143,6 +178,7 @@ func (w rmWorker) Run() {
 			err := esIndexer.Remove(string(uri[1 : len(uri)-1]))
 			if err != nil {
 				log.Error("failed to remove resource from index", log.Ctx{"error": err.Error(), "uri": uri})
+				// TODO uri should be stored for retry
 				break
 			}
 
@@ -164,6 +200,72 @@ func (w rmWorker) Stop() {
 
 func newRmWorker(id int, wq chan chan indexRequest) Worker {
 	return rmWorker{
+		ID:          id,
+		Work:        make(chan indexRequest),
+		WorkerQueue: wq,
+		Quit:        make(chan bool, 1),
+	}
+}
+
+type kohaSyncWorker struct {
+	ID          int
+	Work        chan indexRequest
+	WorkerQueue chan chan indexRequest
+	Quit        chan bool
+}
+
+func (w kohaSyncWorker) Run() {
+	for {
+		w.WorkerQueue <- w.Work
+
+		select {
+		case uri := <-w.Work:
+			// Get RDF of resource
+			r, err := db.Query(fmt.Sprintf(resourceQuery, uri, uri, uri))
+			if err != nil {
+				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, uri, uri, uri)})
+				// TODO uri should be stored for retry
+				break
+			}
+			var res *sparql.Results
+			var profile string
+			err = json.Unmarshal(r, &res)
+			if err != nil {
+				l.Error("failed to parse sparql response", log.Ctx{"error": err.Error(), "uri": uri})
+				// TODO uri should be stored for retry
+				break
+			}
+
+			for _, b := range res.Results.Bindings {
+				if b["p"].Value == "armillaria://internal/profile" {
+					profile = b["o"].Value
+					break
+				}
+			}
+
+			if profile != "manifestation" {
+				// We are only syncing manifestations to Koha
+				break
+			}
+
+			l.Info("synced resource to Koha (simulated)", log.Ctx{"uri": uri, "workerID": w.Who()})
+		case <-w.Quit:
+			println(w.Who(), "quitting")
+			return
+		}
+	}
+}
+
+func (w kohaSyncWorker) Who() int {
+	return w.ID
+}
+
+func (w kohaSyncWorker) Stop() {
+	w.Quit <- true
+}
+
+func newKohaSyncWorker(id int, wq chan chan indexRequest) Worker {
+	return kohaSyncWorker{
 		ID:          id,
 		Work:        make(chan indexRequest),
 		WorkerQueue: wq,
