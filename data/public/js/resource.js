@@ -581,6 +581,7 @@ listener = ractive.on({
         {"predicate": predicate, "predicateLabel": predicateLabel, "value": uri,
          "URILabel": label, "source": source});
     }
+    ractive.update( 'views.'+ idx.i1 + '.elements.' + idx.i2 + '.values' );
 
   },
   searchSuggestion: function( event ) {
