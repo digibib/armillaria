@@ -445,7 +445,7 @@ listener = ractive.on({
       ractive.set( event.keypath + ".searching", false);
       ractive.set( 'searchResults', [] );
       ractive.set( 'searchSummary', '' );
-    }, 100 );
+    }, 200 );
   },
   newValue: function( event ) {
     var value, predicate, predicateLabel, source;
