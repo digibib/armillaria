@@ -27,7 +27,7 @@ build:
 	@go build
 
 test:
-  @go get ./...
+	@go get ./...
 	@go list -f '{{range .TestImports}}{{.}} {{end}}' ./... | xargs -n1 go get -d
 	@go test
 
