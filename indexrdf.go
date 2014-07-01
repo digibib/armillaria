@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	qAll          = `SELECT DISTINCT ?res WHERE { ?res <armillaria://internal/profile> "%s" } OFFSET %d LIMIT %d`
+	qAll          = `SELECT DISTINCT ?res FROM <%s> WHERE { ?res <armillaria://internal/profile> "%s" } OFFSET %d LIMIT %d`
 	resourceQuery = `
 SELECT * FROM <%s> WHERE {
    { <%s> ?p ?o .
@@ -65,7 +65,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	b, err := db.Query(fmt.Sprintf(qAll, *resType, *offset, *limit))
+	b, err := db.Query(fmt.Sprintf(qAll, *graph, *resType, *offset, *limit))
 	if err != nil {
 		log.Fatal(err)
 	}
