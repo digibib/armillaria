@@ -10,7 +10,7 @@ var common = {
   "logLines": [],
   "defaultLang": "nb-no",
   "internalNamespace": "armillaria://internal/",
-  "publicGraph": "<http://data.deichman.no/public>",
+  "publicGraph": "<http://data.deichman.no/books>",
   "draftsGraph": "<http://data.deichman.no/drafts>",
   "trimURI": function(s) { return s.substr(1, s.length -2)},
   "hiddenFields": function( view ) { return _.filter(view.elements, function( e ) { return e.hidden == true && e.values.length == 0})},
