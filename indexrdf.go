@@ -94,7 +94,9 @@ func main() {
 
 		resourceBody, _, err := createIndexDoc(indexMappings, rb, uri)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("Failed to index:", uri)
+			log.Println(err)
+			continue
 		}
 		_, err = f.Write(bulkHead)
 		if err != nil {
