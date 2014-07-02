@@ -193,6 +193,20 @@
 						{{/}}
 					</div>
 					{{/views}}
+					{{#nonEditableProperties.length > 0}}
+					<h3>Additional properties on this resource</h3>
+					<p>These are not editable.</p>
+					<table>
+						<thead>
+							<tr><th>predicate</th><th>value</th></tr>
+						</thead>
+						<tbody>
+							{{#nonEditableProperties}}
+								<tr><td>{{predicate}}</td><td>{{value}}</td></tr>
+							{{/nonEditableProperties}}
+						</tbody>
+					<table>
+					{{/}}
 				</div>
 				<!-- {{>URIInput}} -->
 					<input

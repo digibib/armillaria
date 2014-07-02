@@ -149,6 +149,11 @@ var insertQuery = function( publish ) {
   if ( publish && !ractive.data.overview.published ) {
     meta.push( {'p': internalPred( 'published' ), 'o': dateFormat( now.toISOString() ) } );
   }
+  for (var i=0; i<ractive.data.nonEditableProperties.length; i++) {
+    meta.push( { 'p': ractive.get('nonEditableProperties.'+i+'.predicate'),
+                 'o': ractive.get('nonEditableProperties.'+i+'.value')} );
+  }
+
   var generated = "";
   if ( ractive.data.generatedValues ) {
     ractive.data.generatedValues.forEach( function( g ) {
@@ -1019,6 +1024,7 @@ if ( urlParams.uri ) {
     } else {
       loadScript( '/public/profiles/' + p + ".js", function() {
         createSchema( true );
+        ractive.set( 'nonEditableProperties', [] );
 
         // Find bindings which are labels for URIs
         var uriLabels = {};
@@ -1056,29 +1062,47 @@ if ( urlParams.uri ) {
               ractive.get(kp + ".values").push(res);
             }
           } else {
+            var unknownPred = true;
             switch ( pred ) {
               case internalPred( 'displayLabel' ):
                 ractive.set( 'overview.displayLabel', getValue( b.o ) );
+                unknownPred = false;
                 break;
               case internalPred( 'searchLabel' ):
                 ractive.set( 'overview.searchLabel', getValue( b.o ) );
+                unknownPred = false;
                 break;
               case internalPred( 'created' ):
                 ractive.set( 'overview.created', getValue( b.o ) );
+                unknownPred = false;
                 break;
               case internalPred( 'updated' ):
                 ractive.set( 'overview.updated', getValue( b.o ) );
+                unknownPred = false;
                 break;
               case internalPred( 'published' ):
                 ractive.set( 'overview.published', getValue( b.o ) );
+                unknownPred = false;
                 break;
               case internalPred( 'id' ):
                 ractive.set( 'overview.idNumber', getValue( b.o ) );
                 ractive.set( 'overview.uri', '<' + urlParams.uri + '>' );
+                unknownPred = false;
                 break;
               case "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>":
                 ractive.data.overview.type.push( '<' + b.o + '>');
+                unknownPred = false;
                 break;
+              case internalPred( 'profile' ):
+                unknownPred = false;
+                break;
+            }
+
+            // Store predicates and values whitch are NOT in profile schema:
+            if (unknownPred) {
+              ractive.data.nonEditableProperties.push({
+              "predicate": pred, "value": getValue( b.o )
+              });
             }
           }
         }); // end rdfRes.results.bindings.forEach
