@@ -95,8 +95,8 @@ func main() {
 		for ok := false; ok == false; {
 			b, err = db.Query(fmt.Sprintf(qAll, *graph, *resType, i, limit))
 			if err != nil {
-				log.Println(err)
-				log.Println("SPARQL endpoint unavaialable? Trying againt in 5 seconds.")
+				fmt.Println(err)
+				fmt.Println("SPARQL endpoint unavaialable? Trying againt in 5 seconds.")
 				time.Sleep(5 * time.Second)
 			} else {
 				ok = true
@@ -120,8 +120,8 @@ func main() {
 			for ok := false; ok == false; {
 				rb, err = db.Query(fmt.Sprintf(resourceQuery, *graph, uri, uri, uri))
 				if err != nil {
-					log.Println(err)
-					log.Println("SPARQL endpoint unavaialable? Trying againt in 5 seconds.")
+					fmt.Println(err)
+					fmt.Println("SPARQL endpoint unavaialable? Trying againt in 5 seconds.")
 					time.Sleep(5 * time.Second)
 				} else {
 					ok = true
