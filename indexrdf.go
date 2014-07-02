@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/digibib/armillaria/sparql"
 )
@@ -87,12 +88,19 @@ func main() {
 	}
 	fmt.Printf("Found %d resources of type %v\n", total, *resType)
 
+	// Fetch resources in batches of <limit>
 	for i := 0; i < total; i += limit {
 		fmt.Printf("Processing batch %d - %d ...\n", i, i+limit)
-		// Fetch resources in batches of <limit>
-		b, err = db.Query(fmt.Sprintf(qAll, *graph, *resType, i, limit))
-		if err != nil {
-			log.Fatal(err)
+
+		for ok := false; ok == false; {
+			b, err = db.Query(fmt.Sprintf(qAll, *graph, *resType, i, limit))
+			if err != nil {
+				log.Println(err)
+				log.Println("SPARQL endpoint unavaialable? Trying againt in 5 seconds.")
+				time.Sleep(5 * time.Second)
+			} else {
+				ok = true
+			}
 		}
 
 		err = json.Unmarshal(b, &res)
