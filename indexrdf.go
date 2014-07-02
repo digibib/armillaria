@@ -88,6 +88,7 @@ func main() {
 	fmt.Printf("Found %d resources of type %v\n", total, *resType)
 
 	for i := 0; i < total; i += limit {
+		fmt.Printf("Processing batch %d - %d ...\n", i, i+limit)
 		// Fetch resources in batches of <limit>
 		b, err = db.Query(fmt.Sprintf(qAll, *graph, *resType, i, limit))
 		if err != nil {
@@ -103,8 +104,8 @@ func main() {
 		var docs bytes.Buffer
 
 		bulkHead := []byte(string(fmt.Sprintf(head, *resType)))
-		for i, r := range res.Results.Bindings {
-			fmt.Printf("%d resources processed\r", i)
+
+		for _, r := range res.Results.Bindings {
 			uri := r["res"].Value
 			rb, err := db.Query(fmt.Sprintf(resourceQuery, *graph, uri, uri, uri))
 			if err != nil {
@@ -122,7 +123,7 @@ func main() {
 		}
 
 		docs.Write([]byte("\n"))
-		fmt.Print("\nSending batch to indexing: ")
+		fmt.Print("Sending batch to Elassticsearch: ")
 		resp, err := http.Post("http://localhost:9200/_bulk", "application/json", &docs)
 		if err != nil {
 			log.Fatal(err)
