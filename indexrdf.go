@@ -16,16 +16,20 @@ go run indexrdf.go rdfstore.go indexing.go -t=work -o=10000, -l=5000
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/digibib/armillaria/sparql"
 )
 
 const (
+	qCount        = `SELECT COUNT(DISTINCT ?s) FROM <%s> WHERE { ?s <armillaria://internal/profile> "%s"}`
 	qAll          = `SELECT DISTINCT ?res FROM <%s> WHERE { ?res <armillaria://internal/profile> "%s" } OFFSET %d LIMIT %d`
 	resourceQuery = `
 SELECT * FROM <%s> WHERE {
@@ -38,6 +42,7 @@ SELECT * FROM <%s> WHERE {
 	head = `
 { "index" : { "_index" : "public", "_type" : "%s" } }
 `
+	limit = 10000
 )
 
 var (
@@ -47,8 +52,6 @@ var (
 func urlify(s string) string { return fmt.Sprintf("<%s>", s) }
 
 func main() {
-	offset := flag.Int("o", 0, "offset")
-	limit := flag.Int("l", 10000, "limit")
 	resType := flag.String("t", "", "resource type to index (the value of the <armillaria://internal/profile> predicate.)")
 	graph := flag.String("g", "http://data.deichman.no/public", "graph from rdfstore to index from")
 
@@ -65,7 +68,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	b, err := db.Query(fmt.Sprintf(qAll, *graph, *resType, *offset, *limit))
+	// Get total count of this resource type
+	b, err := db.Query(fmt.Sprintf(qCount, *graph, *resType))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -77,44 +81,59 @@ func main() {
 		log.Fatal(err)
 	}
 
-	f, err := os.Create("out.json")
+	total, err := strconv.Atoi(res.Results.Bindings[0][res.Head.Vars[0]].Value)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer f.Close()
+	fmt.Printf("Found %d resources of type %v\n", total, *resType)
 
-	bulkHead := []byte(string(fmt.Sprintf(head, *resType)))
-	for i, r := range res.Results.Bindings {
-		fmt.Printf("%d resources processed\r", i)
-		uri := r["res"].Value
-		rb, err := db.Query(fmt.Sprintf(resourceQuery, *graph, uri, uri, uri))
+	for i := 0; i < total; i += limit {
+		// Fetch resources in batches of <limit>
+		b, err = db.Query(fmt.Sprintf(qAll, *graph, *resType, i, limit))
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		resourceBody, _, err := createIndexDoc(indexMappings, rb, uri)
+		err = json.Unmarshal(b, &res)
 		if err != nil {
-			log.Println("Failed to index:", uri)
-			log.Println(err)
-			continue
-		}
-		_, err = f.Write(bulkHead)
-		if err != nil {
+			println(string(b))
 			log.Fatal(err)
 		}
 
-		_, err = f.Write(resourceBody)
+		var docs bytes.Buffer
+
+		bulkHead := []byte(string(fmt.Sprintf(head, *resType)))
+		for i, r := range res.Results.Bindings {
+			fmt.Printf("%d resources processed\r", i)
+			uri := r["res"].Value
+			rb, err := db.Query(fmt.Sprintf(resourceQuery, *graph, uri, uri, uri))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			resourceBody, _, err := createIndexDoc(indexMappings, rb, uri)
+			if err != nil {
+				fmt.Println("Failed to index:", uri)
+				fmt.Println(err)
+				continue
+			}
+			docs.Write(bulkHead)
+			docs.Write(resourceBody)
+		}
+
+		docs.Write([]byte("\n"))
+		fmt.Print("\nSending batch to indexing: ")
+		resp, err := http.Post("http://localhost:9200/_bulk", "application/json", &docs)
 		if err != nil {
 			log.Fatal(err)
 		}
+		if resp.StatusCode != http.StatusOK {
+			fmt.Print("FAILED\n")
+			log.Fatalf("http request failed with %v", resp.Status)
+		} else {
+			fmt.Print("OK\n")
+		}
+		docs.Reset()
 	}
-
-	_, err = f.Write([]byte("\n"))
-	if err != nil {
-
-		log.Fatal(err)
-	}
-	fmt.Println("\nTo index run:")
-	fmt.Println("curl -s -XPOST localhost:9200/_bulk --data-binary @out.json")
-
+	fmt.Println("Done!")
 }
