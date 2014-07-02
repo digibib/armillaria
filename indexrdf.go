@@ -121,7 +121,7 @@ func main() {
 				rb, err = db.Query(fmt.Sprintf(resourceQuery, *graph, uri, uri, uri))
 				if err != nil {
 					fmt.Println(err)
-					fmt.Println("SPARQL endpoint unavaialable? Trying againt in 5 seconds.")
+					fmt.Println("SPARQL endpoint unavaialable? Trying again in 5 seconds...")
 					time.Sleep(5 * time.Second)
 				} else {
 					ok = true
