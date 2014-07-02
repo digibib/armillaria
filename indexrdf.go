@@ -115,9 +115,17 @@ func main() {
 
 		for _, r := range res.Results.Bindings {
 			uri := r["res"].Value
-			rb, err := db.Query(fmt.Sprintf(resourceQuery, *graph, uri, uri, uri))
-			if err != nil {
-				log.Fatal(err)
+
+			var rb []byte
+			for ok := false; ok == false; {
+				rb, err = db.Query(fmt.Sprintf(resourceQuery, *graph, uri, uri, uri))
+				if err != nil {
+					log.Println(err)
+					log.Println("SPARQL endpoint unavaialable? Trying againt in 5 seconds.")
+					time.Sleep(5 * time.Second)
+				} else {
+					ok = true
+				}
 			}
 
 			resourceBody, _, err := createIndexDoc(indexMappings, rb, uri)
