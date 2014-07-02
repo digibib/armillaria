@@ -116,7 +116,7 @@ var profile = {
     return '"' + label + '"';
   },
   "searchLabel": function(values) {
-    var label = cleanString( values.name[0].value );
+    var label = cleanString( values.nameNormalized[0].value );
     return '"' + label + '"';
   },
   "rules": [
