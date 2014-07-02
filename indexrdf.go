@@ -27,7 +27,7 @@ import (
 
 const (
 	qCount        = `SELECT COUNT(DISTINCT ?s) FROM <%s> WHERE { ?s <armillaria://internal/profile> "%s"}`
-	qAll          = `SELECT ?res FROM <%s> WHERE { { SELECT ?res { ?res <armillaria://internal/profile> "%s" } ORDER BY ?res } } OFFSET %d LIMIT %d`
+	qAll          = `SELECT ?res WHERE { { SELECT DISTINCT ?res FROM <%s> WHERE { ?res <armillaria://internal/profile> "%s" } ORDER BY ASC(?res) } } OFFSET %d LIMIT %d`
 	resourceQuery = `
 SELECT * FROM <%s> WHERE {
    { <%s> ?p ?o .
