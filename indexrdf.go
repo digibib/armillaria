@@ -7,10 +7,6 @@ Basic script to index rdf data, using the mappings in data/mappings
 To index all of type work, run:
 go run indexrdf.go rdfstore.go indexing.go -t=work
 
-By default 10,000 uris are fetched at a time
-You can set ofsett & limit with -o & -l:
-go run indexrdf.go rdfstore.go indexing.go -t=work -o=10000, -l=5000
-
 */
 
 package main
@@ -31,7 +27,7 @@ import (
 
 const (
 	qCount        = `SELECT COUNT(DISTINCT ?s) FROM <%s> WHERE { ?s <armillaria://internal/profile> "%s"}`
-	qAll          = `SELECT DISTINCT ?res FROM <%s> WHERE { ?res <armillaria://internal/profile> "%s" } OFFSET %d LIMIT %d`
+	qAll          = `SELECT ?res FROM <%s> WHERE { { SELECT ?res { ?res <armillaria://internal/profile> "%s" } ORDER BY ?res } } OFFSET %d LIMIT %d`
 	resourceQuery = `
 SELECT * FROM <%s> WHERE {
    { <%s> ?p ?o .
