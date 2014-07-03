@@ -24,20 +24,6 @@
             "type": "integer"
         }
     },
-    "<http://dbpedia.org/ontology/nationality>": {
-        "nationality": {
-            "type": "nested",
-            "properties": {
-                "uri": {
-                    "type": "string",
-                    "index": "not_analyzed"
-                },
-                "label": {
-                    "type": "string"
-                }
-            }
-        }
-    },
     "<http://data.deichman.no/hasPseudonym>": {
         "pseudonym": {
             "type": "nested",
