@@ -12,11 +12,31 @@ The instructions will probably work with any Debian/Ubuntu-flavoured distro. My 
 ### Runtime dependencies
 
 #### Openlink Virtuoso quad-store
-Armillaria is developed and tested against Virtuoso 7, which must be compiled [from source](https://github.com/openlink/virtuoso-opensource):
+Ideally, any RDF quad-store with full SPARQL 1.1 support should do the trick, but Armillaria is developed and tested against Virtuoso 7, so that is what we recommend.
+
+There are no binary distribution of Virtuoso 7, so it which must be compiled [from source](https://github.com/openlink/virtuoso-opensource):
 
 ```bash
-TODO build instructions
+# fetch build dependencies
+sudo apt-get install libssl-dev gawk gperf flex build-essential automake autoconf bison libtool
+# fetch virtuoso source tree
+git clone https://github.com/openlink/virtuoso-opensource.git
+git checkout develop/7
+# bootstrap build
+CFLAGS="-O2 -m64" ./autogen.sh
+# build (substitute your destination)
+CFLAGS="-O2 -m64" ./configure --prefix=/your/install/destination --disable-dbpedia-vad --disable-demo-vad --disable-fct-vad --disable-isparql-vad --disable-ods-vad --disable-rdfmappers-vad --disable-rdb2rdf-vad --disable-sparqldemo-vad --disable-syncml-vad --disable-tutorial-vad --disable-bpel-vad --with-port=1111
 ```
+
+Test your installation by running virtuoso in the foreground. You need to give it a configuration file like this:
+
+```bash
+/your/install/destination/bin/virtuoso-t -f -c /my/db/destination/virtuoso.ini
+```
+
+You may use [our minimal virtuoso.ini](https://github.com/digibib/saltdeploy/blob/master/koha/salt/koha/files/virtuoso/virtuoso.ini.minimal) as a starting point.
+
+For a more robust deployment, you may want to run virtuoso as an upstart service: [example virtuoso.conf](https://github.com/digibib/saltdeploy/blob/master/koha/salt/koha/files/virtuoso/virtuoso.conf)
 
 
 #### Elasticsearch
