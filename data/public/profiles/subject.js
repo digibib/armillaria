@@ -81,7 +81,7 @@ var profile = {
           "repeatable": true,
           "predicate": "<http://xmlns.com/foaf/0.1/focus>",
           "type": "URI",
-          "searchTypes": ["agent", "work", "location", "event", "wgs84"]
+          "searchTypes": ["work", "location", "event", "wgs84"]
         }
       ]
     }

@@ -55,7 +55,7 @@ var profile = {
           "repeatable": true,
           "predicate": "<http://purl.org/NET/c4dm/event.owl#agent>",
           "type": "URI",
-          "searchTypes": ["agent"]
+          "searchTypes": ["person" "organization"]
         }
       ]
     }

@@ -820,7 +820,7 @@ var profile = {
           "repeatable": false,
           "predicate": "<http://purl.org/ontology/bibo/issuer>",
           "type": "URI",
-          "searchTypes": ["agent", "person", "organization"]
+          "searchTypes": ["person", "organization"]
         },
         {
           "id": "pubPlace",
@@ -1038,7 +1038,7 @@ var profile = {
             {"uri": "<http://purl.org/dc/terms/contributor>", "predicateLabel": "bidragsyter"}
           ],
           "type": "multiPredicateURI",
-          "searchTypes": ["person", "agent", "organization"]
+          "searchTypes": ["person", "organization"]
         }
       ]
     },

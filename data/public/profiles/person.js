@@ -98,7 +98,7 @@ var profile = {
           "hidden": true,
           "predicate": "<http://data.deichman.no/hasPseudonym>",
           "type": "URI",
-          "searchTypes": ["agent"]
+          "searchTypes": ["person"]
         }
       ]
     }
