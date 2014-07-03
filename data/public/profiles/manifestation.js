@@ -830,7 +830,7 @@ var profile = {
           "repeatable": false,
           "predicate": "<http://data.deichman.no/publicationPlace>",
           "type": "URI",
-          "searchTypes": ["location"]
+          "searchTypes": ["place"]
         },
         {
           "id": "lang",
