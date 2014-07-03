@@ -18,7 +18,7 @@ var common = {
     var translations = {
       "classification": "klassifikasjon",
       "event": "hendelse",
-      "location": "sted",
+      "place": "sted",
       "language": "språk",
       "manifestation": "manifestasjon",
       "person": "person",
