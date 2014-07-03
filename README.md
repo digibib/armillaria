@@ -34,17 +34,17 @@ sudo service elasticsearch start
 #### Go
 The (very limited) server backend is coded in Go.
 
-There are pacakges for Ubuntu:
+There are pacakges for Ubuntu which are usually fairly up to date if you are running an updated distro:
 
 ```bash
 sudo apt-get install golang
 ```
 
-If you want the latest and greatest I recommend the [official binary distributions](https://code.google.com/p/go/wiki/Downloads?tm=2):
+The minimum required version is version 1.2. If you want the latest and greatest I recommend  the [official binary distributions](https://code.google.com/p/go/wiki/Downloads?tm=2):
 
 ```bash
-wget https://storage.googleapis.com/golang/go1.2.2.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.2.2.linux-amd64.tar.gz
+wget https://storage.googleapis.com/golang/go1.3.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.3.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 ```
 
