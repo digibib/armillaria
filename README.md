@@ -14,7 +14,7 @@ The instructions will probably work with any Debian/Ubuntu-flavoured distro. My 
 #### Openlink Virtuoso quad-store
 Ideally, any RDF quad-store with full SPARQL 1.1 support should do the trick, but Armillaria is developed and tested against Virtuoso 7, so that is what we recommend.
 
-There are no binary distribution of Virtuoso 7, so it which must be compiled [from source](https://github.com/openlink/virtuoso-opensource):
+There are no binary distribution of Virtuoso 7, so it must be compiled [from source](https://github.com/openlink/virtuoso-opensource):
 
 ```bash
 # fetch build dependencies
