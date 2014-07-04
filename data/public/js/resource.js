@@ -1119,6 +1119,7 @@ if ( urlParams.uri ) {
 if ( urlParams.profile && !urlParams.uri ) {
   // No URI given; assuming creating a new resource.
   ractive.set('existingResource', false);
+  ractive.set('nonEditableProperties', []);
   loadScript( '/public/profiles/' + urlParams.profile + ".js",  createSchema);
   ractive.set( { 'draftDisabled': true, 'deleteDisabled': true, 'publishDisabled': true } );
 }
