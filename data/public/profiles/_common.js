@@ -99,7 +99,15 @@ var dateFormat = function(d) {
 }
 
 var trimURI = function(s) {
-  return s.substr( 1, s.length - 2 );
+  if ( s ) {
+    if ( s.match(/^<(.*)>$/) ) {
+      return s.substr( 1, s.length - 2 );
+    } else {
+      return s
+    }
+  } else {
+    return ""
+  }
 }
 
 String.prototype.supplant = function (o) {
