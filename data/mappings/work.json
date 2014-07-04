@@ -33,20 +33,6 @@
       }
     }
   },
-  "<http://purl.org/dc/terms/audience>": {
-    "audience": {
-      "type": "nested",
-      "properties": {
-        "uri": {
-          "type": "string",
-          "index": "not_analyzed"
-        },
-        "label": {
-          "type": "string"
-        }
-      }
-    }
-  },
   "<http://purl.org/dc/terms/description>": {
     "description": {
       "type": "string"
