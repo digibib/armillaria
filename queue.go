@@ -10,7 +10,7 @@ import (
 
 const resourceQuery = `
 SELECT *
-FROM <http://data.deichman.no/books>
+FROM <%s>
 WHERE {
    { %s ?p ?o .
      MINUS { %s ?p ?o . ?o <armillaria://internal/displayLabel> _:l . } }
@@ -21,7 +21,7 @@ WHERE {
 
 const affectedResourcesQuery = `
 SELECT ?resource
-FROM <http://data.deichman.no/books>
+FROM <%s>
 WHERE {
 	{ ?resource _:p %s } UNION { %s _:p ?resource }
 	?resource <armillaria://internal/profile> "manifestation" .
@@ -96,7 +96,7 @@ func (w addWorker) Run() {
 		select {
 		case uri := <-w.Work:
 			// Get RDF resource to be indexed
-			r, err := db.Query(fmt.Sprintf(resourceQuery, uri, uri, uri))
+			r, err := db.Query(fmt.Sprintf(resourceQuery, cfg.RDFStore.DefaultGraph, uri, uri, uri))
 			if err != nil {
 				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, uri, uri, uri)})
 				// TODO uri should be stored for retry
@@ -125,7 +125,7 @@ func (w addWorker) Run() {
 			queueKohaSync.WorkQueue <- uri
 
 			// Check if there are other resources which are affected by this resource.
-			r, err = db.Query(fmt.Sprintf(affectedResourcesQuery, uri, uri))
+			r, err = db.Query(fmt.Sprintf(affectedResourcesQuery, cfg.RDFStore.DefaultGraph, uri, uri))
 			if err != nil {
 				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, uri, uri, uri)})
 				// TODO uri should be stored for retry
@@ -224,7 +224,7 @@ func (w kohaSyncWorker) Run() {
 		select {
 		case uri := <-w.Work:
 			// Get RDF of resource
-			r, err := db.Query(fmt.Sprintf(resourceQuery, uri, uri, uri))
+			r, err := db.Query(fmt.Sprintf(resourceQuery, cfg.RDFStore.DefaultGraph, uri, uri, uri))
 			if err != nil {
 				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, uri, uri, uri)})
 				// TODO uri should be stored for retry

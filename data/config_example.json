@@ -4,7 +4,8 @@
   "RDFStore": {
     "Endpoint": "http://localhost:8890/sparql-auth",
     "Username": "dba",
-    "Password": "dba"
+    "Password": "dba",
+    "DefaultGraph": "http://data.deichman.no/books"
   },
   "Elasticsearch": "http://localhost:9200",
   "ExternalDataSources":
