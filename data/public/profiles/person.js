@@ -26,7 +26,7 @@ var profile = {
               if ( split && split.length == 3) {
                 return '"' + split[2] + ' ' + split[1] + '"';
               }
-              return name
+              return '"' + name + '"';
             }
             return false
           }
