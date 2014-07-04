@@ -9,7 +9,9 @@ import (
 )
 
 const resourceQuery = `
-SELECT * WHERE {
+SELECT *
+FROM <http://data.deichman.no/books>
+WHERE {
    { %s ?p ?o .
      MINUS { %s ?p ?o . ?o <armillaria://internal/displayLabel> _:l . } }
    UNION
@@ -19,6 +21,7 @@ SELECT * WHERE {
 
 const affectedResourcesQuery = `
 SELECT ?resource
+FROM <http://data.deichman.no/books>
 WHERE {
 	{ ?resource _:p %s } UNION { %s _:p ?resource }
 	?resource <armillaria://internal/profile> "manifestation" .
