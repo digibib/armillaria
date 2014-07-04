@@ -1054,7 +1054,7 @@ var profile = {
           "repeatable": true,
           "predicate": "<http:/data.deichman.no/literaryFormat>",
           "type": "URI",
-          "searchTypes": ["literaryFormat"]
+          "searchTypes": ["genre"]
         },
         {
           "id": "genre",
