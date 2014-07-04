@@ -160,16 +160,16 @@
 							{{^ type == 'selectMust'}}
 								{{# (repeatable ? false : ( values.length > 1))}}<div class="warning yellow" title="For mange verdier i dette feltet; redusér til 1 verdi.">&#9888;</div>{{/}}
 								{{#values:i3}}
-									<div class="propertyValue column{{# type !== "text"}} half{{/}}{{# type === "text"}} full{{/}}">
+									<div class="propertyValue">
 
-										{{^URILabel}}<span class="propertyLabel{{# generated != true && (repeatable ? true : ( values.length == 1))}} clickable{{/}}" on-click="{{# generated != true && (repeatable ? true : ( values.length == 1))}}editLiteral{{/}}">{{value}}</span>{{/URILabel}}
+										{{^URILabel}}<span class="propertyLabel{{# generated != true && (repeatable ? true : ( values.length == 1))}} clickable{{/}}" on-click="{{# generated != true && (repeatable ? true : ( values.length == 1))}}editLiteral{{/}}">{{value}}</span><span class="removeProperty" on-click='remove'>&times;</span>{{/URILabel}}
 
-										<span class="removeProperty" on-click='remove'>&times;</span>
+
 										{{# source !== 'local' }}
 											<span class="source tinyText">{{source}}</span>
 										{{/}}
 										{{#URILabel}}
-											<div>{{# predicateLabel && predicateLabel !== label}}{{predicateLabel}}: {{/}}<a title="{{value}}" target="_blank" href="/resource?uri={{trimURI(value)}}">{{URILabel}}</a></div>
+											<div>{{# predicateLabel && predicateLabel !== label}}{{predicateLabel}}: {{/}}<a title="{{value}}" target="_blank" href="/resource?uri={{trimURI(value)}}">{{URILabel}}</a><span class="removeProperty" on-click='remove'>&times;</span></div>
 										{{/URILabel}}
 									</div>
 								{{/values}}

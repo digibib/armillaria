@@ -284,6 +284,7 @@ select[disabled=disabled] {
   border-radius: 3px;
   padding: 0.3em;
   word-wrap: break-word;
+  float:left;
 }
 
 .propertyValue:hover {
@@ -307,6 +308,7 @@ select[disabled=disabled] {
 }
 
 .removeProperty {
+  margin-left: 10px;
   display: inline-block;
   border-radius: 2px;
   width: 1.2em;
