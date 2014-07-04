@@ -24,7 +24,8 @@ var common = {
       "person": "person",
       "script": "skriftsystem",
       "subject": "emne",
-      "work": "verk"
+      "work": "verk",
+      "organization": "organisasjon"
     }
     if ( translations[s] ) {
       return translations[s];
