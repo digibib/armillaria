@@ -11,7 +11,7 @@ import (
 	log "gopkg.in/inconshreveable/log15.v2"
 )
 
-// Global variables and constants---------------------------------------------
+// Global variables and constants
 var (
 	db            *localRDFStore
 	cfg           *config
@@ -71,7 +71,7 @@ func main() {
 	queueKohaSync = newQueue("syncToKoha", 1000, 1, newKohaSyncWorker)
 	go queueKohaSync.runDispatcher()
 
-	// Routing
+	// setup ElasticSearch proxy
 	esHost, err := url.Parse(cfg.Elasticsearch)
 	if err != nil {
 		l.Error("unparsable Elasticsearch host address", log.Ctx{"error": err.Error()})
@@ -79,6 +79,7 @@ func main() {
 	}
 	esProxy := httputil.NewSingleHostReverseProxy(esHost)
 
+	// Routing
 	mux := httprouter.New()
 	mux.Handle("POST", "/search/*indexandtype", searchHandler(esProxy))
 	mux.GET("/id/:type", getIdHandler)
