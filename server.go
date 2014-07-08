@@ -83,6 +83,7 @@ func main() {
 	mux := httprouter.New()
 	mux.Handle("POST", "/search/*indexandtype", searchHandler(esProxy))
 	mux.GET("/id/:type", getIdHandler)
+	mux.GET("/rdf2marc", rdf2marcHandler)
 	mux.POST("/RDF/resource", doResourceQuery)
 	mux.POST("/queue/add", addToIndex)
 	mux.POST("/queue/remove", rmFromIndex)

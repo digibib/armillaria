@@ -8,6 +8,60 @@ import (
 	"github.com/digibib/armillaria/sparql"
 )
 
+// Constants
+// =========
+
+// queryRDF2MARC is the SPARQL query used to fetch the values
+// needed for converting into MARC. This is only done on resources
+// with type fabio:Manifestation.
+// The binding variables indicates the MARC destination datafield
+// and subfield for a given value. For example:
+//   ?245_b   -> 245$b
+//   ?c008_22 -> controlfield 008, position 22
+const queryRDF2MARC = `
+PREFIX armillaria: <armillaria://internal/>
+PREFIX radatana:   <http://def.bibsys.no/xmlns/radatana/1.0#>
+PREFIX foaf:       <http://xmlns.com/foaf/0.1/>
+PREFIX deich:      <http://data.deichman.no/>
+PREFIX fabio:      <http://purl.org/spar/fabio/>
+PREFIX dct:        <http://purl.org/dc/terms/>
+PREFIX dbo:        <http://dbpedia.org/ontology/>
+PREFIX bibo:       <http://purl.org/ontology/bibo/>
+PREFIX gn:         <http://www.geonames.org/ontology#>
+
+SELECT *
+FROM <%s>
+WHERE {
+	<%s> dct:title ?245_a .
+    BIND(<%s> AS ?r)
+    ?r armillaria:profile ?profile .
+    OPTIONAL { ?r fabio:hasSubtitle ?245_b }
+    OPTIONAL { ?r bibo:isbn ?020_a }
+    OPTIONAL { ?r dct:format ?019_b }
+    OPTIONAL { ?r deich:bindingInfo ?020_b }
+    OPTIONAL { ?r deich:literaryFormat ?019_d
+               FILTER(?019_d != <http://dbpedia.org/resource/Fiction>) }
+    OPTIONAL { ?r deich:location_format ?090_b }
+    OPTIONAL { ?r dct:creator _:creator .
+                   _:creator foaf:name ?245_c ;
+                   radatana:catalogueName ?100_a .
+    OPTIONAL { _:creator deich:lifespan ?100_d }
+               OPTIONAL { _:creator dbo:nationality ?100_j } }
+    OPTIONAL { ?r deich:publicationPlace _:pubPlace .
+               _:pubPlace gn:name ?260_a }
+    OPTIONAL { ?r bibo:issuer _:issuer .
+               _:issuer foaf:name ?260_b }
+    OPTIONAL { ?r fabio:hasPublicationYear ?260_c }
+    OPTIONAL { ?r bibo:numPages ?300_a }
+    OPTIONAL { ?r dct:description ?300_b }
+
+    OPTIONAL { ?r deich:literaryFormat ?c008_33 .
+                FILTER(?c008_33 = <http://dbpedia.org/resource/Fiction> || ?c008_33 = <http://dbpedia.org/resource/Non-Fiction> ) }
+    OPTIONAL { ?r dct:audience ?c008_22 }
+    OPTIONAL { ?r dct:language ?c008_35 }
+    OPTIONAL { ?r dct:identifier ?c001_0 }
+}`
+
 // Data structures for MARCXML marshalling
 // =======================================
 
@@ -50,6 +104,7 @@ var literalMappings = map[string]string{
 	"http://data.deichman.no/bindingInfo/h":   "h",
 	"http://data.deichman.no/audience/adult":  "a",
 	"http://lexvo.org/id/iso639-3/nob":        "nob",
+	"http://lexvo.org/id/iso639-3/eng":        "eng",
 	"http://data.deichman.no/nationality/n":   "n",
 	"http://dbpedia.org/resource/Fiction":     "1",
 	"http://dbpedia.org/resource/Non-Fiction": "0",
@@ -154,6 +209,7 @@ func bindings(rdf sparql.Results) map[string][]string {
 
 // convertRDF2MARC takes a SPARQL result response, and converts it into
 // a marcRecord, which is easily serializable as marcxml.
+// TODO error not necessary? Given a parsed sparql response, nothing can panic..
 func convertRDF2MARC(rdf sparql.Results) (marcRecord, error) {
 	rec := marcRecord{}
 

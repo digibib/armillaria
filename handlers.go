@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -11,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/digibib/armillaria/sparql"
 	"github.com/julienschmidt/httprouter"
 	log "gopkg.in/inconshreveable/log15.v2"
 )
@@ -178,4 +181,56 @@ func queryExternalSource(w http.ResponseWriter, r *http.Request, values httprout
 
 	}
 
+}
+
+// rdf2marcHandler serves a marcxml record for a given URI (only for manifestation).
+func rdf2marcHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	uri := strings.TrimSpace(r.FormValue("uri"))
+	if uri == "" {
+		http.Error(w, "missing required parameter: uri", http.StatusBadRequest)
+		return
+	}
+
+	res, err := db.Query(
+		fmt.Sprintf(queryRDF2MARC, cfg.RDFStore.DefaultGraph, uri, uri))
+	if err != nil {
+		l.Error("db.Query failed", log.Ctx{"error": err.Error()})
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var rdf sparql.Results
+	err = json.Unmarshal(res, &rdf)
+	if err != nil {
+		l.Error("unmarshal sparql json response failed", log.Ctx{"error": err.Error()})
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if len(rdf.Results.Bindings) == 0 {
+		http.Error(w, "no resource with that URI", http.StatusNotFound)
+		return
+	}
+
+	if rdf.Results.Bindings[0]["profile"].Value != "manifestation" {
+		http.Error(w, "can only convert resources of type fabio:manifestation", http.StatusBadRequest)
+		return
+	}
+
+	rec, err := convertRDF2MARC(rdf)
+	if err != nil {
+		l.Error("rdf2marc coversion failed", log.Ctx{"error": err.Error()})
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	marcxml, err := xml.Marshal(rec)
+	if err != nil {
+		l.Error("marcxml marhsalling failed", log.Ctx{"error": err.Error()})
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
+	io.Copy(w, bytes.NewReader(marcxml))
 }
