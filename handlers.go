@@ -42,6 +42,7 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	if err != nil {
 		l.Error("db.Query failed", log.Ctx{"error": err.Error()})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
