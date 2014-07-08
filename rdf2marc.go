@@ -99,15 +99,19 @@ type subField struct {
 // literalMappings contains the mappings of URIs into string values
 // used in DeichmanMARC/NORMARC.
 var literalMappings = map[string]string{
-	"http://data.deichman.no/format/Book":     "l",
-	"http://dbpedia.org/resource/Poetry":      "D",
-	"http://data.deichman.no/bindingInfo/h":   "h",
-	"http://data.deichman.no/audience/adult":  "a",
-	"http://lexvo.org/id/iso639-3/nob":        "nob",
-	"http://lexvo.org/id/iso639-3/eng":        "eng",
-	"http://data.deichman.no/nationality/n":   "n",
-	"http://dbpedia.org/resource/Fiction":     "1",
-	"http://dbpedia.org/resource/Non-Fiction": "0",
+	"http://data.deichman.no/format/Book":    "l",
+	"http://dbpedia.org/resource/Novel":      "R",
+	"http://dbpedia.org/resource/Poetry":     "D",
+	"http://dbpedia.org/resource/Comic_book": "T",
+	"http://data.deichman.no/bindingInfo/h":  "h",
+	"http://data.deichman.no/bindingInfo/ib", "ib",
+	"http://data.deichman.no/audience/adult":    "a",
+	"http://data.deichman.no/audience/juvenile": "j",
+	"http://lexvo.org/id/iso639-3/nob":          "nob",
+	"http://lexvo.org/id/iso639-3/eng":          "eng",
+	"http://data.deichman.no/nationality/n":     "n",
+	"http://dbpedia.org/resource/Fiction":       "1",
+	"http://dbpedia.org/resource/Non-Fiction":   "0",
 }
 
 type dMapping struct {
