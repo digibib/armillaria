@@ -98,7 +98,7 @@ var dataFieldMappings = []dMapping{
 		dataField: "100", index2: "0",
 		subFields: []sMapping{
 			{code: "a"},
-			{code: "b"},
+			{code: "d"},
 			{code: "j"},
 		},
 	},
@@ -107,7 +107,7 @@ var dataFieldMappings = []dMapping{
 		subFields: []sMapping{
 			{code: "a"},
 			{code: "b"},
-			{code: "j"},
+			{code: "c"},
 		},
 	},
 	{
@@ -129,7 +129,7 @@ var dataFieldMappings = []dMapping{
 
 var controlFieldMappings = []ctrlMapping{
 	{field: "001", pos: []int{0}},
-	{field: "008", pos: []int{22, 33, 35}},
+	{field: "008", pos: []int{35, 33, 22}},
 }
 
 // Helper functions
@@ -137,7 +137,6 @@ var controlFieldMappings = []ctrlMapping{
 
 // bindings takes a sparql.Reusults and returns a map where each
 // bound variable has a key.
-// TODO move to sparql package?
 func bindings(rdf sparql.Results) map[string][]string {
 	rb := make(map[string][]string)
 	for _, k := range rdf.Head.Vars {
