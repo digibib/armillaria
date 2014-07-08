@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/xml"
+	"fmt"
 
 	"github.com/digibib/armillaria/sparql"
 )
@@ -43,12 +45,14 @@ type subField struct {
 // literalMappings contains the mappings of URIs into string values
 // used in DeichmanMARC/NORMARC.
 var literalMappings = map[string]string{
-	"http://data.deichman.no/format/Book":    "l",
-	"http://dbpedia.org/resource/Poetry":     "D",
-	"http://data.deichman.no/bindingInfo/h":  "h",
-	"http://data.deichman.no/audience/adult": "a",
-	"http://lexvo.org/id/iso639-3/nob":       "nob",
-	"http://data.deichman.no/nationality/n":  "n",
+	"http://data.deichman.no/format/Book":     "l",
+	"http://dbpedia.org/resource/Poetry":      "D",
+	"http://data.deichman.no/bindingInfo/h":   "h",
+	"http://data.deichman.no/audience/adult":  "a",
+	"http://lexvo.org/id/iso639-3/nob":        "nob",
+	"http://data.deichman.no/nationality/n":   "n",
+	"http://dbpedia.org/resource/Fiction":     "1",
+	"http://dbpedia.org/resource/Non-Fiction": "0",
 }
 
 type dMapping struct {
@@ -64,7 +68,12 @@ type sMapping struct {
 	repeatable bool
 }
 
-var marcMappings = []dMapping{
+type ctrlMapping struct {
+	field string
+	pos   []int
+}
+
+var dataFieldMappings = []dMapping{
 	{
 		dataField: "019",
 		subFields: []sMapping{
@@ -118,6 +127,11 @@ var marcMappings = []dMapping{
 	},
 }
 
+var controlFieldMappings = []ctrlMapping{
+	{field: "001", pos: []int{0}},
+	{field: "008", pos: []int{22, 33, 35}},
+}
+
 // Helper functions
 // ================
 
@@ -143,14 +157,37 @@ func bindings(rdf sparql.Results) map[string][]string {
 // a marcRecord, which is easily serializable as marcxml.
 func convertRDF2MARC(rdf sparql.Results) (marcRecord, error) {
 	rec := marcRecord{}
-	rec.CtrlFields = []cField{
-		{Tag: "001"},
-		{Tag: "008"},
-	}
 
 	bindings := bindings(rdf)
 
-	for _, m := range marcMappings {
+	cf := make(map[string][]byte)
+	for _, c := range controlFieldMappings {
+		for _, p := range c.pos {
+			boundVar := fmt.Sprintf("c%s_%d", c.field, p)
+			if v, ok := bindings[boundVar]; ok {
+				val := v[0]
+				if v2, ok := literalMappings[val]; ok {
+					val = v2
+				}
+				l := len([]byte(val))
+				if _, ok := cf[c.field]; !ok {
+					cf[c.field] = bytes.Repeat([]byte(" "), l)
+				}
+				if len(cf[c.field]) < (p + l) {
+					biggerSlice := bytes.Repeat([]byte(" "), (p + l))
+					copy(biggerSlice, cf[c.field])
+					cf[c.field] = biggerSlice
+				}
+				copy(cf[c.field][p:], []byte(val))
+			}
+		}
+	}
+	for k, v := range cf {
+		rec.CtrlFields = append(rec.CtrlFields,
+			cField{Tag: k, Field: string(v)})
+	}
+
+	for _, m := range dataFieldMappings {
 		field := dField{Tag: m.dataField, Ind1: m.index1, Ind2: m.index2}
 		var foundMatch bool
 		for _, s := range m.subFields {
