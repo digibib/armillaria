@@ -92,7 +92,7 @@ func main() {
 	mux.ServeFiles("/public/*filepath", http.Dir("./data/public/"))
 
 	// Start server
-	l.Info("starting Armillaria server")
+	l.Info("starting Armillaria server", log.Ctx{"port": cfg.ServePort})
 	err = http.ListenAndServe(fmt.Sprintf(":%d", cfg.ServePort), mux)
 	if err != nil {
 		l.Error("http server crashed", log.Ctx{"details": err.Error()})
