@@ -132,6 +132,7 @@ type ctrlMapping struct {
 	pos   []int
 }
 
+// dataFieldMappings says which MARC fields and subfields we want to populate.
 var dataFieldMappings = []dMapping{
 	{
 		dataField: "019",
@@ -186,6 +187,7 @@ var dataFieldMappings = []dMapping{
 	},
 }
 
+// controlFieldMappings says which position in control fields we want to populate.
 var controlFieldMappings = []ctrlMapping{
 	{field: "001", pos: []int{0}},
 	{field: "008", pos: []int{35, 33, 22}},
@@ -216,9 +218,9 @@ func bindings(rdf sparql.Results) map[string][]string {
 // TODO error not necessary? Given a parsed sparql response, nothing can panic..
 func convertRDF2MARC(rdf sparql.Results) (marcRecord, error) {
 	rec := marcRecord{}
-
 	bindings := bindings(rdf)
 
+	// 1. populate controlfields
 	cf := make(map[string][]byte)
 	for _, c := range controlFieldMappings {
 		for _, p := range c.pos {
@@ -246,6 +248,7 @@ func convertRDF2MARC(rdf sparql.Results) (marcRecord, error) {
 			cField{Tag: k, Field: string(v)})
 	}
 
+	// 2. populate datafields
 	for _, m := range dataFieldMappings {
 		field := dField{Tag: m.dataField, Ind1: m.index1, Ind2: m.index2}
 		var foundMatch bool
