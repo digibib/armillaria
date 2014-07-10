@@ -37,7 +37,7 @@
 							<a class="clickable" style="color:navy" on-click="lastPage">forrige</a>
 						{{/}}
 						{{# offset == 0}}<a class="grey">forrige</a>{{/}}
-						{{# searchResults.hits.total > 10}}
+						{{# searchResults.hits.total > 10 && offset * 10 < searchResults.hits.total-10 }}
 							<a class="clickable" style="color:navy" on-click="nextPage">neste</a>
 						{{/}}
 						{{# !searchResults.hits || searchResults.hits.total <= 10}}<a class="grey">neste</a>{{/}}
