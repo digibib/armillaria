@@ -23,6 +23,7 @@
 				<div class="clearfix"></div>
 				<h2>Endre eksisterende ressurs</h2>
 				<input
+					id="q"
 					type="search"
 					on-keyup='search'
 					on-blur='searchBlur'
@@ -31,6 +32,16 @@
 
 				<div class="mainSearchResults clearfix">
 					<div class="textRight smallText">{{searchResults.hits.total}} treff ({{searchResults.took}} ms.)</div>
+					<div class="smallText">
+						{{# offset > 0}}
+							<a class="clickable" style="color:navy" on-click="lastPage">forrige</a>
+						{{/}}
+						{{# offset == 0}}<a class="grey">forrige</a>{{/}}
+						{{# searchResults.hits.total > 10}}
+							<a class="clickable" style="color:navy" on-click="nextPage">neste</a>
+						{{/}}
+						{{# !searchResults.hits || searchResults.hits.total <= 10}}<a class="grey">neste</a>{{/}}
+					</div>
 					<table>
 						{{#searchResults.hits.hits}}
 							<tr class="{{^._source.published}}utkast{{/}}">
@@ -51,15 +62,20 @@
 				data: {
 					"profiles": ["person", "subject", "place", "work", "manifestation", "classification"],
 					"includeDrafts": true,
-					"searchResults": {}
+					"searchResults": {},
+					"offset": 0,
 				}
 			});
 
 			listener = ractive.on({
-				search: _.debounce(function( event) {
+				searchByKey: _.debounce(function( event) {
+					ractive.set( "offset", 0 );
+					ractive.fire( "search", event );
+				}, 100),
+				search: function( event) {
 					var searchQuery,
 							query = {};
-					var q = event.node.value.trim();
+					var q = document.getElementById("q").value.trim();
 					if (q.length == 0 ) {
 						return;
 					}
@@ -89,11 +105,20 @@
 						ractive.set( 'searchResults',
 												JSON.parse( e.target.responseText) );
 					}
-
+					searchQuery.from = ractive.get("offset")*10;
 					req.send( JSON.stringify( searchQuery ) );
 
-				}, 100),
+				},
 				searchBlur: function( event) {
+
+				},
+				nextPage: function( event ) {
+					ractive.add("offset");
+					ractive.fire( "search", event );
+				},
+				lastPage: function( event ) {
+					ractive.subtract("offset");
+					ractive.fire( "search", event );
 				}
 			});
 
