@@ -13,6 +13,9 @@ type config struct {
 	RDFStore            source
 	ExternalDataSources map[string]source
 	Elasticsearch       string
+	KohaPath            string
+	KohaSyncUser        string
+	KohaSyncPass        string
 }
 
 type source struct {

@@ -8,6 +8,9 @@
     "DefaultGraph": "http://data.deichman.no/books"
   },
   "Elasticsearch": "http://localhost:9200",
+  "KohaPath": "http://localhost:8081",
+  "KohaSyncUser": "sync",
+  "KohaSyncPass": "sync",
   "ExternalDataSources":
   {
     "dewey.info": {
