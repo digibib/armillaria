@@ -133,7 +133,7 @@ var insertQuery = function( publish ) {
   for (var i=0; i<ractive.data.overview.type.length; i++) {
     meta.push( { 'p': 'a', 'o': ractive.get( 'overview.type.'+ i) });
   }
-  if ( !ractive.data.uriFn ) {
+  if ( !ractive.data.uriFn && ractive.get( 'overview.idNumber' ) ) {
     meta.push( { 'p': internalPred( 'id' ), 'o': ractive.get( 'overview.idNumber' ) } );
   }
   if ( ractive.data.existingResource ) {
