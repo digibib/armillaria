@@ -25,7 +25,7 @@ FROM <%s>
 WHERE {
 	{ ?resource _:p %s } UNION { %s _:p ?resource }
 	?resource <armillaria://internal/profile> "manifestation" .
-}
+} LIMIT 100
 `
 
 // indexRequest holds the URI which should be indexed or removed from an index.
