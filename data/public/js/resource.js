@@ -1086,7 +1086,6 @@ if ( urlParams.uri ) {
                 break;
               case internalPred( 'id' ):
                 ractive.set( 'overview.idNumber', getValue( b.o ) );
-                ractive.set( 'overview.uri', '<' + urlParams.uri + '>' );
                 unknownPred = false;
                 break;
               case "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>":
@@ -1097,6 +1096,7 @@ if ( urlParams.uri ) {
                 unknownPred = false;
                 break;
             }
+            ractive.set( 'overview.uri', '<' + urlParams.uri + '>' );
 
             // Store predicates and values whitch are NOT in profile schema:
             if (unknownPred) {
