@@ -240,7 +240,7 @@ func (w kohaSyncWorker) Run() {
 			}
 
 			if len(res.Results.Bindings) == 0 {
-				l.Error("cannot sync non-existing resource to Koha", log.Ctx{"error": err.Error(), "uri": uri}
+				l.Error("cannot sync non-existing resource to Koha", log.Ctx{"error": err.Error(), "uri": uri})
 				break
 			}
 
