@@ -239,6 +239,11 @@ func (w kohaSyncWorker) Run() {
 				break
 			}
 
+			if len(res.Results.Bindings) == 0 {
+				l.Error("cannot sync non-existing resource to Koha", log.Ctx{"error": err.Error(), "uri": uri}
+				break
+			}
+
 			for _, b := range res.Results.Bindings {
 				if b["p"].Value == "armillaria://internal/profile" {
 					profile = b["o"].Value
