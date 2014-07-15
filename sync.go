@@ -41,16 +41,14 @@ func syncKohaAuth(kohaPath, user, pass string) (http.CookieJar, error) {
 	return client.Jar, nil
 }
 
-// 1. Manifestation created
-// -> POST /svc/new_bib
-//    hold on to biblionumber and store in RDF:
-//    -> insert { <manifestation> armillaria:kohaId biblionumber }
-func syncNewManifestation(kohaPath string, jar http.CookieJar, rec marcRecord) (int, error) {
+// syncNewManifestation takes the given marcxml record and send it with a
+//  POST request to /svc/new_bib. It returns the biblionumber it got assigned fro Koha.
+func syncNewManifestation(kohaPath string, jar http.CookieJar, marc []byte) (int, error) {
 	return 122345, nil
 }
 
-// 2. Manifestation updated
-// -> POST /svc/{biblionumber}
+// syncUpdatedManifestation takes the given marcxml record and send it with a
+// POST request to the /svc/{biblio} endpoint.
 func syncUpdatedManifestation(kohaPath string, jar http.CookieJar, marc []byte, biblio int) error {
 	path := fmt.Sprintf("%s/cgi-bin/koha/svc/bib/%d", kohaPath, biblio)
 	client := &http.Client{Jar: jar}
@@ -93,7 +91,7 @@ func syncUpdatedManifestation(kohaPath string, jar http.CookieJar, marc []byte, 
 	return nil
 }
 
-// 3. Manifestation deleted
+// syncDeletedManifestation
 // -> DELETE /svc/{biblionumber}
 func syncDeletedManifestation(kohaPath string, jar http.CookieJar, biblio string) error {
 	return errors.New("svc API does not support deletion yet")
