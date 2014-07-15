@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
+	"strconv"
 
 	"github.com/digibib/armillaria/sparql"
 	log "gopkg.in/inconshreveable/log15.v2"
@@ -27,6 +30,11 @@ WHERE {
 	?resource <armillaria://internal/profile> "manifestation" .
 } LIMIT 100
 `
+
+const insertKohaIDQuery = `
+INSERT DATA
+ { GRAPH <%s>
+	{ %v <armillaria://internal/kohaID> %v } }`
 
 // indexRequest holds the URI which should be indexed or removed from an index.
 type indexRequest string
@@ -224,6 +232,7 @@ func (w kohaSyncWorker) Run() {
 		select {
 		case uri := <-w.Work:
 			// Get RDF of resource
+			// TODO should be same query as needed for RDF2MARC? or just a slim response with armillaria properties?
 			r, err := db.Query(fmt.Sprintf(resourceQuery, cfg.RDFStore.DefaultGraph, uri, uri, uri))
 			if err != nil {
 				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, uri, uri, uri)})
@@ -244,19 +253,103 @@ func (w kohaSyncWorker) Run() {
 				break
 			}
 
+			var bibnrStr string
 			for _, b := range res.Results.Bindings {
 				if b["p"].Value == "armillaria://internal/profile" {
 					profile = b["o"].Value
+				}
+				if b["p"].Value == "armillaria://internal/kohaID" {
+					bibnrStr = b["o"].Value
+				}
+			}
+
+			// We are only syncing manifestations to Koha
+			if profile != "manifestation" {
+				break
+			}
+
+			// Make sure we are authenticated to Koha
+			if kohaCookies == nil {
+				kohaCookies, err = syncKohaAuth(cfg.KohaPath, cfg.KohaSyncUser, cfg.KohaSyncPass)
+				if err != nil {
+					l.Error("cannot sync to Koha,", log.Ctx{"error": err.Error(), "uri": uri})
+					// TODO uri should be stored for retry
 					break
 				}
 			}
 
-			if profile != "manifestation" {
-				// We are only syncing manifestations to Koha
+			// Generate MARCXML record of RDF resource
+			r, err = db.Query(fmt.Sprintf(queryRDF2MARC, cfg.RDFStore.DefaultGraph, uri, uri))
+			if err != nil {
+				l.Error("db.Query failed", log.Ctx{"error": err.Error()})
+				// TODO uri should be stored for retry
 				break
 			}
 
-			l.Info("synced resource to Koha (simulated)", log.Ctx{"uri": uri, "workerID": w.Who()})
+			err = json.Unmarshal(r, &res)
+			if err != nil {
+				l.Error("failed to parse sparql response", log.Ctx{"error": err.Error(), "uri": uri})
+				// TODO uri should be stored for retry
+				break
+			}
+
+			rec, err := convertRDF2MARC(*res)
+			if err != nil {
+				l.Error("failed to generate marc record from RDF", log.Ctx{"error": err.Error(), "uri": uri})
+				// TODO uri should be stored for retry
+				break
+			}
+
+			marc, err := xml.Marshal(rec)
+			if err != nil {
+				l.Error("failed to marshal marc record into XML", log.Ctx{"error": err.Error(), "uri": uri})
+				// TODO uri should be stored for retry
+				break
+			}
+
+			var bibnr int
+			// If resorurce has a kohaID, its an update, otherwise it's a new resource
+			if bibnrStr != "" {
+				// we're updating
+				bibnr, err = strconv.Atoi(bibnrStr)
+				if err != nil {
+					l.Error("kohaID on resource is not an integer", log.Ctx{"error": err.Error(), "uri": uri})
+					// TODO uri should be stored for retry
+					break
+				}
+
+				err = syncUpdatedManifestation(cfg.KohaPath, kohaCookies, marc, bibnr)
+				if err != nil {
+					l.Error("sync updated resource to Koha failed", log.Ctx{"error": err.Error(), "uri": uri})
+					// TODO uri should be stored for retry
+					break
+				}
+			} else {
+				// uri is a new resource
+				bibnr, err = syncNewManifestation(cfg.KohaPath, kohaCookies, marc)
+				if err != nil {
+					l.Error("sync new resource to Koha failed", log.Ctx{"error": err.Error(), "uri": uri})
+					// TODO uri should be stored for retry
+					break
+				}
+
+				// store the koha id as property on the RDF resource
+				r, err := db.Query(fmt.Sprintf(insertKohaIDQuery, cfg.RDFStore.DefaultGraph, uri, bibnr))
+				if err != nil {
+					l.Error("db.Query failed", log.Ctx{"error": err.Error()})
+					// TODO uri should be stored for retry
+					break
+				}
+
+				if bytes.Index(r, []byte("1 (or less) triples")) == -1 {
+					l.Error("failed to insert koha ID on resource", log.Ctx{"error": err.Error(),
+						"sparqlResponse": string(r)})
+					// TODO uri should be stored for retry
+					break
+				}
+			}
+
+			l.Info("synced resource to Koha", log.Ctx{"uri": uri, "workerID": w.Who(), "biblionr": bibnr})
 		case <-w.Quit:
 			println(w.Who(), "quitting")
 			return

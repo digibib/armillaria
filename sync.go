@@ -89,11 +89,11 @@ func syncNewManifestation(kohaPath string, jar http.CookieJar, marc []byte) (int
 func syncUpdatedManifestation(kohaPath string, jar http.CookieJar, marc []byte, biblio int) error {
 	path := fmt.Sprintf("%s/cgi-bin/koha/svc/bib/%d", kohaPath, biblio)
 	client := &http.Client{Jar: jar}
-	req, err := http.NewRequest("GET", path, bytes.NewReader(marc))
+	req, err := http.NewRequest("POST", path, bytes.NewReader(marc))
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Content-Type", "text/xml")
+	req.Header.Set("Content-Type", "text/xml; charset=utf-8")
 	resp, err := client.Do(req)
 	if err != nil {
 		return err

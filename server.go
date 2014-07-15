@@ -22,6 +22,7 @@ var (
 	indexMappings map[string]map[string]string // indexMappings[profile]map[predicate] = property
 	esIndexer     = Indexer{host: "http://localhost:9200", client: http.DefaultClient}
 	idGen         = newIdService()
+	kohaCookies   http.CookieJar
 )
 
 func main() {
