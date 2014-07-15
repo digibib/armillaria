@@ -32,8 +32,8 @@ PREFIX gn:         <http://www.geonames.org/ontology#>
 SELECT *
 FROM <%s>
 WHERE {
-	<%s> dct:title ?245_a .
-    BIND(<%s> AS ?r)
+	%s dct:title ?245_a .
+    BIND(%s AS ?r)
     ?r armillaria:profile ?profile .
     OPTIONAL { ?r fabio:hasSubtitle ?245_b }
     OPTIONAL { ?r bibo:isbn ?020_a }
