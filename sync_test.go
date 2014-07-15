@@ -10,9 +10,10 @@ import (
 var (
 	authServer      *httptest.Server
 	svcUpdateServer *httptest.Server
+	svcNewServer    *httptest.Server
 )
 
-const updateResponse = `
+const successResponse = `
 <?xml version='1.0' standalone='yes'?>
 <response>
 	<biblionumber>164442</biblionumber>
@@ -41,7 +42,16 @@ func init() {
 	svcUpdateServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("CGISESSID")
 		if err == nil && cookie.Value == "8655024ef41e104a1a2c58a6c744e69c" {
-			w.Write([]byte(updateResponse))
+			w.Write([]byte(successResponse))
+			return
+		}
+		http.Error(w, "unathorized", http.StatusForbidden)
+	}))
+
+	svcNewServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("CGISESSID")
+		if err == nil && cookie.Value == "8655024ef41e104a1a2c58a6c744e69c" {
+			w.Write([]byte(successResponse))
 			return
 		}
 		http.Error(w, "unathorized", http.StatusForbidden)
@@ -83,5 +93,20 @@ func TestUpdatedManifestation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
 
+func TestSyncNewManifesation(t *testing.T) {
+	jar, err := syncKohaAuth(authServer.URL, "sync", "sync")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	biblionr, err := syncNewManifestation(svcNewServer.URL, jar, []byte("<marcxml>...</marxml>"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if biblionr != 164442 {
+		t.Errorf("expected biblionr 164442; got %d", biblionr)
+	}
 }
