@@ -67,8 +67,8 @@ WHERE {
 
 // marcRecord represents the top <record> node
 type marcRecord struct {
-	XMLName    xml.Name `xml:"record"`
-	Leader     string   `xml:"leader"`
+	XMLName xml.Name `xml:"record"`
+	//Leader     string   `xml:"leader"`
 	CtrlFields []cField `xml:"controlfield"`
 	DataFields []dField `xml:"datafield"`
 }
