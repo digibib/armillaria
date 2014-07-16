@@ -59,7 +59,7 @@ func (q Queue) runDispatcher() {
 	for i := 0; i < q.NumWorkers; i++ {
 		w := q.WorkerFactory(i+1, q.WorkerQueue)
 		go w.Run()
-		l.Info("staring worker", log.Ctx{"queue": q.Name, "workerID": w.Who()})
+		l.Info("staring worker", log.Ctx{"queue": q.Name, "workerID": w.ID()})
 	}
 
 	for {
@@ -84,25 +84,25 @@ func newQueue(name string, bufferSize int, numWorkers int, wFn workerFactory) Qu
 
 // Worker is the interface witch all queue workers must implement.
 type Worker interface {
-	Who() int // TODO rename ID()
+	ID() int // TODO rename ID()
 	Run()
 	Stop()
 }
 
 type addWorker struct {
-	ID          int
-	Work        chan indexRequest
-	WorkerQueue chan chan indexRequest
-	Quit        chan bool
+	id          int
+	work        chan indexRequest
+	workerQueue chan chan indexRequest
+	quit        chan bool
 }
 
 func (w addWorker) Run() {
 	for {
 		// ready for new work
-		w.WorkerQueue <- w.Work
+		w.workerQueue <- w.work
 
 		select {
-		case uri := <-w.Work:
+		case uri := <-w.work:
 			// Get RDF resource to be indexed
 			r, err := db.Query(fmt.Sprintf(resourceQuery, cfg.RDFStore.DefaultGraph, uri, uri, uri))
 			if err != nil {
@@ -127,7 +127,7 @@ func (w addWorker) Run() {
 				break
 			}
 
-			l.Info("indexed resource", log.Ctx{"uri": uri, "workerID": w.Who(), "index": "public", "profile": profile})
+			l.Info("indexed resource", log.Ctx{"uri": uri, "workerID": w.ID(), "index": "public", "profile": profile})
 
 			// Send uri for sync to Koha
 			queueKohaSync.WorkQueue <- uri
@@ -149,43 +149,43 @@ func (w addWorker) Run() {
 				queueKohaSync.WorkQueue <- indexRequest("<" + b["resource"].Value + ">")
 			}
 
-		case <-w.Quit:
-			println(w.Who(), "quitting")
+		case <-w.quit:
+			println(w.ID(), "quitting")
 			return
 		}
 	}
 }
 
-func (w addWorker) Who() int {
-	return w.ID
+func (w addWorker) ID() int {
+	return w.id
 }
 
 func (w addWorker) Stop() {
-	w.Quit <- true
+	w.quit <- true
 }
 
 func newAddWorker(id int, wq chan chan indexRequest) Worker {
 	return addWorker{
-		ID:          id,
-		Work:        make(chan indexRequest),
-		WorkerQueue: wq,
-		Quit:        make(chan bool, 1),
+		id:          id,
+		work:        make(chan indexRequest),
+		workerQueue: wq,
+		quit:        make(chan bool, 1),
 	}
 }
 
 type rmWorker struct {
-	ID          int
-	Work        chan indexRequest
-	WorkerQueue chan chan indexRequest
-	Quit        chan bool
+	id          int
+	work        chan indexRequest
+	workerQueue chan chan indexRequest
+	quit        chan bool
 }
 
 func (w rmWorker) Run() {
 	for {
-		w.WorkerQueue <- w.Work
+		w.workerQueue <- w.work
 
 		select {
-		case uri := <-w.Work:
+		case uri := <-w.work:
 			err := esIndexer.Remove(string(uri[1 : len(uri)-1]))
 			if err != nil {
 				log.Error("failed to remove resource from index", log.Ctx{"error": err.Error(), "uri": uri})
@@ -193,44 +193,44 @@ func (w rmWorker) Run() {
 				break
 			}
 
-			l.Info("removed resource from index", log.Ctx{"uri": uri, "workerID": w.Who()})
-		case <-w.Quit:
-			println(w.Who(), "quitting")
+			l.Info("removed resource from index", log.Ctx{"uri": uri, "workerID": w.ID()})
+		case <-w.quit:
+			println(w.ID(), "quitting")
 			return
 		}
 	}
 }
 
-func (w rmWorker) Who() int {
-	return w.ID
+func (w rmWorker) ID() int {
+	return w.id
 }
 
 func (w rmWorker) Stop() {
-	w.Quit <- true
+	w.quit <- true
 }
 
 func newRmWorker(id int, wq chan chan indexRequest) Worker {
 	return rmWorker{
-		ID:          id,
-		Work:        make(chan indexRequest),
-		WorkerQueue: wq,
-		Quit:        make(chan bool, 1),
+		id:          id,
+		work:        make(chan indexRequest),
+		workerQueue: wq,
+		quit:        make(chan bool, 1),
 	}
 }
 
 type kohaSyncWorker struct {
-	ID          int
-	Work        chan indexRequest
-	WorkerQueue chan chan indexRequest
-	Quit        chan bool
+	id          int
+	work        chan indexRequest
+	workerQueue chan chan indexRequest
+	quit        chan bool
 }
 
 func (w kohaSyncWorker) Run() {
 	for {
-		w.WorkerQueue <- w.Work
+		w.workerQueue <- w.work
 
 		select {
-		case uri := <-w.Work:
+		case uri := <-w.work:
 			// Get RDF of resource
 			// TODO should be same query as needed for RDF2MARC? or just a slim response with armillaria properties?
 			r, err := db.Query(fmt.Sprintf(resourceQuery, cfg.RDFStore.DefaultGraph, uri, uri, uri))
@@ -272,7 +272,7 @@ func (w kohaSyncWorker) Run() {
 			if kohaCookies == nil {
 				kohaCookies, err = syncKohaAuth(cfg.KohaPath, cfg.KohaSyncUser, cfg.KohaSyncPass)
 				if err != nil {
-					l.Error("cannot sync to Koha,", log.Ctx{"error": err.Error(), "uri": uri})
+					l.Error("cannot authenticate to Koha /svc API", log.Ctx{"error": err.Error(), "uri": uri})
 					// TODO uri should be stored for retry
 					break
 				}
@@ -349,27 +349,27 @@ func (w kohaSyncWorker) Run() {
 				}
 			}
 
-			l.Info("synced resource to Koha", log.Ctx{"uri": uri, "workerID": w.Who(), "biblionr": bibnr})
-		case <-w.Quit:
-			println(w.Who(), "quitting")
+			l.Info("synced resource to Koha", log.Ctx{"uri": uri, "workerID": w.ID(), "biblionr": bibnr})
+		case <-w.quit:
+			println(w.ID(), "quitting")
 			return
 		}
 	}
 }
 
-func (w kohaSyncWorker) Who() int {
-	return w.ID
+func (w kohaSyncWorker) ID() int {
+	return w.id
 }
 
 func (w kohaSyncWorker) Stop() {
-	w.Quit <- true
+	w.quit <- true
 }
 
 func newKohaSyncWorker(id int, wq chan chan indexRequest) Worker {
 	return kohaSyncWorker{
-		ID:          id,
-		Work:        make(chan indexRequest),
-		WorkerQueue: wq,
-		Quit:        make(chan bool, 1),
+		id:          id,
+		work:        make(chan indexRequest),
+		workerQueue: wq,
+		quit:        make(chan bool, 1),
 	}
 }
