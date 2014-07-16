@@ -53,15 +53,14 @@ type workerFactory func(int, chan chan indexRequest) Worker
 func urlify(s string) string { return fmt.Sprintf("<%s>", s) }
 
 func retry(job indexRequest, c chan indexRequest, task string) {
-	time.Sleep(time.Second)
-
 	job.count = job.count + 1
 	if job.count >= maxRetries {
 		l.Info("gave up resource after max retries", log.Ctx{"uri": job.uri, "task": task})
 		return
 	}
-	c <- job
 
+	time.Sleep(time.Second * time.Duration(job.count*10))
+	c <- job
 }
 
 // Queue is an in-memory work queue.
