@@ -6,6 +6,8 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/julienschmidt/httprouter"
 	log "gopkg.in/inconshreveable/log15.v2"
@@ -92,6 +94,26 @@ func main() {
 	mux.HandlerFunc("GET", "/resource", serveFile("./data/html/resource.html"))
 	mux.HandlerFunc("GET", "/", serveFile("./data/html/index.html"))
 	mux.ServeFiles("/public/*filepath", http.Dir("./data/public/"))
+
+	// Trap interutption signals to clean up before shutdown
+	interruptChan := make(chan os.Signal, 1)
+	signal.Notify(interruptChan, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
+	go func() {
+		<-interruptChan
+		l.Info("interrupt signal received; exiting")
+
+		// Stop queue workers, letting them complete any running tasks.
+		queueAdd.ShutDown <- true
+		<-queueAdd.ShutDown
+
+		queueRemove.ShutDown <- true
+		<-queueRemove.ShutDown
+
+		queueKohaSync.ShutDown <- true
+		<-queueKohaSync.ShutDown
+
+		os.Exit(0)
+	}()
 
 	// Start server
 	l.Info("starting Armillaria server", log.Ctx{"port": cfg.ServePort})

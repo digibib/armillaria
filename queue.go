@@ -51,6 +51,8 @@ type Queue struct {
 	WorkQueue     chan indexRequest
 	WorkerQueue   chan chan indexRequest
 	WorkerFactory workerFactory
+	ShutDown      chan bool
+	Workers       []Worker
 }
 
 func (q Queue) runDispatcher() {
@@ -60,6 +62,7 @@ func (q Queue) runDispatcher() {
 		w := q.WorkerFactory(i+1, q.WorkerQueue)
 		go w.Run()
 		l.Info("staring worker", log.Ctx{"queue": q.Name, "workerID": w.ID()})
+		q.Workers = append(q.Workers, w)
 	}
 
 	for {
@@ -69,6 +72,12 @@ func (q Queue) runDispatcher() {
 				worker := <-q.WorkerQueue
 				worker <- work
 			}()
+		case <-q.ShutDown:
+			for _, w := range q.Workers {
+				l.Info("stopping worker", log.Ctx{"queue": q.Name, "workerID": w.ID()})
+				w.Stop()
+			}
+			q.ShutDown <- true
 		}
 	}
 }
@@ -79,6 +88,7 @@ func newQueue(name string, bufferSize int, numWorkers int, wFn workerFactory) Qu
 		WorkQueue:     make(chan indexRequest, bufferSize),
 		NumWorkers:    numWorkers,
 		WorkerFactory: wFn,
+		ShutDown:      make(chan bool),
 	}
 }
 
@@ -150,7 +160,6 @@ func (w addWorker) Run() {
 			}
 
 		case <-w.quit:
-			println(w.ID(), "quitting")
 			return
 		}
 	}
@@ -195,7 +204,6 @@ func (w rmWorker) Run() {
 
 			l.Info("removed resource from index", log.Ctx{"uri": uri, "workerID": w.ID()})
 		case <-w.quit:
-			println(w.ID(), "quitting")
 			return
 		}
 	}
@@ -351,7 +359,6 @@ func (w kohaSyncWorker) Run() {
 
 			l.Info("synced resource to Koha", log.Ctx{"uri": uri, "workerID": w.ID(), "biblionr": bibnr})
 		case <-w.quit:
-			println(w.ID(), "quitting")
 			return
 		}
 	}
