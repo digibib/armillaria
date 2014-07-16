@@ -17,7 +17,6 @@ var res = []byte(`
     `)
 
 var wantMARCXML = `<record>
-  <leader></leader>
   <controlfield tag="001">214177</controlfield>
   <controlfield tag="008">                      a          1 nob</controlfield>
   <datafield tag="019" ind1="" ind2="">
