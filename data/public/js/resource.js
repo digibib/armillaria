@@ -179,10 +179,11 @@ var insertQuery = function( publish ) {
 };
 
 // doQuery sends a SPARQL query the endpoint, and takes a success callback function.
-var doQuery = function( query, callback ) {
-  var postData = 'query=' + encodeURIComponent( query );
+// task parameter should be one of get/create/update/delete
+var doQuery = function( query, task, callback ) {
+  var postData = 'query=' + encodeURIComponent( query ) + '&task=' +task;
   var req = new XMLHttpRequest();
-  req.open( 'POST', '/RDF/resource', true );
+  req.open( 'POST', '/resource', true );
   req.setRequestHeader('Content-Type',
                        'application/x-www-form-urlencoded; charset=UTF-8');
   req.onload = function() {
@@ -386,7 +387,8 @@ listener = ractive.on({
     } else {
       q = insertQuery( false );
     }
-    doQuery( q, function() {
+    var task = ractive.get( 'existingURI') ? 'update' : 'create';
+    doQuery( q, task, function() {
       // update the index
       addToIndex( ractive.get( 'overview.uri' ) );
 
@@ -406,7 +408,8 @@ listener = ractive.on({
     } else {
       q = insertQuery( true, 'forward' );
     }
-    doQuery( q, function() {
+    var task = ractive.get( 'existingURI') ? 'update' : 'create';
+    doQuery( q, task, function() {
       // update the index
       addToIndex( ractive.get( 'overview.uri' ) );
 
@@ -421,7 +424,7 @@ listener = ractive.on({
   delResource: function( event) {
     var published = ractive.get( 'overview.published' ) ? true : false;
     var q = deleteQuery( published );
-    doQuery( q, function() {
+    doQuery( q, 'delete', function() {
       // update the index
       removeFromIndex( ractive.get( 'overview.uri' ) );
 
@@ -890,7 +893,7 @@ ractive.observe( 'overview.uri', function( newURI, oldURI, keyPath ) {
     // Check if URI allready exists in local RDF repo.
     if ( newURI !== "" && newURI !== ractive.get( 'existingURI' ) ) {
       var q = 'ASK WHERE { ' + newURI + '?p ?o }';
-      doQuery( q, function( data) {
+      doQuery( q, 'get', function( data) {
         var exists = data.boolean;
         ractive.set( 'duplicateURI', exists );
         ractive.set( 'draftDisabled', exists );
@@ -1001,7 +1004,7 @@ if ( urlParams.uri ) {
   var q = 'SELECT * WHERE { { <' + urlParams.uri + '> ?p ?o } UNION ' +
           '{ <' + urlParams.uri + '> ?p ?o .' +
           ' ?o ' + internalPred( 'displayLabel') + ' ?l } }';
-  doQuery( q, function( rdfRes ) {
+  doQuery( q, 'get', function( rdfRes ) {
     // If the SPARQL query returns an empty set, forward to create new resource page.
     // TODO display flash message 'resource not found' for the user
     if ( rdfRes.results.bindings.length === 0 && urlParams.profile ) {

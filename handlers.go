@@ -28,7 +28,9 @@ func serveFile(filename string) func(w http.ResponseWriter, r *http.Request) {
 }
 
 // doResourceQuery sends a query to the RDF store SPARQL endpoint and returns the
-// application/sparql-results+json  response.
+// application/sparql-results+json response. If query param task is set to either
+// create/update/delete, the uri will be published to the corresponding indexing
+// and sync queues.
 func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	q := r.FormValue("query")
 	if q == "" {
@@ -46,6 +48,16 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		l.Error("db.Query failed", log.Ctx{"error": err.Error()})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	task := r.FormValue("task")
+	switch task {
+	case "create":
+		// publish to indexqueye + kohasyncque
+	case "update":
+		// publish to queue
+	case "delete":
+		// publish to queue
 	}
 
 	w.Header().Set("Content-Type", "application/json")
