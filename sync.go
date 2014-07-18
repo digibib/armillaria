@@ -128,8 +128,30 @@ func syncUpdatedManifestation(kohaPath string, jar http.CookieJar, marc []byte, 
 	return nil
 }
 
-// syncDeletedManifestation
-// -> DELETE /svc/{biblionumber}
-func syncDeletedManifestation(kohaPath string, jar http.CookieJar, biblio string) error {
-	return errors.New("svc API does not support deletion yet")
+// syncDeletedManifestation sends a DELETE request to /svc/biblio/{biblionr}
+func syncDeletedManifestation(kohaPath string, jar http.CookieJar, biblio int) error {
+	path := fmt.Sprintf("%s/cgi-bin/koha/svc/bib/%d", kohaPath, biblio)
+	client := &http.Client{Jar: jar}
+	req, err := http.NewRequest("DELETE", path, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "text/xml; charset=utf-8")
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		var svcRes svcResponse
+		d := xml.NewDecoder(resp.Body)
+
+		if err := d.Decode(&svcRes); err != nil {
+			return err
+		}
+		return errors.New(svcRes.Error)
+	}
+
+	return nil
 }
