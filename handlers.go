@@ -57,7 +57,11 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 
 	task := r.FormValue("task")
 	switch task {
-	case "create", "update":
+	case "createDraft", "updateDraft":
+		if q, err := queues.Get("addToIndex"); err == nil {
+			q.WorkQueue <- qRequest{uri: uri, draft: true}
+		}
+	case "createPublished", "updatePublished":
 		if q, err := queues.Get("addToIndex"); err == nil {
 			q.WorkQueue <- qRequest{uri: uri}
 		}

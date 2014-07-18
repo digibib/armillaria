@@ -14,10 +14,10 @@ import (
 
 const resourceQuery = `
 SELECT *
-FROM <%s>
 WHERE {
-   { %s ?p ?o .
-     MINUS { %s ?p ?o . ?o <armillaria://internal/displayLabel> _:l . } }
+   { GRAPH <%s> {
+   	 %s ?p ?o .
+     MINUS { %s ?p ?o . ?o <armillaria://internal/displayLabel> _:l . } } }
    UNION
    { %s ?p ?o .
      ?o <armillaria://internal/displayLabel> ?l . }
@@ -44,6 +44,7 @@ const maxRetries = 3
 // and keeps track of how many times the sync has been attemtped.
 type qRequest struct {
 	uri    string
+	draft  bool // true when resource is a draft
 	delete bool // true when resource should be deleted
 	count  int
 }
@@ -159,13 +160,16 @@ func (w addWorker) Run() {
 		select {
 		case job := <-w.work:
 			// Get RDF resource to be indexed
-			r, err := db.Query(fmt.Sprintf(resourceQuery, cfg.RDFStore.DefaultGraph, job.uri, job.uri, job.uri))
+			var graph = cfg.RDFStore.DefaultGraph
+			if job.draft {
+				graph = cfg.RDFStore.DraftsGraph
+			}
+			r, err := db.Query(fmt.Sprintf(resourceQuery, graph, job.uri, job.uri, job.uri))
 			if err != nil {
-				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, job.uri, job.uri, job.uri)})
+				l.Error("db.Query failed", log.Ctx{"error": err.Error()})
 				if q, err := queues.Get("addToIndex"); err == nil {
 					retry(job, q.WorkQueue, "index")
 				}
-
 				break
 			}
 
@@ -292,7 +296,11 @@ func (w kohaSyncWorker) Run() {
 		case job := <-w.work:
 			// Get RDF of resource
 			// TODO should be same query as needed for RDF2MARC? or just a slim response with armillaria properties?
-			r, err := db.Query(fmt.Sprintf(resourceQuery, cfg.RDFStore.DefaultGraph, job.uri, job.uri, job.uri))
+			var graph = cfg.RDFStore.DefaultGraph
+			if job.draft {
+				graph = cfg.RDFStore.DraftsGraph
+			}
+			r, err := db.Query(fmt.Sprintf(resourceQuery, graph, job.uri, job.uri, job.uri))
 			if err != nil {
 				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, job.uri, job.uri, job.uri)})
 				if q, err := queues.Get("syncToKoha"); err == nil {

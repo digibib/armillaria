@@ -5,7 +5,8 @@
     "Endpoint": "http://localhost:8890/sparql-auth",
     "Username": "dba",
     "Password": "dba",
-    "DefaultGraph": "http://data.deichman.no/books"
+    "DefaultGraph": "http://data.deichman.no/books",
+    "DraftsGraph": "http://data.deichman.no/drafts"
   },
   "Elasticsearch": "http://localhost:9200",
   "KohaPath": "http://localhost:8081",

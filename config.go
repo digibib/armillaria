@@ -21,6 +21,7 @@ type config struct {
 type source struct {
 	Endpoint          string
 	DefaultGraph      string
+	DraftsGraph       string
 	InternalNameSpace string
 	Username          string
 	Password          string

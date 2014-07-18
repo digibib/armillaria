@@ -28,7 +28,7 @@ type Indexer struct {
 	client *http.Client
 }
 
-// Add adds anresource to an index.
+// Add adds a resource to an index.
 func (i Indexer) Add(idx string, tp string, b []byte) error {
 	req, err := http.NewRequest(
 		"POST",

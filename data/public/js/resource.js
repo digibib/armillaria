@@ -368,7 +368,7 @@ listener = ractive.on({
     } else {
       q = insertQuery( false );
     }
-    var task = ractive.get( 'existingURI') ? 'update' : 'create';
+    var task = ractive.get( 'existingURI') ? 'updateDraft' : 'createDraft';
     doQuery( q, task, function() {
       // TODO check for return errors
 
@@ -388,7 +388,7 @@ listener = ractive.on({
     } else {
       q = insertQuery( true, 'forward' );
     }
-    var task = ractive.get( 'existingURI') ? 'update' : 'create';
+    var task = ractive.get( 'existingURI') ? 'updatePublished' : 'createPublished';
     doQuery( q, task, function() {
       // TODO check for returned errors
 
