@@ -22,10 +22,9 @@
 						on-click="queryExternal">
 						Innhent data fra eksterne kilder
 				  </button>
-  				<button on-click="saveDraft" disabled='{{draftDisabled}}'>
-						{{^overview.published}}Lagre kladd{{/overview.published}}
-						{{#overview.published}}Trekk tilbake til kladd{{/overview.published}}
-					</button>
+				{{^overview.published}}
+  					<button on-click="saveDraft" disabled='{{draftDisabled}}'>Lagre kladd</button>
+				{{/overview.published}}
   					<button on-click="publish" disabled='{{publishDisabled}}'>Lagre</button>
 					{{#existingResource}}
 						<button on-click="delResource" disabled='{{deleteDisabled}}'>Slett</button>
