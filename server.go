@@ -13,14 +13,12 @@ import (
 	log "gopkg.in/inconshreveable/log15.v2"
 )
 
-// Global variables and constants
+// Global variables
 var (
 	db            *localRDFStore
 	cfg           *config
 	l             = log.New()
-	queueAdd      Queue
-	queueRemove   Queue
-	queueKohaSync Queue
+	queues        Queues
 	indexMappings map[string]map[string]string // indexMappings[profile]map[predicate] = property
 	esIndexer     = Indexer{host: "http://localhost:9200", client: http.DefaultClient}
 	idGen         = newIdService()
@@ -67,12 +65,10 @@ func main() {
 	}
 
 	// Initialize queues and workers
-	queueAdd = newQueue("addToIndex", 100, 2, newAddWorker)
-	go queueAdd.runDispatcher()
-	queueRemove = newQueue("rmFromIndex", 100, 1, newRmWorker)
-	go queueRemove.runDispatcher()
-	queueKohaSync = newQueue("syncToKoha", 1000, 1, newKohaSyncWorker)
-	go queueKohaSync.runDispatcher()
+	queues = append(queues, newQueue("addToIndex", 100, 2, newAddWorker))
+	queues = append(queues, newQueue("rmFromIndex", 100, 1, newRmWorker))
+	queues = append(queues, newQueue("syncToKoha", 1000, 1, newKohaSyncWorker))
+	queues.StartAll()
 
 	// setup ElasticSearch proxy
 	esHost, err := url.Parse(cfg.Elasticsearch)
@@ -87,7 +83,7 @@ func main() {
 	mux.Handle("POST", "/search/*indexandtype", searchHandler(esProxy))
 	mux.GET("/id/:type", getIdHandler)
 	mux.GET("/rdf2marc", rdf2marcHandler)
-	mux.POST("/RDF/resource", doResourceQuery)
+	mux.POST("/resource", doResourceQuery)
 	mux.POST("/queue/add", addToIndex)
 	mux.POST("/queue/remove", rmFromIndex)
 	mux.POST("/external/:source", queryExternalSource)
@@ -103,14 +99,7 @@ func main() {
 		l.Info("interrupt signal received; exiting")
 
 		// Stop queue workers, letting them complete any running tasks.
-		queueAdd.ShutDown <- true
-		<-queueAdd.ShutDown
-
-		queueRemove.ShutDown <- true
-		<-queueRemove.ShutDown
-
-		queueKohaSync.ShutDown <- true
-		<-queueKohaSync.ShutDown
+		queues.StopAll()
 
 		os.Exit(0)
 	}()
