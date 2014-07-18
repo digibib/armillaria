@@ -84,8 +84,6 @@ func main() {
 	mux.GET("/id/:type", getIdHandler)
 	mux.GET("/rdf2marc", rdf2marcHandler)
 	mux.POST("/resource", doResourceQuery)
-	mux.POST("/queue/add", addToIndex)
-	mux.POST("/queue/remove", rmFromIndex)
 	mux.POST("/external/:source", queryExternalSource)
 	mux.HandlerFunc("GET", "/resource", serveFile("./data/html/resource.html"))
 	mux.HandlerFunc("GET", "/", serveFile("./data/html/index.html"))

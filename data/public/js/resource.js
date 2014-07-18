@@ -181,7 +181,9 @@ var insertQuery = function( publish ) {
 // doQuery sends a SPARQL query the endpoint, and takes a success callback function.
 // task parameter should be one of get/create/update/delete
 var doQuery = function( query, task, callback ) {
-  var postData = 'query=' + encodeURIComponent( query ) + '&task=' +task;
+  var postData = 'query=' + encodeURIComponent( query )
+  postData += '&task=' +task;
+  postData += '&uri=' + encodeURIComponent( ractive.get( 'overview.uri' ) );
   var req = new XMLHttpRequest();
   req.open( 'POST', '/resource', true );
   req.setRequestHeader('Content-Type',
@@ -202,27 +204,6 @@ var doQuery = function( query, task, callback ) {
 
   req.send( postData );
 };
-
-// enqueue sends an uri to a named queue.
-// It's currently fire & forget: no success/failure handling.
-var enqueue = function ( queue, uri) {
-  var postData = 'uri=' + encodeURIComponent( uri );
-  var req = new XMLHttpRequest();
-  req.open( 'POST', '/queue/' + queue, true) ;
-  req.setRequestHeader( 'Content-Type',
-                        'application/x-www-form-urlencoded; charset=UTF-8' );
-  req.send( postData );
-}
-
-// addToIndex sends an uri to the indexing queue.
-var addToIndex = function( uri ) {
-  enqueue( "add", uri );
-}
-
-// removeFromIndex sends an uri to the remove-from-index queue.
-var removeFromIndex = function( uri) {
-  enqueue( "remove", uri );
-}
 
 // searchES queries ElasticSearch for URIs with searchLabel q
 var searchES = _.debounce( function( q, kp) {
@@ -389,8 +370,7 @@ listener = ractive.on({
     }
     var task = ractive.get( 'existingURI') ? 'update' : 'create';
     doQuery( q, task, function() {
-      // update the index
-      addToIndex( ractive.get( 'overview.uri' ) );
+      // TODO check for return errors
 
       // Forward to saved uri
       setTimeout( function () {
@@ -410,8 +390,7 @@ listener = ractive.on({
     }
     var task = ractive.get( 'existingURI') ? 'update' : 'create';
     doQuery( q, task, function() {
-      // update the index
-      addToIndex( ractive.get( 'overview.uri' ) );
+      // TODO check for returned errors
 
       // Forward to saved uri
       setTimeout( function () {
@@ -425,8 +404,7 @@ listener = ractive.on({
     var published = ractive.get( 'overview.published' ) ? true : false;
     var q = deleteQuery( published );
     doQuery( q, 'delete', function() {
-      // update the index
-      removeFromIndex( ractive.get( 'overview.uri' ) );
+      // TODO check for returned errors
 
       // forward to create new resource
       setTimeout( function () {

@@ -37,6 +37,11 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		http.Error(w, "missing required parameter: query", http.StatusBadRequest)
 		return
 	}
+	uri := r.FormValue("uri")
+	if uri == "" {
+		http.Error(w, "missing required parameter: uri", http.StatusBadRequest)
+		return
+	}
 
 	if db == nil {
 		http.Error(w, "uninitialized RDF store", http.StatusInternalServerError)
@@ -52,44 +57,18 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 
 	task := r.FormValue("task")
 	switch task {
-	case "create":
-		// publish to indexqueye + kohasyncque
-	case "update":
-		// publish to queue
+	case "create", "update":
+		if q, err := queues.Get("addToIndex"); err == nil {
+			q.WorkQueue <- qRequest{uri: uri}
+		}
 	case "delete":
-		// publish to queue
+		if q, err := queues.Get("rmFromIndex"); err == nil {
+			q.WorkQueue <- qRequest{uri: uri}
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	io.Copy(w, bytes.NewReader(res))
-}
-
-// addToIndex enqueues the requested URI to the indexing queue.
-func addToIndex(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	uri := strings.TrimSpace(r.FormValue("uri"))
-	if uri == "" {
-		http.Error(w, "missing required parameter: uri", http.StatusBadRequest)
-		return
-	}
-
-	if q, err := queues.Get("addToIndex"); err == nil {
-		q.WorkQueue <- qRequest{uri: uri}
-	}
-	w.WriteHeader(http.StatusCreated)
-}
-
-// rmFromIndex enqueues the requested URI to the remove-from-index queue.
-func rmFromIndex(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	uri := strings.TrimSpace(r.FormValue("uri"))
-	if uri == "" {
-		http.Error(w, "missing required parameter: uri", http.StatusBadRequest)
-		return
-	}
-
-	if q, err := queues.Get("rmFromIndex"); err == nil {
-		q.WorkQueue <- qRequest{uri: uri}
-	}
-	w.WriteHeader(http.StatusCreated)
 }
 
 // searchHandler proxies request to Elasticsearch.
