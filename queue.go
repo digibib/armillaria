@@ -136,7 +136,8 @@ func newQueue(name string, bufferSize int, numWorkers int, wFn workerFactory) Qu
 	}
 }
 
-// Worker is the interface witch all queue workers must implement.
+// Worker is the interface for queue workers; they should
+// know how to start, stop and identify themselves.
 type Worker interface {
 	ID() int
 	Run()
