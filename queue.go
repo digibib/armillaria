@@ -40,19 +40,20 @@ INSERT DATA
 // How many times to try to sync to Koha before we give up
 const maxRetries = 3
 
-// indexRequest holds the URI which should be indexed and synced,
+// qRequest holds the URI which should be indexed and synced,
 // and keeps track of how many times the sync has been attemtped.
-type indexRequest struct {
-	uri   string
-	count int
+type qRequest struct {
+	uri    string
+	delete bool // true when resource should be deleted
+	count  int
 }
 
 // workerFactory is the function signature for creating a worker.
-type workerFactory func(int, chan chan indexRequest) Worker
+type workerFactory func(int, chan chan qRequest) Worker
 
 func urlify(s string) string { return fmt.Sprintf("<%s>", s) }
 
-func retry(job indexRequest, c chan indexRequest, task string) {
+func retry(job qRequest, c chan qRequest, task string) {
 	job.count = job.count + 1
 	if job.count >= maxRetries {
 		l.Info("gave up resource after max retries", log.Ctx{"uri": job.uri, "task": task})
@@ -67,8 +68,8 @@ func retry(job indexRequest, c chan indexRequest, task string) {
 type Queue struct {
 	Name          string
 	NumWorkers    int
-	WorkQueue     chan indexRequest
-	WorkerQueue   chan chan indexRequest
+	WorkQueue     chan qRequest
+	WorkerQueue   chan chan qRequest
 	WorkerFactory workerFactory
 	ShutDown      chan bool
 	Workers       []Worker
@@ -99,7 +100,7 @@ func (qs Queues) StopAll() {
 }
 
 func (q Queue) runDispatcher() {
-	q.WorkerQueue = make(chan chan indexRequest, q.NumWorkers)
+	q.WorkerQueue = make(chan chan qRequest, q.NumWorkers)
 
 	for i := 0; i < q.NumWorkers; i++ {
 		w := q.WorkerFactory(i+1, q.WorkerQueue)
@@ -128,7 +129,7 @@ func (q Queue) runDispatcher() {
 func newQueue(name string, bufferSize int, numWorkers int, wFn workerFactory) Queue {
 	return Queue{
 		Name:          name,
-		WorkQueue:     make(chan indexRequest, bufferSize),
+		WorkQueue:     make(chan qRequest, bufferSize),
 		NumWorkers:    numWorkers,
 		WorkerFactory: wFn,
 		ShutDown:      make(chan bool),
@@ -137,15 +138,15 @@ func newQueue(name string, bufferSize int, numWorkers int, wFn workerFactory) Qu
 
 // Worker is the interface witch all queue workers must implement.
 type Worker interface {
-	ID() int // TODO rename ID()
+	ID() int
 	Run()
 	Stop()
 }
 
 type addWorker struct {
 	id          int
-	work        chan indexRequest
-	workerQueue chan chan indexRequest
+	work        chan qRequest
+	workerQueue chan chan qRequest
 	quit        chan bool
 }
 
@@ -211,7 +212,7 @@ func (w addWorker) Run() {
 			}
 			for _, b := range res.Results.Bindings {
 				if q, err := queues.Get("syncToKoha"); err == nil {
-					q.WorkQueue <- indexRequest{uri: "<" + b["resource"].Value + ">"}
+					q.WorkQueue <- qRequest{uri: "<" + b["resource"].Value + ">"}
 				}
 			}
 
@@ -221,18 +222,13 @@ func (w addWorker) Run() {
 	}
 }
 
-func (w addWorker) ID() int {
-	return w.id
-}
+func (w addWorker) ID() int { return w.id }
+func (w addWorker) Stop()   { w.quit <- true }
 
-func (w addWorker) Stop() {
-	w.quit <- true
-}
-
-func newAddWorker(id int, wq chan chan indexRequest) Worker {
+func newAddWorker(id int, wq chan chan qRequest) Worker {
 	return addWorker{
 		id:          id,
-		work:        make(chan indexRequest),
+		work:        make(chan qRequest),
 		workerQueue: wq,
 		quit:        make(chan bool, 1),
 	}
@@ -240,8 +236,8 @@ func newAddWorker(id int, wq chan chan indexRequest) Worker {
 
 type rmWorker struct {
 	id          int
-	work        chan indexRequest
-	workerQueue chan chan indexRequest
+	work        chan qRequest
+	workerQueue chan chan qRequest
 	quit        chan bool
 }
 
@@ -268,18 +264,13 @@ func (w rmWorker) Run() {
 	}
 }
 
-func (w rmWorker) ID() int {
-	return w.id
-}
+func (w rmWorker) ID() int { return w.id }
+func (w rmWorker) Stop()   { w.quit <- true }
 
-func (w rmWorker) Stop() {
-	w.quit <- true
-}
-
-func newRmWorker(id int, wq chan chan indexRequest) Worker {
+func newRmWorker(id int, wq chan chan qRequest) Worker {
 	return rmWorker{
 		id:          id,
-		work:        make(chan indexRequest),
+		work:        make(chan qRequest),
 		workerQueue: wq,
 		quit:        make(chan bool, 1),
 	}
@@ -287,8 +278,8 @@ func newRmWorker(id int, wq chan chan indexRequest) Worker {
 
 type kohaSyncWorker struct {
 	id          int
-	work        chan indexRequest
-	workerQueue chan chan indexRequest
+	work        chan qRequest
+	workerQueue chan chan qRequest
 	quit        chan bool
 }
 
@@ -447,18 +438,13 @@ func (w kohaSyncWorker) Run() {
 	}
 }
 
-func (w kohaSyncWorker) ID() int {
-	return w.id
-}
+func (w kohaSyncWorker) ID() int { return w.id }
+func (w kohaSyncWorker) Stop()   { w.quit <- true }
 
-func (w kohaSyncWorker) Stop() {
-	w.quit <- true
-}
-
-func newKohaSyncWorker(id int, wq chan chan indexRequest) Worker {
+func newKohaSyncWorker(id int, wq chan chan qRequest) Worker {
 	return kohaSyncWorker{
 		id:          id,
-		work:        make(chan indexRequest),
+		work:        make(chan qRequest),
 		workerQueue: wq,
 		quit:        make(chan bool, 1),
 	}

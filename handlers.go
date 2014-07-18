@@ -73,7 +73,7 @@ func addToIndex(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 
 	if q, err := queues.Get("addToIndex"); err == nil {
-		q.WorkQueue <- indexRequest{uri: uri}
+		q.WorkQueue <- qRequest{uri: uri}
 	}
 	w.WriteHeader(http.StatusCreated)
 }
@@ -87,7 +87,7 @@ func rmFromIndex(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 
 	if q, err := queues.Get("rmFromIndex"); err == nil {
-		q.WorkQueue <- indexRequest{uri: uri}
+		q.WorkQueue <- qRequest{uri: uri}
 	}
 	w.WriteHeader(http.StatusCreated)
 }
