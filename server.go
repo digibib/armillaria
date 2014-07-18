@@ -14,6 +14,8 @@ import (
 )
 
 // Global variables
+// TODO create env struct and move all globals into it
+// env must be supplied to handlers or embedded in handler structs.
 var (
 	db            *localRDFStore
 	cfg           *config
