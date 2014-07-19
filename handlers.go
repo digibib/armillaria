@@ -92,7 +92,6 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 			}
 		}
 		if updated != r.FormValue("updated") {
-			fmt.Printf("\nupdated RDF: %v updated FORM: %v\n", updated, r.FormValue("updated"))
 			http.Error(w, "resource has been updated by someone else, please reload", http.StatusInternalServerError)
 			return
 		}
