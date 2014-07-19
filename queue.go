@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"strconv"
 	"time"
@@ -24,29 +22,32 @@ WHERE {
 }`
 
 const affectedResourcesQuery = `
-SELECT ?resource
+SELECT ?resource, ?kohaID
 FROM <%s>
 WHERE {
-	{ ?resource _:p %s } UNION { %s _:p ?resource }
+	      { ?resource _:p %s ; <armillaria://internal/kohaID> ?kohaID }
+	UNION { %s _:p ?resource . ?resource <armillaria://internal/kohaID> ?kohaID }
 	?resource <armillaria://internal/profile> "manifestation" .
 } LIMIT 100
 `
 
 const insertKohaIDQuery = `
-INSERT DATA
- { GRAPH <%s>
-	{ %v <armillaria://internal/kohaID> %v } }`
+WITH <%s>
+DELETE { %v <armillaria://internal/updated> ?updated }
+INSERT { %v <armillaria://internal/updated> ?now ; <armillaria://internal/kohaID> %v }
+WHERE { OPTIONAL { %v <armillaria://internal/updated> ?updated } .
+        BIND( now() AS ?now ) }`
 
 // How many times to try to sync to Koha before we give up
 const maxRetries = 3
 
-// qRequest holds the URI which should be indexed and synced,
+// qRequest holds the URI/biblinr which should be indexed and synced,
 // and keeps track of how many times the sync has been attemtped.
 type qRequest struct {
-	uri    string
-	draft  bool // true when resource is a draft
-	delete bool // true when resource should be deleted
-	count  int
+	uri      string
+	biblionr int
+	task     string // createDraft|updateDraft|deleteDraft|create|update|delete
+	count    int
 }
 
 // workerFactory is the function signature for creating a worker.
@@ -54,10 +55,10 @@ type workerFactory func(int, chan chan qRequest) Worker
 
 func urlify(s string) string { return fmt.Sprintf("<%s>", s) }
 
-func retry(job qRequest, c chan qRequest, task string) {
+func retry(job qRequest, c chan qRequest, queue string) {
 	job.count = job.count + 1
 	if job.count >= maxRetries {
-		l.Info("gave up resource after max retries", log.Ctx{"uri": job.uri, "task": task})
+		l.Info("gave up resource after max retries", log.Ctx{"uri": job.uri, "task": job.task, "queue": queue})
 		return
 	}
 
@@ -161,14 +162,14 @@ func (w addWorker) Run() {
 		case job := <-w.work:
 			// Get RDF resource to be indexed
 			var graph = cfg.RDFStore.DefaultGraph
-			if job.draft {
+			if job.task == "createDraft" || job.task == "updateDraft" {
 				graph = cfg.RDFStore.DraftsGraph
 			}
 			r, err := db.Query(fmt.Sprintf(resourceQuery, graph, job.uri, job.uri, job.uri))
 			if err != nil {
 				l.Error("db.Query failed", log.Ctx{"error": err.Error()})
 				if q, err := queues.Get("addToIndex"); err == nil {
-					retry(job, q.WorkQueue, "index")
+					retry(job, q.WorkQueue, q.Name)
 				}
 				break
 			}
@@ -178,7 +179,7 @@ func (w addWorker) Run() {
 			if err != nil {
 				l.Error("failed to create indexable json doc from RDF resource", log.Ctx{"error": err.Error(), "uri": job.uri})
 				if q, err := queues.Get("addToIndex"); err == nil {
-					retry(job, q.WorkQueue, "index")
+					retry(job, q.WorkQueue, q.Name)
 				}
 				break
 			}
@@ -188,7 +189,7 @@ func (w addWorker) Run() {
 			if err != nil {
 				log.Error("failed to index resource", log.Ctx{"error": err.Error(), "uri": job.uri})
 				if q, err := queues.Get("addToIndex"); err == nil {
-					retry(job, q.WorkQueue, "index")
+					retry(job, q.WorkQueue, q.Name)
 				}
 				break
 			}
@@ -205,7 +206,7 @@ func (w addWorker) Run() {
 			if err != nil {
 				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, job.uri, job.uri, job.uri)})
 				if q, err := queues.Get("addToIndex"); err == nil {
-					retry(job, q.WorkQueue, "index")
+					retry(job, q.WorkQueue, q.Name)
 				}
 				break
 			}
@@ -214,10 +215,16 @@ func (w addWorker) Run() {
 			err = json.Unmarshal(r, &res)
 			if err != nil {
 				l.Error("failed to parse sparql response", log.Ctx{"error": err.Error(), "uri": job.uri})
+				// TODO now what, retry?
+				break
 			}
 			for _, b := range res.Results.Bindings {
 				if q, err := queues.Get("syncToKoha"); err == nil {
-					q.WorkQueue <- qRequest{uri: "<" + b["resource"].Value + ">"}
+					job := qRequest{uri: "<" + b["resource"].Value + ">"}
+					if biblionr, err := strconv.Atoi(b["kohaID"].Value); err == nil {
+						job.biblionr = biblionr
+					}
+					q.WorkQueue <- job
 				}
 			}
 
@@ -256,10 +263,16 @@ func (w rmWorker) Run() {
 			if err != nil {
 				log.Error("failed to remove resource from index", log.Ctx{"error": err.Error(), "uri": job.uri})
 				if q, err := queues.Get("rmFromIndex"); err == nil {
-					retry(job, q.WorkQueue, "unindex")
+					retry(job, q.WorkQueue, q.Name)
 				}
-
 				break
+			}
+
+			// send to Koha-sync queue for deletion, if not a draf
+			if job.task != "deleteDraft" {
+				if q, err := queues.Get("syncToKoha"); err == nil {
+					q.WorkQueue <- job
+				}
 			}
 
 			l.Info("removed resource from index", log.Ctx{"uri": job.uri, "workerID": w.ID()})
@@ -294,153 +307,38 @@ func (w kohaSyncWorker) Run() {
 
 		select {
 		case job := <-w.work:
-			// Get RDF of resource
-			// TODO should be same query as needed for RDF2MARC? or just a slim response with armillaria properties?
-			var graph = cfg.RDFStore.DefaultGraph
-			if job.draft {
-				graph = cfg.RDFStore.DraftsGraph
+			var err error
+			var tryAgain bool
+			var biblionr int
+
+			switch job.task {
+			case "create":
+				biblionr, tryAgain, err = syncCreateResource(job.uri)
+			case "update":
+				tryAgain, err = syncUpdateResource(job.uri, job.biblionr)
+			case "delete":
+				tryAgain, err = syncDeleteResource(job.biblionr)
+			default:
+				continue
 			}
-			r, err := db.Query(fmt.Sprintf(resourceQuery, graph, job.uri, job.uri, job.uri))
 			if err != nil {
-				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, job.uri, job.uri, job.uri)})
-				if q, err := queues.Get("syncToKoha"); err == nil {
-					retry(job, q.WorkQueue, "Koha-sync")
-				}
-				break
-			}
-			var res *sparql.Results
-			var profile string
-			err = json.Unmarshal(r, &res)
-			if err != nil {
-				l.Error("failed to parse sparql response", log.Ctx{"error": err.Error(), "uri": job.uri})
-				if q, err := queues.Get("syncToKoha"); err == nil {
-					retry(job, q.WorkQueue, "Koha-sync")
-				}
-				break
-			}
-
-			if len(res.Results.Bindings) == 0 {
-				l.Error("cannot sync non-existing resource to Koha", log.Ctx{"error": err.Error(), "uri": job.uri})
-				break
-			}
-
-			var bibnrStr string
-			for _, b := range res.Results.Bindings {
-				if b["p"].Value == "armillaria://internal/profile" {
-					profile = b["o"].Value
-				}
-				if b["p"].Value == "armillaria://internal/kohaID" {
-					bibnrStr = b["o"].Value
-				}
-			}
-
-			// We are only syncing manifestations to Koha
-			if profile != "manifestation" {
-				break
-			}
-
-			// Make sure we are authenticated to Koha
-			if kohaCookies == nil {
-				kohaCookies, err = syncKohaAuth(cfg.KohaPath, cfg.KohaSyncUser, cfg.KohaSyncPass)
-				if err != nil {
-					l.Error("cannot authenticate to Koha /svc API", log.Ctx{"error": err.Error(), "uri": job.uri})
+				l.Error("sync resource to Koha failed",
+					log.Ctx{"error": err.Error(), "uri": job.uri, "worker": w.ID(), "task": job.task})
+				if tryAgain {
 					if q, err := queues.Get("syncToKoha"); err == nil {
-						retry(job, q.WorkQueue, "Koha-sync")
+						retry(job, q.WorkQueue, q.Name)
 					}
-					break
+					continue
 				}
 			}
 
-			// Generate MARCXML record of RDF resource
-			r, err = db.Query(fmt.Sprintf(queryRDF2MARC, cfg.RDFStore.DefaultGraph, job.uri, job.uri))
-			if err != nil {
-				l.Error("db.Query failed", log.Ctx{"error": err.Error()})
-				if q, err := queues.Get("syncToKoha"); err == nil {
-					retry(job, q.WorkQueue, "Koha-sync")
-				}
-				break
+			if biblionr == 0 {
+				biblionr = job.biblionr
 			}
 
-			err = json.Unmarshal(r, &res)
-			if err != nil {
-				l.Error("failed to parse sparql response", log.Ctx{"error": err.Error(), "uri": job.uri})
-				if q, err := queues.Get("syncToKoha"); err == nil {
-					retry(job, q.WorkQueue, "Koha-sync")
-				}
-				break
-			}
+			l.Info("synced resource to Koha",
+				log.Ctx{"uri": job.uri, "workerID": w.ID(), "biblionr": biblionr, "task": job.task})
 
-			rec, err := convertRDF2MARC(*res)
-			if err != nil {
-				l.Error("failed to generate marc record from RDF", log.Ctx{"error": err.Error(), "uri": job.uri})
-				if q, err := queues.Get("syncToKoha"); err == nil {
-					retry(job, q.WorkQueue, "Koha-sync")
-				}
-				break
-			}
-
-			marc, err := xml.Marshal(rec)
-			if err != nil {
-				l.Error("failed to marshal marc record into XML", log.Ctx{"error": err.Error(), "uri": job.uri})
-				if q, err := queues.Get("syncToKoha"); err == nil {
-					retry(job, q.WorkQueue, "Koha-sync")
-				}
-				break
-			}
-
-			var bibnr int
-			// If resorurce has a kohaID, its an update, otherwise it's a new resource
-			if bibnrStr != "" {
-				// we're updating
-				bibnr, err = strconv.Atoi(bibnrStr)
-				if err != nil {
-					l.Error("kohaID on resource is not an integer", log.Ctx{"error": err.Error(), "uri": job.uri})
-					if q, err := queues.Get("syncToKoha"); err == nil {
-						retry(job, q.WorkQueue, "Koha-sync")
-					}
-					break
-				}
-
-				err = syncUpdatedManifestation(cfg.KohaPath, kohaCookies, marc, bibnr)
-				if err != nil {
-					l.Error("sync updated resource to Koha failed", log.Ctx{"error": err.Error(), "uri": job.uri})
-					if q, err := queues.Get("syncToKoha"); err == nil {
-						retry(job, q.WorkQueue, "Koha-sync")
-					}
-					break
-				}
-			} else {
-				// uri is a new resource
-				bibnr, err = syncNewManifestation(cfg.KohaPath, kohaCookies, marc)
-				if err != nil {
-					l.Error("sync new resource to Koha failed", log.Ctx{"error": err.Error(), "uri": job.uri})
-					if q, err := queues.Get("syncToKoha"); err == nil {
-						retry(job, q.WorkQueue, "Koha-sync")
-					}
-					break
-				}
-
-				// store the koha id as property on the RDF resource
-				r, err := db.Query(fmt.Sprintf(insertKohaIDQuery, cfg.RDFStore.DefaultGraph, job.uri, bibnr))
-				if err != nil {
-					l.Error("db.Query failed", log.Ctx{"error": err.Error()})
-					if q, err := queues.Get("syncToKoha"); err == nil {
-						retry(job, q.WorkQueue, "Koha-sync")
-					}
-					break
-				}
-
-				if bytes.Index(r, []byte("1 (or less) triples")) == -1 {
-					l.Error("failed to insert koha ID on resource", log.Ctx{"error": err.Error(),
-						"sparqlResponse": string(r)})
-					if q, err := queues.Get("syncToKoha"); err == nil {
-						retry(job, q.WorkQueue, "Koha-sync")
-					}
-					break
-				}
-			}
-
-			l.Info("synced resource to Koha", log.Ctx{"uri": job.uri, "workerID": w.ID(), "biblionr": bibnr})
 		case <-w.quit:
 			return
 		}

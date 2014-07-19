@@ -32,11 +32,13 @@ func serveFile(filename string) func(w http.ResponseWriter, r *http.Request) {
 // create/update/delete, the uri will be published to the corresponding indexing
 // and sync queues.
 func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+
 	q := r.FormValue("query")
 	if q == "" {
 		http.Error(w, "missing required parameter: query", http.StatusBadRequest)
 		return
 	}
+
 	uri := r.FormValue("uri")
 	if uri == "" {
 		http.Error(w, "missing required parameter: uri", http.StatusBadRequest)
@@ -48,6 +50,98 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		return
 	}
 
+	// Before we can proxy the request to the query to the SPARQL endpoint, we have to:
+	// * check if anyone else has updated the resource since profile form was loaded
+	// * make sure that no other resources are linked to the resource we want to delete
+	// * store armillaria:kohaID on the job request, needed for koha-sync
+
+	task := r.FormValue("task")
+	job := qRequest{uri: uri, task: task}
+
+	if task == "update" || task == "updateDraft" {
+		q := fmt.Sprintf(
+			`PREFIX armillaria: <armillaria://internal/>
+			 SELECT ?updated, ?kohaID
+			 WHERE {
+				%s armillaria:updated ?updated
+				OPTIONAL { %s armillaria:kohaID ?kohaID }
+			 }`, uri, uri)
+		rb, err := db.Query(q)
+		if err != nil {
+			l.Error("db.Query failed", log.Ctx{"error": err.Error()})
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		var res *sparql.Results
+		err = json.Unmarshal(rb, &res)
+		if err != nil {
+			l.Error("failed to parse SPARQL response", log.Ctx{"error": err.Error()})
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		var updated string
+		for _, b := range res.Results.Bindings {
+			if id, ok := b["kohaID"]; ok {
+				if idNr, err := strconv.Atoi(id.Value); err == nil {
+					job.biblionr = idNr
+				}
+			}
+			if u, ok := b["updated"]; ok {
+				updated = u.Value
+			}
+		}
+		if updated != r.FormValue("updated") {
+			fmt.Printf("\nupdated RDF: %v updated FORM: %v\n", updated, r.FormValue("updated"))
+			http.Error(w, "resource has been updated by someone else, please reload", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	if task == "delete" || task == "deleteDraft" {
+		q := fmt.Sprintf(
+			`PREFIX armillaria: <armillaria://internal/>
+			 SELECT ?updated, ?kohaID, ?dependant
+			 WHERE {
+				%s armillaria:updated ?updated
+				OPTIONAL { %s armillaria:kohaID ?kohaID }
+				OPTIONAL { ?dependant _:p %s }
+			 } LIMIT 3`, uri, uri, uri)
+		rb, err := db.Query(q)
+		if err != nil {
+			l.Error("db.Query failed", log.Ctx{"error": err.Error()})
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		var res *sparql.Results
+		err = json.Unmarshal(rb, &res)
+		if err != nil {
+			l.Error("failed to parse SPARQL response", log.Ctx{"error": err.Error()})
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		var updated string
+		for _, b := range res.Results.Bindings {
+			if id, ok := b["kohaID"]; ok {
+				if idNr, err := strconv.Atoi(id.Value); err == nil {
+					job.biblionr = idNr
+				}
+			}
+			if u, ok := b["updated"]; ok {
+				updated = u.Value
+			}
+			if _, ok := b["dependant"]; ok {
+				http.Error(w, "cannot delete: other resources are dependant on this resource", http.StatusInternalServerError)
+				return
+			}
+		}
+		if updated != r.FormValue("updated") {
+			http.Error(w, "resource has been updated by someone else, please reload", http.StatusInternalServerError)
+			return
+		}
+	}
+
 	res, err := db.Query(q)
 	if err != nil {
 		l.Error("db.Query failed", log.Ctx{"error": err.Error()})
@@ -55,19 +149,15 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		return
 	}
 
-	task := r.FormValue("task")
+	// publish to queues
 	switch task {
-	case "createDraft", "updateDraft":
+	case "create", "update", "createDraft", "updateDraft":
 		if q, err := queues.Get("addToIndex"); err == nil {
-			q.WorkQueue <- qRequest{uri: uri, draft: true}
+			q.WorkQueue <- job
 		}
-	case "createPublished", "updatePublished":
-		if q, err := queues.Get("addToIndex"); err == nil {
-			q.WorkQueue <- qRequest{uri: uri}
-		}
-	case "delete":
+	case "delete", "deleteDraft":
 		if q, err := queues.Get("rmFromIndex"); err == nil {
-			q.WorkQueue <- qRequest{uri: uri}
+			q.WorkQueue <- job
 		}
 	}
 

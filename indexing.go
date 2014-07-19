@@ -158,6 +158,9 @@ func createIndexDoc(mappings map[string]map[string]string, sparqlRes []byte, uri
 		return nil, profile, errors.New("failed to parse sparql response")
 
 	}
+	if len(res.Results.Bindings) == 0 {
+		return nil, profile, errors.New("resource does not exist")
+	}
 	// fetch the resource profile from the SPARQL responsevar profile string
 	for _, b := range res.Results.Bindings {
 		if b["p"].Value == "armillaria://internal/profile" {

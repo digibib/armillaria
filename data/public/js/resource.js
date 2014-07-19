@@ -184,6 +184,9 @@ var doQuery = function( query, task, callback ) {
   var postData = 'query=' + encodeURIComponent( query )
   postData += '&task=' +task;
   postData += '&uri=' + encodeURIComponent( ractive.get( 'overview.uri' ) );
+  if ( ractive.get( 'overview.updated' ) ) {
+    postData += '&updated=' + encodeURIComponent( ractive.get( 'overview.updated') );
+  }
   var req = new XMLHttpRequest();
   req.open( 'POST', '/resource', true );
   req.setRequestHeader('Content-Type',
@@ -193,8 +196,7 @@ var doQuery = function( query, task, callback ) {
       //console.log( req.responseText );
       callback( JSON.parse( req.responseText ) );
     } else {
-      console.log( 'SPARQL endpoint responed with an error' );
-      ractive.set( { 'draftDisabled': true, 'deleteDisabled': true, 'publishDisabled': true } );
+      ractive.set( { 'serverError': req.responseText } );
     }
   };
 
@@ -388,7 +390,7 @@ listener = ractive.on({
     } else {
       q = insertQuery( true, 'forward' );
     }
-    var task = ractive.get( 'existingURI') ? 'updatePublished' : 'createPublished';
+    var task = published ? 'update' : 'create';
     doQuery( q, task, function() {
       // TODO check for returned errors
 
@@ -403,7 +405,8 @@ listener = ractive.on({
   delResource: function( event) {
     var published = ractive.get( 'overview.published' ) ? true : false;
     var q = deleteQuery( published );
-    doQuery( q, 'delete', function() {
+    var task = published ? 'delete' : 'deleteDraft';
+    doQuery( q, task, function() {
       // TODO check for returned errors
 
       // forward to create new resource

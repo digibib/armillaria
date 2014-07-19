@@ -2,11 +2,15 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/http/cookiejar"
+	"strconv"
+
+	"github.com/digibib/armillaria/sparql"
 )
 
 var svcNotAuthorized = errors.New("unauthorized")
@@ -154,4 +158,171 @@ func syncDeletedManifestation(kohaPath string, jar http.CookieJar, biblio int) e
 	}
 
 	return nil
+}
+
+func syncCreateResource(uri string) (int, bool, error) {
+	r, err := db.Query(fmt.Sprintf(resourceQuery, cfg.RDFStore.DefaultGraph, uri, uri, uri))
+	if err != nil {
+		return 0, true, fmt.Errorf("db.Query: %v", err.Error())
+	}
+
+	var res *sparql.Results
+	var profile string
+	err = json.Unmarshal(r, &res)
+	if err != nil {
+		return 0, true, fmt.Errorf("parse SPARQL response: %v", err.Error())
+	}
+
+	if len(res.Results.Bindings) == 0 {
+		return 0, false, errors.New("cannot sync non-existing resource to Koha")
+	}
+
+	for _, b := range res.Results.Bindings {
+		if b["p"].Value == "armillaria://internal/profile" {
+			profile = b["o"].Value
+			break
+		}
+	}
+
+	if profile != "manifestation" {
+		return 0, false, errors.New("only manifestations are synced to Koha")
+	}
+
+	// Make sure we are authenticated to Koha
+	if kohaCookies == nil {
+		kohaCookies, err = syncKohaAuth(cfg.KohaPath, cfg.KohaSyncUser, cfg.KohaSyncPass)
+		if err != nil {
+			return 0, true, fmt.Errorf("authenticate to Koha: %v", err.Error())
+		}
+	}
+
+	// Generate MARCXML record of RDF resource
+	r, err = db.Query(fmt.Sprintf(queryRDF2MARC, cfg.RDFStore.DefaultGraph, uri, uri))
+	if err != nil {
+		return 0, true, fmt.Errorf("db.Query: %v", err.Error())
+	}
+
+	err = json.Unmarshal(r, &res)
+	if err != nil {
+		return 0, true, fmt.Errorf("parse SPARQL response: %v", err.Error())
+	}
+
+	rec, err := convertRDF2MARC(*res)
+	if err != nil {
+		return 0, true, fmt.Errorf("convertRDF2MARC: %v", err.Error())
+	}
+
+	marc, err := xml.Marshal(rec)
+	if err != nil {
+		return 0, true, fmt.Errorf("MARC xml marhsal: %v", err.Error())
+	}
+
+	bibnr, err := syncNewManifestation(cfg.KohaPath, kohaCookies, marc)
+	if err != nil {
+		return 0, true, fmt.Errorf("syncNewManifestation: %v", err.Error())
+	}
+
+	// store the koha id as property on the RDF resource
+	r, err = db.Query(fmt.Sprintf(insertKohaIDQuery, cfg.RDFStore.DefaultGraph, uri, uri, bibnr, uri))
+	if err != nil {
+		return 0, true, fmt.Errorf("db.Query: %v", err.Error())
+	}
+
+	if bytes.Index(r, []byte("1 (or less) triples")) == -1 {
+		// TODO now what? retry will create another duplicate biblio record in Koha..
+		if err != nil {
+			return 0, false, fmt.Errorf("insert koha ID on resource: %v", err.Error())
+		}
+	}
+
+	return bibnr, false, nil
+}
+
+func syncUpdateResource(uri string, biblionr int) (bool, error) {
+	r, err := db.Query(fmt.Sprintf(resourceQuery, cfg.RDFStore.DefaultGraph, uri, uri, uri))
+	if err != nil {
+		return true, fmt.Errorf("db.Query: %v", err.Error())
+	}
+
+	var res *sparql.Results
+	var profile string
+	err = json.Unmarshal(r, &res)
+	if err != nil {
+		return true, fmt.Errorf("parse SPARQL response: %v", err.Error())
+	}
+
+	if len(res.Results.Bindings) == 0 {
+		return false, errors.New("cannot sync non-existing resource to Koha")
+	}
+
+	var bibnrStr string
+	var bibnr int
+	for _, b := range res.Results.Bindings {
+		if b["p"].Value == "armillaria://internal/profile" {
+			profile = b["o"].Value
+		}
+		if b["p"].Value == "armillaria://internal/kohaID" {
+			bibnrStr = b["o"].Value
+		}
+	}
+
+	if bibnrStr != "" {
+		bibnr, err = strconv.Atoi(bibnrStr)
+		if err != nil {
+			return false, errors.New("kohaID on resource is not an integer")
+		}
+	}
+
+	if bibnr == 0 {
+		return false, errors.New("cannot sync to Koha; missing kohaID on resource")
+	}
+
+	if profile != "manifestation" {
+		return false, errors.New("only manifestations are synced to Koha")
+	}
+
+	// Make sure we are authenticated to Koha
+	if kohaCookies == nil {
+		kohaCookies, err = syncKohaAuth(cfg.KohaPath, cfg.KohaSyncUser, cfg.KohaSyncPass)
+		if err != nil {
+			return true, fmt.Errorf("authenticate to Koha: %v", err.Error())
+		}
+	}
+
+	// Generate MARCXML record of RDF resource
+	r, err = db.Query(fmt.Sprintf(queryRDF2MARC, cfg.RDFStore.DefaultGraph, uri, uri))
+	if err != nil {
+		return true, fmt.Errorf("db.Query: %v", err.Error())
+	}
+
+	err = json.Unmarshal(r, &res)
+	if err != nil {
+		return true, fmt.Errorf("parse SPARQL response: %v", err.Error())
+	}
+
+	rec, err := convertRDF2MARC(*res)
+	if err != nil {
+		return true, fmt.Errorf("convertRDF2MARC: %v", err.Error())
+	}
+
+	marc, err := xml.Marshal(rec)
+	if err != nil {
+		return true, fmt.Errorf("MARC xml marhsal: %v", err.Error())
+	}
+
+	// we're updating
+	err = syncUpdatedManifestation(cfg.KohaPath, kohaCookies, marc, bibnr)
+	if err != nil {
+		return true, fmt.Errorf("syncUpdatedManifestation: %v", err.Error())
+	}
+
+	return false, nil
+}
+
+func syncDeleteResource(biblionr int) (bool, error) {
+	err := syncDeletedManifestation(cfg.KohaPath, kohaCookies, biblionr)
+	if err != nil {
+		return true, err
+	}
+	return false, nil
 }
