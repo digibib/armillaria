@@ -152,11 +152,11 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	// publish to queues
 	switch task {
 	case "create", "update", "createDraft", "updateDraft":
-		if q, err := queues.Get("addToIndex"); err == nil {
+		if q, err := queues.Get("add"); err == nil {
 			q.WorkQueue <- job
 		}
 	case "delete", "deleteDraft":
-		if q, err := queues.Get("rmFromIndex"); err == nil {
+		if q, err := queues.Get("remove"); err == nil {
 			q.WorkQueue <- job
 		}
 	}

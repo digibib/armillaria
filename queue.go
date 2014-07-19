@@ -168,7 +168,7 @@ func (w addWorker) Run() {
 			r, err := db.Query(fmt.Sprintf(resourceQuery, graph, job.uri, job.uri, job.uri))
 			if err != nil {
 				l.Error("db.Query failed", log.Ctx{"error": err.Error()})
-				if q, err := queues.Get("addToIndex"); err == nil {
+				if q, err := queues.Get("add"); err == nil {
 					retry(job, q.WorkQueue, q.Name)
 				}
 				break
@@ -178,7 +178,7 @@ func (w addWorker) Run() {
 			resourceBody, profile, err := createIndexDoc(indexMappings, r, string(job.uri[1:len(job.uri)-1]))
 			if err != nil {
 				l.Error("failed to create indexable json doc from RDF resource", log.Ctx{"error": err.Error(), "uri": job.uri})
-				if q, err := queues.Get("addToIndex"); err == nil {
+				if q, err := queues.Get("add"); err == nil {
 					retry(job, q.WorkQueue, q.Name)
 				}
 				break
@@ -188,7 +188,7 @@ func (w addWorker) Run() {
 			err = esIndexer.Add("public", profile, resourceBody)
 			if err != nil {
 				log.Error("failed to index resource", log.Ctx{"error": err.Error(), "uri": job.uri})
-				if q, err := queues.Get("addToIndex"); err == nil {
+				if q, err := queues.Get("add"); err == nil {
 					retry(job, q.WorkQueue, q.Name)
 				}
 				break
@@ -197,7 +197,7 @@ func (w addWorker) Run() {
 			l.Info("indexed resource", log.Ctx{"uri": job.uri, "workerID": w.ID(), "index": "public", "profile": profile})
 
 			// Send uri for sync to Koha
-			if q, err := queues.Get("syncToKoha"); err == nil {
+			if q, err := queues.Get("KohaSync"); err == nil {
 				q.WorkQueue <- job
 			}
 
@@ -205,7 +205,7 @@ func (w addWorker) Run() {
 			r, err = db.Query(fmt.Sprintf(affectedResourcesQuery, cfg.RDFStore.DefaultGraph, job.uri, job.uri))
 			if err != nil {
 				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, job.uri, job.uri, job.uri)})
-				if q, err := queues.Get("addToIndex"); err == nil {
+				if q, err := queues.Get("add"); err == nil {
 					retry(job, q.WorkQueue, q.Name)
 				}
 				break
@@ -219,7 +219,7 @@ func (w addWorker) Run() {
 				break
 			}
 			for _, b := range res.Results.Bindings {
-				if q, err := queues.Get("syncToKoha"); err == nil {
+				if q, err := queues.Get("KohaSync"); err == nil {
 					job := qRequest{uri: "<" + b["resource"].Value + ">"}
 					if biblionr, err := strconv.Atoi(b["kohaID"].Value); err == nil {
 						job.biblionr = biblionr
@@ -262,7 +262,7 @@ func (w rmWorker) Run() {
 			err := esIndexer.Remove(string(job.uri[1 : len(job.uri)-1]))
 			if err != nil {
 				log.Error("failed to remove resource from index", log.Ctx{"error": err.Error(), "uri": job.uri})
-				if q, err := queues.Get("rmFromIndex"); err == nil {
+				if q, err := queues.Get("remove"); err == nil {
 					retry(job, q.WorkQueue, q.Name)
 				}
 				break
@@ -270,7 +270,7 @@ func (w rmWorker) Run() {
 
 			// send to Koha-sync queue for deletion, if not a draf
 			if job.task != "deleteDraft" {
-				if q, err := queues.Get("syncToKoha"); err == nil {
+				if q, err := queues.Get("KohaSync"); err == nil {
 					q.WorkQueue <- job
 				}
 			}
@@ -325,7 +325,7 @@ func (w kohaSyncWorker) Run() {
 				l.Error("sync resource to Koha failed",
 					log.Ctx{"error": err.Error(), "uri": job.uri, "worker": w.ID(), "task": job.task})
 				if tryAgain {
-					if q, err := queues.Get("syncToKoha"); err == nil {
+					if q, err := queues.Get("KohaSync"); err == nil {
 						retry(job, q.WorkQueue, q.Name)
 					}
 					continue

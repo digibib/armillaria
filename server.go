@@ -67,9 +67,9 @@ func main() {
 	}
 
 	// Initialize queues and workers
-	queues = append(queues, newQueue("addToIndex", 100, 2, newAddWorker))
-	queues = append(queues, newQueue("rmFromIndex", 100, 1, newRmWorker))
-	queues = append(queues, newQueue("syncToKoha", 1000, 1, newKohaSyncWorker))
+	queues = append(queues, newQueue("add", 100, 2, newAddWorker))
+	queues = append(queues, newQueue("remove", 100, 1, newRmWorker))
+	queues = append(queues, newQueue("KohaSync", 1000, 1, newKohaSyncWorker))
 	queues.StartAll()
 
 	// setup ElasticSearch proxy
