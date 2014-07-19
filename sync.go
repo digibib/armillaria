@@ -26,9 +26,9 @@ type svcResponse struct {
 	// so we ignore the rest of the response.
 }
 
-// syncKohaAuth attemps to authenticate against Koha's /svc endpoint.
+// svcAuth attemps to authenticate against Koha's /svc endpoint.
 // If sucessfull, it returns a cookiejar with the authenticated cookie.
-func syncKohaAuth(kohaPath, user, pass string) (http.CookieJar, error) {
+func svcAuth(kohaPath, user, pass string) (http.CookieJar, error) {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		return nil, err
@@ -45,9 +45,9 @@ func syncKohaAuth(kohaPath, user, pass string) (http.CookieJar, error) {
 	return client.Jar, nil
 }
 
-// syncNewManifestation takes the given marcxml record and send it with a
-//  POST request to /svc/new_bib. It returns the biblionumber it got assigned fro Koha.
-func syncNewManifestation(kohaPath string, jar http.CookieJar, marc []byte) (int, error) {
+// svcNew takes the given marcxml record and send it with a  POST request
+// to /svc/new_bib. It returns the biblionumber it got assigned fro Koha.
+func svcNew(kohaPath string, jar http.CookieJar, marc []byte) (int, error) {
 	path := fmt.Sprintf("%s/cgi-bin/koha/svc/new_bib", kohaPath)
 	client := &http.Client{Jar: jar}
 	req, err := http.NewRequest("POST", path, bytes.NewReader(marc))
@@ -88,9 +88,9 @@ func syncNewManifestation(kohaPath string, jar http.CookieJar, marc []byte) (int
 	return svcRes.Biblio, nil
 }
 
-// syncUpdatedManifestation takes the given marcxml record and send it with a
-// POST request to the /svc/{biblio} endpoint.
-func syncUpdatedManifestation(kohaPath string, jar http.CookieJar, marc []byte, biblio int) error {
+// svcUpdate takes the given marcxml record and send it with a POST request
+// to the /svc/{biblio} endpoint.
+func svcUpdate(kohaPath string, jar http.CookieJar, marc []byte, biblio int) error {
 	path := fmt.Sprintf("%s/cgi-bin/koha/svc/bib/%d", kohaPath, biblio)
 	client := &http.Client{Jar: jar}
 	req, err := http.NewRequest("POST", path, bytes.NewReader(marc))
@@ -132,8 +132,8 @@ func syncUpdatedManifestation(kohaPath string, jar http.CookieJar, marc []byte, 
 	return nil
 }
 
-// syncDeletedManifestation sends a DELETE request to /svc/biblio/{biblionr}
-func syncDeletedManifestation(kohaPath string, jar http.CookieJar, biblio int) error {
+// svcDelete sends a DELETE request to /svc/biblio/{biblionr}
+func svcDelete(kohaPath string, jar http.CookieJar, biblio int) error {
 	path := fmt.Sprintf("%s/cgi-bin/koha/svc/bib/%d", kohaPath, biblio)
 	client := &http.Client{Jar: jar}
 	req, err := http.NewRequest("DELETE", path, nil)
@@ -190,7 +190,7 @@ func syncCreateResource(uri string) (int, bool, error) {
 
 	// Make sure we are authenticated to Koha
 	if kohaCookies == nil {
-		kohaCookies, err = syncKohaAuth(cfg.KohaPath, cfg.KohaSyncUser, cfg.KohaSyncPass)
+		kohaCookies, err = svcAuth(cfg.KohaPath, cfg.KohaSyncUser, cfg.KohaSyncPass)
 		if err != nil {
 			return 0, true, fmt.Errorf("authenticate to Koha: %v", err.Error())
 		}
@@ -217,9 +217,9 @@ func syncCreateResource(uri string) (int, bool, error) {
 		return 0, true, fmt.Errorf("MARC xml marhsal: %v", err.Error())
 	}
 
-	bibnr, err := syncNewManifestation(cfg.KohaPath, kohaCookies, marc)
+	bibnr, err := svcNew(cfg.KohaPath, kohaCookies, marc)
 	if err != nil {
-		return 0, true, fmt.Errorf("syncNewManifestation: %v", err.Error())
+		return 0, true, fmt.Errorf("svcNew: %v", err.Error())
 	}
 
 	// store the koha id as property on the RDF resource
@@ -283,7 +283,7 @@ func syncUpdateResource(uri string, biblionr int) (bool, error) {
 
 	// Make sure we are authenticated to Koha
 	if kohaCookies == nil {
-		kohaCookies, err = syncKohaAuth(cfg.KohaPath, cfg.KohaSyncUser, cfg.KohaSyncPass)
+		kohaCookies, err = svcAuth(cfg.KohaPath, cfg.KohaSyncUser, cfg.KohaSyncPass)
 		if err != nil {
 			return true, fmt.Errorf("authenticate to Koha: %v", err.Error())
 		}
@@ -311,16 +311,16 @@ func syncUpdateResource(uri string, biblionr int) (bool, error) {
 	}
 
 	// we're updating
-	err = syncUpdatedManifestation(cfg.KohaPath, kohaCookies, marc, bibnr)
+	err = svcUpdate(cfg.KohaPath, kohaCookies, marc, bibnr)
 	if err != nil {
-		return true, fmt.Errorf("syncUpdatedManifestation: %v", err.Error())
+		return true, fmt.Errorf("svcUpdate: %v", err.Error())
 	}
 
 	return false, nil
 }
 
 func syncDeleteResource(biblionr int) (bool, error) {
-	err := syncDeletedManifestation(cfg.KohaPath, kohaCookies, biblionr)
+	err := svcDelete(cfg.KohaPath, kohaCookies, biblionr)
 	if err != nil {
 		return true, err
 	}
