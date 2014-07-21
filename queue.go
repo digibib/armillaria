@@ -169,8 +169,10 @@ func (w addWorker) Run() {
 			l.Info("indexed resource", log.Ctx{"uri": job.uri, "workerID": w.ID(), "index": "public", "profile": profile})
 
 			// Send uri for sync to Koha
-			if q, err := queues.Get("KohaSync"); err == nil {
-				q.WorkQueue <- job
+			if cfg.SyncToKoha {
+				if q, err := queues.Get("KohaSync"); err == nil {
+					q.WorkQueue <- job
+				}
 			}
 
 			// Check if there are other resources which are affected by this resource.
@@ -241,7 +243,7 @@ func (w rmWorker) Run() {
 			}
 
 			// send to Koha-sync queue for deletion, if not a draf
-			if job.task != "deleteDraft" {
+			if job.task != "deleteDraft" && cfg.SyncToKoha {
 				if q, err := queues.Get("KohaSync"); err == nil {
 					q.WorkQueue <- job
 				}
