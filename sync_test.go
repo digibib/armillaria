@@ -58,15 +58,15 @@ func init() {
 	}))
 }
 
-func TestSyncKohaAuth(t *testing.T) {
-	_, err := syncKohaAuth(authServer.URL, "sync", "wrong")
+func TestSvcAuth(t *testing.T) {
+	_, err := svcAuth(authServer.URL, "sync", "wrong")
 	if err == nil {
-		t.Error("syncKohaAuth: expected wrong password to result in an error")
+		t.Error("svcAuth: expected wrong password to result in an error")
 	}
 
-	jar, err := syncKohaAuth(authServer.URL, "sync", "sync")
+	jar, err := svcAuth(authServer.URL, "sync", "sync")
 	if err != nil {
-		t.Fatal("syncKohaAuth with correct user & pass result in error: %v", err)
+		t.Fatal("svcAuth with correct user & pass result in error: %v", err)
 	}
 	u, err := url.Parse(authServer.URL)
 	if err != nil {
@@ -84,24 +84,24 @@ func TestSyncKohaAuth(t *testing.T) {
 }
 
 func TestUpdatedManifestation(t *testing.T) {
-	jar, err := syncKohaAuth(authServer.URL, "sync", "sync")
+	jar, err := svcAuth(authServer.URL, "sync", "sync")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = syncUpdatedManifestation(svcUpdateServer.URL, jar, []byte("<marcxml> ... </marcxml>"), 164442)
+	err = svcUpdate(svcUpdateServer.URL, jar, []byte("<marcxml> ... </marcxml>"), 164442)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestSyncNewManifesation(t *testing.T) {
-	jar, err := syncKohaAuth(authServer.URL, "sync", "sync")
+	jar, err := svcAuth(authServer.URL, "sync", "sync")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	biblionr, err := syncNewManifestation(svcNewServer.URL, jar, []byte("<marcxml>...</marxml>"))
+	biblionr, err := svcNew(svcNewServer.URL, jar, []byte("<marcxml>...</marxml>"))
 	if err != nil {
 		t.Fatal(err)
 	}
