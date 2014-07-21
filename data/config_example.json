@@ -10,6 +10,7 @@
   },
   "Elasticsearch": "http://localhost:9200",
   "KohaPath": "http://localhost:8081",
+  "SyncToKoha": true,
   "KohaSyncUser": "sync",
   "KohaSyncPass": "sync",
   "ExternalDataSources":

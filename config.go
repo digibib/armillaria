@@ -16,6 +16,7 @@ type config struct {
 	KohaPath            string
 	KohaSyncUser        string
 	KohaSyncPass        string
+	SyncToKoha          bool
 }
 
 type source struct {
