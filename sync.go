@@ -161,6 +161,8 @@ func svcUpdate(kohaPath string, jar http.CookieJar, marc []byte, biblio int) err
 }
 
 // svcDelete sends a DELETE request to /svc/biblio/{biblionr}
+// TODO this depends on patch #12590
+// http://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=12590
 func svcDelete(kohaPath string, jar http.CookieJar, biblio int) error {
 	path := fmt.Sprintf("%s/cgi-bin/koha/svc/bib/%d", kohaPath, biblio)
 	client := &http.Client{Jar: jar}
