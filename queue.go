@@ -10,34 +10,6 @@ import (
 	log "gopkg.in/inconshreveable/log15.v2"
 )
 
-const resourceQuery = `
-SELECT *
-WHERE {
-   { GRAPH <%s> {
-   	 %s ?p ?o .
-     MINUS { %s ?p ?o . ?o <armillaria://internal/displayLabel> _:l . } } }
-   UNION
-   { %s ?p ?o .
-     ?o <armillaria://internal/displayLabel> ?l . }
-}`
-
-const affectedResourcesQuery = `
-SELECT ?resource, ?kohaID
-FROM <%s>
-WHERE {
-	      { ?resource _:p %s ; <armillaria://internal/kohaID> ?kohaID }
-	UNION { %s _:p ?resource . ?resource <armillaria://internal/kohaID> ?kohaID }
-	?resource <armillaria://internal/profile> "manifestation" .
-} LIMIT 100
-`
-
-const insertKohaIDQuery = `
-WITH <%s>
-DELETE { %v <armillaria://internal/updated> ?updated }
-INSERT { %v <armillaria://internal/updated> ?now ; <armillaria://internal/kohaID> %v }
-WHERE { OPTIONAL { %v <armillaria://internal/updated> ?updated } .
-        BIND( now() AS ?now ) }`
-
 // How many times to try to sync to Koha before we give up
 const maxRetries = 3
 
