@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -13,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/digibib/armillaria/sparql"
 	"github.com/julienschmidt/httprouter"
 	log "gopkg.in/inconshreveable/log15.v2"
 )
@@ -66,20 +64,13 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 				%s armillaria:updated ?updated
 				OPTIONAL { %s armillaria:kohaID ?kohaID }
 			 }`, uri, uri)
-		rb, err := db.Query(q)
+		res, err := db.Query(q)
 		if err != nil {
 			l.Error("db.Query failed", log.Ctx{"error": err.Error()})
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		var res *sparql.Results
-		err = json.Unmarshal(rb, &res)
-		if err != nil {
-			l.Error("failed to parse SPARQL response", log.Ctx{"error": err.Error()})
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
 		var updated string
 		for _, b := range res.Results.Bindings {
 			if id, ok := b["kohaID"]; ok {
@@ -106,20 +97,13 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 				OPTIONAL { %s armillaria:kohaID ?kohaID }
 				OPTIONAL { ?dependant _:p %s }
 			 } LIMIT 3`, uri, uri, uri)
-		rb, err := db.Query(q)
+		res, err := db.Query(q)
 		if err != nil {
 			l.Error("db.Query failed", log.Ctx{"error": err.Error()})
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		var res *sparql.Results
-		err = json.Unmarshal(rb, &res)
-		if err != nil {
-			l.Error("failed to parse SPARQL response", log.Ctx{"error": err.Error()})
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
 		var updated string
 		for _, b := range res.Results.Bindings {
 			if id, ok := b["kohaID"]; ok {
@@ -141,12 +125,13 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		}
 	}
 
-	res, err := db.Query(q)
+	body, err := db.Proxy(q)
 	if err != nil {
 		l.Error("db.Query failed", log.Ctx{"error": err.Error()})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	defer body.Close()
 
 	// publish to queues
 	switch task {
@@ -161,7 +146,7 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	io.Copy(w, bytes.NewReader(res))
+	io.Copy(w, body)
 }
 
 // searchHandler proxies request to Elasticsearch.
@@ -279,18 +264,10 @@ func rdf2marcHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		return
 	}
 
-	res, err := db.Query(
+	rdf, err := db.Query(
 		fmt.Sprintf(queryRDF2MARC, cfg.RDFStore.DefaultGraph, uri, uri))
 	if err != nil {
 		l.Error("db.Query failed", log.Ctx{"error": err.Error()})
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	var rdf sparql.Results
-	err = json.Unmarshal(res, &rdf)
-	if err != nil {
-		l.Error("unmarshal sparql json response failed", log.Ctx{"error": err.Error()})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

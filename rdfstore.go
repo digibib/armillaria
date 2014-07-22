@@ -3,12 +3,14 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 
 	"github.com/digibib/armillaria/digest"
+	"github.com/knakk/sparql"
 )
 
 // localRDFStore is the RDF store for local data.
@@ -24,7 +26,7 @@ func newLocalRDFStore(endpoint, username, password string) *localRDFStore {
 	return &l
 }
 
-func (s *localRDFStore) Query(q string) ([]byte, error) {
+func query(s *localRDFStore, q string) (io.ReadCloser, error) {
 	form := url.Values{}
 	form.Set("query", q)
 	form.Set("format", "application/sparql-results+json")
@@ -42,25 +44,45 @@ func (s *localRDFStore) Query(q string) ([]byte, error) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Content-Length", strconv.Itoa(len(b)))
 
-	res, err := s.transport.RoundTrip(req)
+	resp, err := s.transport.RoundTrip(req)
 	if err != nil {
 		return nil, err
 	}
 
-	defer res.Body.Close()
-	if res.StatusCode != http.StatusOK {
-		// log result body?
-		b, _ := ioutil.ReadAll(res.Body)
+	if resp.StatusCode != http.StatusOK {
+		// temp log result body for debugging failed SPARQL requests
+		// TODO remove when done
+		b, _ := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
 		println(string(b))
-		return nil, fmt.Errorf("SPARQL http request failed: %s", res.Status)
+		return nil, fmt.Errorf("SPARQL http request failed: %s", resp.Status)
 	}
+	return resp.Body, nil
+}
 
-	body, err := ioutil.ReadAll(res.Body)
+// Query sends a query to localRDFStore's SPARQL endpoint, and returns the parsed
+// results, or an error.
+func (s *localRDFStore) Query(q string) (*sparql.Results, error) {
+	body, err := query(s, q)
+	if err != nil {
+		return nil, err
+	}
+	defer body.Close()
+	results, err := sparql.ParseJSON(body)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO proxy the *http.Response directly?
-	// look into ReverseProxy at http://golang.org/pkg/net/http/httputil/
+	return results, nil
+}
+
+// Proxy sends a query to localRDFStore's SPARQL endpoint, and returns
+// unparsed response body if the request was succesfull (200).
+// It's the callers responsibility to close the response body.
+func (s *localRDFStore) Proxy(q string) (io.ReadCloser, error) {
+	body, err := query(s, q)
+	if err != nil {
+		return nil, err
+	}
 	return body, nil
 }

@@ -1,12 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
 
-	"github.com/digibib/armillaria/sparql"
 	log "gopkg.in/inconshreveable/log15.v2"
 )
 
@@ -176,7 +174,7 @@ func (w addWorker) Run() {
 			}
 
 			// Check if there are other resources which are affected by this resource.
-			r, err = db.Query(fmt.Sprintf(affectedResourcesQuery, cfg.RDFStore.DefaultGraph, job.uri, job.uri))
+			res, err := db.Query(fmt.Sprintf(affectedResourcesQuery, cfg.RDFStore.DefaultGraph, job.uri, job.uri))
 			if err != nil {
 				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, job.uri, job.uri, job.uri)})
 				if q, err := queues.Get("add"); err == nil {
@@ -184,14 +182,7 @@ func (w addWorker) Run() {
 				}
 				break
 			}
-			var res *sparql.Results
 
-			err = json.Unmarshal(r, &res)
-			if err != nil {
-				l.Error("failed to parse sparql response", log.Ctx{"error": err.Error(), "uri": job.uri})
-				// TODO now what, retry?
-				break
-			}
 			for _, b := range res.Results.Bindings {
 				if q, err := queues.Get("KohaSync"); err == nil {
 					job := qRequest{uri: "<" + b["resource"].Value + ">"}
@@ -296,6 +287,10 @@ func (w kohaSyncWorker) Run() {
 				continue
 			}
 			if err != nil {
+				if err == ErrNotManifestation {
+					// This is not an error, so we don't want to log it or retry the job.
+					continue
+				}
 				l.Error("sync resource to Koha failed",
 					log.Ctx{"error": err.Error(), "uri": job.uri, "worker": w.ID(), "task": job.task})
 				if tryAgain {

@@ -2,15 +2,13 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
 	"strconv"
-
-	"github.com/digibib/armillaria/sparql"
 )
 
 const resourceQuery = `
@@ -42,6 +40,7 @@ WHERE { OPTIONAL { %v <armillaria://internal/updated> ?updated } .
         BIND( now() AS ?now ) }`
 
 var svcNotAuthorized = errors.New("unauthorized")
+var ErrNotManifestation = errors.New("only manifestations are synced to Koha")
 
 // svcResponse represents the XML response we get from the svc API when updating
 // or creating a biblio.
@@ -191,16 +190,11 @@ func svcDelete(kohaPath string, jar http.CookieJar, biblio int) error {
 }
 
 func syncCreateResource(uri string) (int, bool, error) {
-	r, err := db.Query(fmt.Sprintf(resourceQuery, cfg.RDFStore.DefaultGraph, uri, uri, uri))
+	var profile string
+
+	res, err := db.Query(fmt.Sprintf(resourceQuery, cfg.RDFStore.DefaultGraph, uri, uri, uri))
 	if err != nil {
 		return 0, true, fmt.Errorf("db.Query: %v", err.Error())
-	}
-
-	var res *sparql.Results
-	var profile string
-	err = json.Unmarshal(r, &res)
-	if err != nil {
-		return 0, true, fmt.Errorf("parse SPARQL response: %v", err.Error())
 	}
 
 	if len(res.Results.Bindings) == 0 {
@@ -227,17 +221,12 @@ func syncCreateResource(uri string) (int, bool, error) {
 	}
 
 	// Generate MARCXML record of RDF resource
-	r, err = db.Query(fmt.Sprintf(queryRDF2MARC, cfg.RDFStore.DefaultGraph, uri, uri))
+	res, err = db.Query(fmt.Sprintf(queryRDF2MARC, cfg.RDFStore.DefaultGraph, uri, uri))
 	if err != nil {
 		return 0, true, fmt.Errorf("db.Query: %v", err.Error())
 	}
 
-	err = json.Unmarshal(r, &res)
-	if err != nil {
-		return 0, true, fmt.Errorf("parse SPARQL response: %v", err.Error())
-	}
-
-	rec, err := convertRDF2MARC(*res)
+	rec, err := convertRDF2MARC(res)
 	if err != nil {
 		return 0, true, fmt.Errorf("convertRDF2MARC: %v", err.Error())
 	}
@@ -253,11 +242,17 @@ func syncCreateResource(uri string) (int, bool, error) {
 	}
 
 	// store the koha id as property on the RDF resource
-	r, err = db.Query(fmt.Sprintf(insertKohaIDQuery, cfg.RDFStore.DefaultGraph, uri, uri, bibnr, uri))
+	body, err := db.Proxy(fmt.Sprintf(insertKohaIDQuery, cfg.RDFStore.DefaultGraph, uri, uri, bibnr, uri))
+	if err != nil {
+		return 0, true, fmt.Errorf("db.Query: %v", err.Error())
+	}
+	defer body.Close()
+	r, err := ioutil.ReadAll(body)
 	if err != nil {
 		return 0, true, fmt.Errorf("db.Query: %v", err.Error())
 	}
 
+	// TODO check if we can use db.Query, is the message bound to some variable?
 	if bytes.Index(r, []byte("1 (or less) triples")) == -1 {
 		// TODO now what? retry will create another duplicate biblio record in Koha..
 		if err != nil {
@@ -269,16 +264,10 @@ func syncCreateResource(uri string) (int, bool, error) {
 }
 
 func syncUpdateResource(uri string, biblionr int) (bool, error) {
-	r, err := db.Query(fmt.Sprintf(resourceQuery, cfg.RDFStore.DefaultGraph, uri, uri, uri))
+	var profile string
+	res, err := db.Query(fmt.Sprintf(resourceQuery, cfg.RDFStore.DefaultGraph, uri, uri, uri))
 	if err != nil {
 		return true, fmt.Errorf("db.Query: %v", err.Error())
-	}
-
-	var res *sparql.Results
-	var profile string
-	err = json.Unmarshal(r, &res)
-	if err != nil {
-		return true, fmt.Errorf("parse SPARQL response: %v", err.Error())
 	}
 
 	if len(res.Results.Bindings) == 0 {
@@ -296,6 +285,10 @@ func syncUpdateResource(uri string, biblionr int) (bool, error) {
 		}
 	}
 
+	if profile != "manifestation" {
+		return false, ErrNotManifestation
+	}
+
 	if bibnrStr != "" {
 		bibnr, err = strconv.Atoi(bibnrStr)
 		if err != nil {
@@ -305,10 +298,7 @@ func syncUpdateResource(uri string, biblionr int) (bool, error) {
 
 	if bibnr == 0 {
 		return false, errors.New("cannot sync to Koha; missing kohaID on resource")
-	}
-
-	if profile != "manifestation" {
-		return false, errors.New("only manifestations are synced to Koha")
+		// TODO set task to "create", and retry?
 	}
 
 	// Make sure we are authenticated to Koha
@@ -320,17 +310,12 @@ func syncUpdateResource(uri string, biblionr int) (bool, error) {
 	}
 
 	// Generate MARCXML record of RDF resource
-	r, err = db.Query(fmt.Sprintf(queryRDF2MARC, cfg.RDFStore.DefaultGraph, uri, uri))
+	res, err = db.Query(fmt.Sprintf(queryRDF2MARC, cfg.RDFStore.DefaultGraph, uri, uri))
 	if err != nil {
 		return true, fmt.Errorf("db.Query: %v", err.Error())
 	}
 
-	err = json.Unmarshal(r, &res)
-	if err != nil {
-		return true, fmt.Errorf("parse SPARQL response: %v", err.Error())
-	}
-
-	rec, err := convertRDF2MARC(*res)
+	rec, err := convertRDF2MARC(res)
 	if err != nil {
 		return true, fmt.Errorf("convertRDF2MARC: %v", err.Error())
 	}

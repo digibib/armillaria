@@ -5,7 +5,7 @@ import (
 	"encoding/xml"
 	"fmt"
 
-	"github.com/digibib/armillaria/sparql"
+	"github.com/knakk/sparql"
 )
 
 // Constants
@@ -204,7 +204,8 @@ var controlFieldMappings = []ctrlMapping{
 
 // bindings takes a sparql.Reusults and returns a map where each
 // bound variable has a key.
-func bindings(rdf sparql.Results) map[string][]string {
+// TODO use sparql.Results.Bindings()
+func bindings(rdf *sparql.Results) map[string][]string {
 	rb := make(map[string][]string)
 	for _, k := range rdf.Head.Vars {
 		for _, b := range rdf.Results.Bindings {
@@ -222,7 +223,7 @@ func bindings(rdf sparql.Results) map[string][]string {
 // convertRDF2MARC takes a SPARQL result response, and converts it into
 // a marcRecord, which is easily serializable as marcxml.
 // TODO error not necessary? Given a parsed sparql response, nothing can panic..
-func convertRDF2MARC(rdf sparql.Results) (marcRecord, error) {
+func convertRDF2MARC(rdf *sparql.Results) (marcRecord, error) {
 	rec := marcRecord{}
 	bindings := bindings(rdf)
 

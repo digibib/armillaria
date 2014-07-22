@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/digibib/armillaria/sparql"
+	"github.com/knakk/sparql"
 )
 
 // esError represents an error returned from a Elasticsearch REST endpoint.
@@ -150,14 +150,9 @@ func loadFromProfiles() (map[string]map[string]string, error) {
 
 // createIndexedDoc creates a json document for a RDF resource, given
 // a set of predicate to field mappings and a sparql json result.
-func createIndexDoc(mappings map[string]map[string]string, sparqlRes []byte, uri string) ([]byte, string, error) {
-	var res *sparql.Results
+func createIndexDoc(mappings map[string]map[string]string, res *sparql.Results, uri string) ([]byte, string, error) {
 	var profile string
-	err := json.Unmarshal(sparqlRes, &res)
-	if err != nil {
-		return nil, profile, errors.New("failed to parse sparql response")
 
-	}
 	if len(res.Results.Bindings) == 0 {
 		return nil, profile, errors.New("resource does not exist")
 	}

@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"testing"
+
+	"github.com/knakk/sparql"
 )
 
 const (
@@ -41,9 +44,13 @@ func TestCreateIndexingDoc(t *testing.T) {
 		}
 	}
 
+	jsonRes, err := sparql.ParseJSON(bytes.NewBufferString(jsonRes))
+	if err != nil {
+		t.Fatal(err)
+	}
 	esDocGot, profile, err := createIndexDoc(
 		mappings,
-		[]byte(jsonRes),
+		jsonRes,
 		"http://data.deichman.no/work/8",
 	)
 

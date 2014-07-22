@@ -66,15 +66,8 @@ func main() {
 	}
 
 	// Get total count of this resource type
-	b, err := db.Query(fmt.Sprintf(qCount, *graph, *resType))
+	res, err := db.Query(fmt.Sprintf(qCount, *graph, *resType))
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	var res sparql.Results
-	err = json.Unmarshal(b, &res)
-	if err != nil {
-		println(string(b))
 		log.Fatal(err)
 	}
 

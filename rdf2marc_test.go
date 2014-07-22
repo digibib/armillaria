@@ -5,7 +5,7 @@ import (
 	"encoding/xml"
 	"testing"
 
-	"github.com/digibib/armillaria/sparql"
+	"github.com/knakk/sparql"
 )
 
 var res = []byte(`
@@ -59,7 +59,7 @@ func TestConvertRDF2MARC(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	marc, err := convertRDF2MARC(parsedRes)
+	marc, err := convertRDF2MARC(&parsedRes)
 	if err != nil {
 		t.Fatal(err)
 	}

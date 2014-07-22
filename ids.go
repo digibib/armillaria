@@ -1,11 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"strconv"
 	"sync"
 
-	"github.com/digibib/armillaria/sparql"
+	"github.com/knakk/sparql"
 )
 
 const queryGetMax = `
@@ -42,15 +41,11 @@ func (s idService) NextId(t string) int {
 // Init initializes an idService with the maxiumum values for each type,
 // by parsing the results from the query queryGetMax defined on top of this file.
 // It takes the results as an unparsed application/sparql-results+json response.
-func (s idService) Init(b []byte) error {
-	var res sparql.Results
+func (s idService) Init(r *sparql.Results) error {
 	s.Lock()
 	defer s.Unlock()
-	err := json.Unmarshal(b, &res)
-	if err != nil {
-		return err
-	}
-	for _, b := range res.Results.Bindings {
+
+	for _, b := range r.Results.Bindings {
 		maxStr := b["max"].Value
 		maxNum, err := strconv.Atoi(maxStr)
 		if err != nil {

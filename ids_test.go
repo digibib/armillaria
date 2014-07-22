@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"sync"
 	"testing"
+
+	"github.com/knakk/sparql"
 )
 
 var sparqlRes = []byte(`
@@ -53,8 +56,12 @@ func TestConcurrentNextId(t *testing.T) {
 
 func TestInitIdServiceFromSparqlResponse(t *testing.T) {
 	s := newIdService()
-	err := s.Init(sparqlRes)
+	r, err := sparql.ParseJSON(bytes.NewReader(sparqlRes))
+	if err != nil {
+		t.Fatal(err)
+	}
 
+	err = s.Init(r)
 	if err != nil {
 		t.Errorf("idService.Init failed with: %v", err)
 	}
