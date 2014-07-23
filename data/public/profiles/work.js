@@ -247,11 +247,17 @@ var profile = {
     }
   ],
   "displayLabel": function( values ) {
-    var label = cleanString(values.title[0].value);
+    var label = "";
+    if ( values.title[0] ) {
+      label += cleanString(values.title[0].value);
+    }
     return '"' + label + '"';
   },
   "searchLabel": function( values ) {
-    var label = cleanString(values.title[0].value);
+    var label = "";
+    if ( values.title[0] ) {
+      label += cleanString(values.title[0].value);
+    }
     return '"' + label + '"';
   },
   "rules": [
