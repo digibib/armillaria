@@ -135,7 +135,12 @@ func (w addWorker) Run() {
 			if job.task == "createDraft" || job.task == "updateDraft" {
 				graph = cfg.RDFStore.DraftsGraph
 			}
-			r, err := db.Query(fmt.Sprintf(resourceQuery, graph, job.uri, job.uri, job.uri))
+			q, err := qBank.Prepare("resource", struct{ Graph, Res string }{graph, job.uri})
+			if err != nil {
+				l.Error("error preparing query", log.Ctx{"error": err.Error()})
+				break
+			}
+			r, err := db.Query(q)
 			if err != nil {
 				l.Error("db.Query failed", log.Ctx{"error": err.Error()})
 				if q, err := queues.Get("add"); err == nil {
@@ -174,9 +179,15 @@ func (w addWorker) Run() {
 			}
 
 			// Check if there are other resources which are affected by this resource.
-			res, err := db.Query(fmt.Sprintf(affectedResourcesQuery, cfg.RDFStore.DefaultGraph, job.uri, job.uri))
+			q, err = qBank.Prepare("affectedResources",
+				struct{ Graph, Res string }{cfg.RDFStore.DefaultGraph, job.uri})
 			if err != nil {
-				l.Error("db.Query failed", log.Ctx{"error": err.Error(), "query": fmt.Sprintf(resourceQuery, job.uri, job.uri, job.uri)})
+				l.Error("error preparing query", log.Ctx{"error": err.Error()})
+				break
+			}
+			res, err := db.Query(q)
+			if err != nil {
+				l.Error("db.Query failed", log.Ctx{"error": err.Error()})
 				if q, err := queues.Get("add"); err == nil {
 					retry(job, q.WorkQueue, q.Name)
 				}

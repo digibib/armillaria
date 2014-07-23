@@ -11,34 +11,6 @@ import (
 	"strconv"
 )
 
-const resourceQuery = `
-SELECT *
-WHERE {
-   { GRAPH <%s> {
-     %s ?p ?o .
-     MINUS { %s ?p ?o . ?o <armillaria://internal/displayLabel> _:l . } } }
-   UNION
-   { %s ?p ?o .
-     ?o <armillaria://internal/displayLabel> ?l . }
-}`
-
-const affectedResourcesQuery = `
-SELECT ?resource, ?kohaID
-FROM <%s>
-WHERE {
-	      { ?resource _:p %s ; <armillaria://internal/kohaID> ?kohaID }
-	UNION { %s _:p ?resource . ?resource <armillaria://internal/kohaID> ?kohaID }
-	?resource <armillaria://internal/profile> "manifestation" .
-} LIMIT 100
-`
-
-const insertKohaIDQuery = `
-WITH <%s>
-DELETE { %v <armillaria://internal/updated> ?updated }
-INSERT { %v <armillaria://internal/updated> ?now ; <armillaria://internal/kohaID> %v }
-WHERE { OPTIONAL { %v <armillaria://internal/updated> ?updated } .
-        BIND( now() AS ?now ) }`
-
 var svcNotAuthorized = errors.New("unauthorized")
 var ErrNotManifestation = errors.New("only manifestations are synced to Koha")
 
@@ -192,7 +164,13 @@ func svcDelete(kohaPath string, jar http.CookieJar, biblio int) error {
 func syncCreateResource(uri string) (int, bool, error) {
 	var profile string
 
-	res, err := db.Query(fmt.Sprintf(resourceQuery, cfg.RDFStore.DefaultGraph, uri, uri, uri))
+	q, err := qBank.Prepare("resource",
+		struct{ Graph, Res string }{cfg.RDFStore.DefaultGraph, uri})
+	if err != nil {
+		return 0, true, fmt.Errorf("error preparing query: %v", err.Error())
+	}
+
+	res, err := db.Query(q)
 	if err != nil {
 		return 0, true, fmt.Errorf("db.Query: %v", err.Error())
 	}
@@ -221,7 +199,13 @@ func syncCreateResource(uri string) (int, bool, error) {
 	}
 
 	// Generate MARCXML record of RDF resource
-	res, err = db.Query(fmt.Sprintf(queryRDF2MARC, cfg.RDFStore.DefaultGraph, uri, uri))
+	q, err = qBank.Prepare("rdf2marc",
+		struct{ Graph, Res string }{cfg.RDFStore.DefaultGraph, uri})
+	if err != nil {
+		return 0, true, fmt.Errorf("error preparing query: %v", err.Error())
+	}
+
+	res, err = db.Query(q)
 	if err != nil {
 		return 0, true, fmt.Errorf("db.Query: %v", err.Error())
 	}
@@ -242,9 +226,19 @@ func syncCreateResource(uri string) (int, bool, error) {
 	}
 
 	// store the koha id as property on the RDF resource
-	body, err := db.Proxy(fmt.Sprintf(insertKohaIDQuery, cfg.RDFStore.DefaultGraph, uri, uri, bibnr, uri))
+	q, err = qBank.Prepare("insertKohaID",
+		struct {
+			Graph  string
+			Res    string
+			KohaID int
+		}{
+			cfg.RDFStore.DefaultGraph,
+			uri,
+			bibnr,
+		})
+	body, err := db.Proxy(q)
 	if err != nil {
-		return 0, true, fmt.Errorf("db.Query: %v", err.Error())
+		return 0, true, fmt.Errorf("error preparing query: %v", err.Error())
 	}
 	defer body.Close()
 	r, err := ioutil.ReadAll(body)
@@ -265,7 +259,12 @@ func syncCreateResource(uri string) (int, bool, error) {
 
 func syncUpdateResource(uri string, biblionr int) (bool, error) {
 	var profile string
-	res, err := db.Query(fmt.Sprintf(resourceQuery, cfg.RDFStore.DefaultGraph, uri, uri, uri))
+	q, err := qBank.Prepare("resource",
+		struct{ Graph, Res string }{cfg.RDFStore.DefaultGraph, uri})
+	if err != nil {
+		return true, fmt.Errorf("error preparing query: %v", err.Error())
+	}
+	res, err := db.Query(q)
 	if err != nil {
 		return true, fmt.Errorf("db.Query: %v", err.Error())
 	}
@@ -310,7 +309,13 @@ func syncUpdateResource(uri string, biblionr int) (bool, error) {
 	}
 
 	// Generate MARCXML record of RDF resource
-	res, err = db.Query(fmt.Sprintf(queryRDF2MARC, cfg.RDFStore.DefaultGraph, uri, uri))
+	q, err = qBank.Prepare("rdf2marc",
+		struct{ Graph, Res string }{cfg.RDFStore.DefaultGraph, uri})
+	if err != nil {
+		return true, fmt.Errorf("error preparing query: %v", err.Error())
+	}
+
+	res, err = db.Query(q)
 	if err != nil {
 		return true, fmt.Errorf("db.Query: %v", err.Error())
 	}

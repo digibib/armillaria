@@ -57,13 +57,13 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	job := qRequest{uri: uri, task: task}
 
 	if task == "update" || task == "updateDraft" {
-		q := fmt.Sprintf(
-			`PREFIX armillaria: <armillaria://internal/>
-			 SELECT ?updated, ?kohaID
-			 WHERE {
-				%s armillaria:updated ?updated
-				OPTIONAL { %s armillaria:kohaID ?kohaID }
-			 }`, uri, uri)
+		q, err := qBank.Prepare("lastUpdated", struct{ Res string }{uri})
+		if err != nil {
+			l.Error("error preparing query", log.Ctx{"error": err.Error()})
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		res, err := db.Query(q)
 		if err != nil {
 			l.Error("db.Query failed", log.Ctx{"error": err.Error()})
@@ -89,14 +89,13 @@ func doResourceQuery(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	}
 
 	if task == "delete" || task == "deleteDraft" {
-		q := fmt.Sprintf(
-			`PREFIX armillaria: <armillaria://internal/>
-			 SELECT ?updated, ?kohaID, ?dependant
-			 WHERE {
-				%s armillaria:updated ?updated
-				OPTIONAL { %s armillaria:kohaID ?kohaID }
-				OPTIONAL { ?dependant _:p %s }
-			 } LIMIT 3`, uri, uri, uri)
+		q, err := qBank.Prepare("hasDependant", struct{ Res string }{uri})
+		if err != nil {
+			l.Error("error preparing query", log.Ctx{"error": err.Error()})
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		res, err := db.Query(q)
 		if err != nil {
 			l.Error("db.Query failed", log.Ctx{"error": err.Error()})
@@ -263,9 +262,14 @@ func rdf2marcHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 		http.Error(w, "missing required parameter: uri", http.StatusBadRequest)
 		return
 	}
-
-	rdf, err := db.Query(
-		fmt.Sprintf(queryRDF2MARC, cfg.RDFStore.DefaultGraph, uri, uri))
+	q, err := qBank.Prepare("rdf2marc",
+		struct{ Graph, Res string }{cfg.RDFStore.DefaultGraph, uri})
+	if err != nil {
+		l.Error("error preparing query", log.Ctx{"error": err.Error()})
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	rdf, err := db.Query(q)
 	if err != nil {
 		l.Error("db.Query failed", log.Ctx{"error": err.Error()})
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
@@ -10,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/knakk/sparql"
 	log "gopkg.in/inconshreveable/log15.v2"
 )
 
@@ -25,6 +27,7 @@ var (
 	esIndexer     = Indexer{host: "http://localhost:9200", client: http.DefaultClient}
 	idGen         = newIdService()
 	kohaCookies   http.CookieJar
+	qBank         sparql.Bank
 )
 
 func main() {
@@ -54,6 +57,8 @@ func main() {
 		cfg.RDFStore.Username,
 		cfg.RDFStore.Password)
 
+	// parse SPARQL queries
+	qBank = sparql.LoadBank(bytes.NewBufferString(sparqlQueries))
 	// Init idService
 	res, err := db.Query(queryGetMax)
 	if err != nil {
