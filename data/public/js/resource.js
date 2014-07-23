@@ -484,10 +484,12 @@ listener = ractive.on({
 
     // If no more values allowed; attempt to focus on next input field.
     if ( !event.context.repeatable ) {
-      // TODO this fails (for example) if there are no more input fields
-      var nextInput = event.node.parentElement.parentElement.parentElement.nextElementSibling.querySelector('input');
-      if ( nextInput ) {
-        nextInput.focus();
+      var sibling =  event.node.parentElement.parentElement.parentElement.nextElementSibling;
+      if ( sibling ) {
+        var nextInput = sibling.querySelector('input');
+        if ( nextInput ) {
+          nextInput.focus();
+        }
       }
     }
   },
