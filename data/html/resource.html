@@ -161,7 +161,15 @@
 								{{#values:i3}}
 									<div class="propertyValue">
 
-										{{^URILabel}}<span class="propertyLabel{{# generated != true && (repeatable ? true : ( values.length == 1))}} clickable{{/}}" on-click="{{# generated != true && (repeatable ? true : ( values.length == 1))}}editLiteral{{/}}">{{value}}</span><span class="removeProperty" on-click='remove'>&times;</span>{{/URILabel}}
+										{{^URILabel}}
+											{{# (generated != true) && (repeatable ? true : ( values.length == 1))}}
+												<span class="propertyLabel clickable" on-click="editLiteral">{{value}}</span><span class="removeProperty" on-click='remove'>&times;</span>
+											{{/}}
+
+											{{# ( generated == true ) || ( repeatable ? false : ( values.length != 1))}}
+											<span class="propertyLabel">{{value}}</span><span class="removeProperty" on-click='remove'>&times;</span>
+											{{/}}
+										{{/URILabel}}
 
 
 										{{# source !== 'local' }}
