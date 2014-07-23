@@ -13,7 +13,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -22,7 +21,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/digibib/armillaria/sparql"
+	"github.com/knakk/sparql"
 )
 
 const (
@@ -82,7 +81,7 @@ func main() {
 		fmt.Printf("Processing batch %d - %d ...\n", i, i+limit)
 
 		for ok := false; ok == false; {
-			b, err = db.Query(fmt.Sprintf(qAll, *graph, *resType, i, limit))
+			res, err = db.Query(fmt.Sprintf(qAll, *graph, *resType, i, limit))
 			if err != nil {
 				fmt.Println(err)
 				fmt.Println("SPARQL endpoint unavaialable? Trying againt in 5 seconds.")
@@ -92,12 +91,6 @@ func main() {
 			}
 		}
 
-		err = json.Unmarshal(b, &res)
-		if err != nil {
-			println(string(b))
-			log.Fatal(err)
-		}
-
 		var docs bytes.Buffer
 
 		bulkHead := []byte(string(fmt.Sprintf(head, *resType)))
@@ -105,9 +98,9 @@ func main() {
 		for _, r := range res.Results.Bindings {
 			uri := r["res"].Value
 
-			var rb []byte
+			var res *sparql.Results
 			for ok := false; ok == false; {
-				rb, err = db.Query(fmt.Sprintf(resourceQuery, *graph, uri, uri, uri))
+				res, err = db.Query(fmt.Sprintf(resourceQuery, *graph, uri, uri, uri))
 				if err != nil {
 					fmt.Println(err)
 					fmt.Println("SPARQL endpoint unavaialable? Trying again in 5 seconds...")
@@ -117,7 +110,7 @@ func main() {
 				}
 			}
 
-			resourceBody, _, err := createIndexDoc(indexMappings, rb, uri)
+			resourceBody, _, err := createIndexDoc(indexMappings, res, uri)
 			if err != nil {
 				fmt.Println("Failed to index:", uri)
 				fmt.Println(err)
