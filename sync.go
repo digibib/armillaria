@@ -187,7 +187,7 @@ func syncCreateResource(uri string) (int, bool, error) {
 	}
 
 	if profile != "manifestation" {
-		return 0, false, errors.New("only manifestations are synced to Koha")
+		return 0, false, ErrNotManifestation
 	}
 
 	// Make sure we are authenticated to Koha
