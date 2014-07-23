@@ -103,6 +103,7 @@ var profile = {
   ],
   "uriNeedIds": ["num", "edition"],
   "uriFn": function(values) {
+     if ( !values.edition[0].URILabel ) { return '' }
      return '<http://data.deichman.no/class/' + cleanString( values.edition[0].URILabel ) +
             '/' + values.num[0].value + ">";
   },
@@ -117,6 +118,7 @@ var profile = {
     return '"' + label + '"';
   },
   "searchLabel": function( values ) {
+    var label = "";
     if ( values.num[0] ) {
       label = values.num[0].value;
       if ( values.prefLabel[0]) {
