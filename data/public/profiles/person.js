@@ -67,7 +67,7 @@ var profile = {
           "repeatable": true,
           "predicate": "<http://dbpedia.org/ontology/nationality>",
           "type": "URI",
-          "searchTypes": ["location"]
+          "searchTypes": ["place"]
         },
                 {
           "id": "tittel",
@@ -104,7 +104,10 @@ var profile = {
     }
   ],
   "displayLabel": function( values ) {
-    var label = cleanString( values.nameNormalized[0].value );
+    var label = ""
+    if ( values.nameNormalized[0] ) {
+      label += cleanString( values.nameNormalized[0].value );
+    }
     if ( values.birthyear[0] ) {
       label += " ("+ cleanString( values.birthyear[0].value ) + "-";
       if ( values.deathyear[0] ) {
@@ -116,7 +119,10 @@ var profile = {
     return '"' + label + '"';
   },
   "searchLabel": function(values) {
-    var label = cleanString( values.nameNormalized[0].value );
+    var label = ""
+    if ( values.nameNormalized[0] ) {
+      label += cleanString( values.nameNormalized[0].value );
+    }
     return '"' + label + '"';
   },
   "rules": [
