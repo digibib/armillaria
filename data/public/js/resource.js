@@ -12,10 +12,10 @@ var ractive = new Ractive({
 // keep a shadow copy of all values
 var values = {};
 
-// true before any changes made, needed for uri observer to not disable
-// draft button on page load.
+// true before profile & data is loaded, this is needed to stop observers
+// from working on missing data.
 // TODO find a better way to solve this
-var firstLoad = true;
+var loading = true;
 
 
 // utility functions  --------------------------------------------------------
@@ -484,6 +484,7 @@ listener = ractive.on({
 
     // If no more values allowed; attempt to focus on next input field.
     if ( !event.context.repeatable ) {
+      // TODO this fails (for example) if there are no more input fields
       var nextInput = event.node.parentElement.parentElement.parentElement.nextElementSibling.querySelector('input');
       if ( nextInput ) {
         nextInput.focus();
@@ -787,6 +788,7 @@ listener = ractive.on({
 // observers  ----------------------------------------------------------------
 
 ractive.observe('views', function( newValue, oldValue, keypath) {
+  if ( loading ) { return; }
   // keep values in sync
   values = {};
   var missingValues = false;
@@ -833,11 +835,11 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
 
 
   // Use uriFn if it exists
-  if ( ractive.get('uriFn') ) {
-    var createURI = _.every(ractive.data.uriNeedIds, function(id) {
+  if ( ractive.get( 'uriFn' ) ) {
+    var createURI = _.every( ractive.data.uriNeedIds, function( id ) {
       return ( values[id].length > 0 );
     });
-    if ( createURI) {
+    if ( createURI ) {
       // got all needed values to generate uri
       ractive.set( 'overview.uri', ractive.data.uriFn( values ) );
     } else {
@@ -845,7 +847,6 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
     }
   }
 
-  firstLoad = false; // TODO fix this
   var sl = ractive.data.searchLabel(values);
   var dl = ractive.data.displayLabel(values);
 
@@ -855,8 +856,9 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
 });
 
 ractive.observe( 'overview.uri', function( newURI, oldURI, keyPath ) {
+  if ( loading ) { return; }
   var missingValues = false;
-  newValue.forEach(function(view, i) {
+  ractive.data.views.forEach(function(view, i) {
     view.elements.forEach(function(elem, j) {
       if (!values[elem.id]) {
         values[elem.id] = [];
@@ -885,7 +887,7 @@ ractive.observe( 'overview.uri', function( newURI, oldURI, keyPath ) {
     } else {
       ractive.set( 'duplicateURI', false );
     }
-    if ( newURI === "" && !firstLoad ) {
+    if ( newURI === "" && !loading ) {
       ractive.set( 'draftDisabled', true );
     }
     // notify user if URI has changed
@@ -953,8 +955,10 @@ var createSchema = function( loadRes ) {
   // merge data with defaults from _common.js:
   ractive.set(_.extend(profile, common));
 
-  if (urlParams.uri) {
+   if (urlParams.uri) {
     // loading an existing resource
+
+    loading = false; // done loading, so observers can "observe" now TODO fix this
     return
   }
 
@@ -972,6 +976,7 @@ var createSchema = function( loadRes ) {
     ractive.set( 'overview.uri', '<http://data.deichman.no/' +
                                  urlParams.profile + '/' + id +'>' );
     ractive.update();
+    loading = false; // done loading, so observers can "observe" now TODO fix this
   }
 
   req.send();
