@@ -774,6 +774,17 @@ listener = ractive.on({
     } else {
       value = "\"" + value + "\"@" + lang;
     }
+
+    // Don't add allow duplicate values:
+    var exists = _.find( ractive.get( event.keypath ).values, function( e ) {
+      return e.value === value;
+    } );
+    if ( exists ) {
+      ractive.data.views[idx.i1].elements[idx.i2].currentValue = "";
+      ractive.update();
+      return
+    }
+
     ractive.data.views[idx.i1].elements[idx.i2].values.push(
       {"value": value.replace(/\n/g, "<br/>"), "predicate": pred, "source": "local"});
 
