@@ -66,7 +66,7 @@ func TestSvcAuth(t *testing.T) {
 
 	jar, err := svcAuth(authServer.URL, "sync", "sync")
 	if err != nil {
-		t.Fatal("svcAuth with correct user & pass result in error: %v", err)
+		t.Fatalf("svcAuth with correct user & pass result in error: %v", err)
 	}
 	u, err := url.Parse(authServer.URL)
 	if err != nil {
@@ -74,7 +74,7 @@ func TestSvcAuth(t *testing.T) {
 	}
 	cookies := jar.Cookies(u)
 	if len(cookies) != 1 {
-		t.Fatal("wanted 1 cookie, got %d", len(cookies))
+		t.Fatalf("wanted 1 cookie, got %d", len(cookies))
 	}
 
 	if cookies[0].Name != "CGISESSID" || cookies[0].Value != "8655024ef41e104a1a2c58a6c744e69c" {
