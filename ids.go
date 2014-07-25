@@ -31,7 +31,7 @@ type idService struct {
 }
 
 // NextId returns the next ID for a given RDF type (profile).
-func (s idService) NextId(t string) int {
+func (s *idService) NextId(t string) int {
 	s.Lock()
 	defer s.Unlock()
 	s.ids[t] = s.ids[t] + 1
@@ -41,7 +41,7 @@ func (s idService) NextId(t string) int {
 // Init initializes an idService with the maxiumum values for each type,
 // by parsing the results from the query queryGetMax defined on top of this file.
 // It takes the results as an unparsed application/sparql-results+json response.
-func (s idService) Init(r *sparql.Results) error {
+func (s *idService) Init(r *sparql.Results) error {
 	s.Lock()
 	defer s.Unlock()
 
@@ -58,6 +58,6 @@ func (s idService) Init(r *sparql.Results) error {
 }
 
 // newIdService returns a new idService.
-func newIdService() idService {
-	return idService{ids: make(map[string]int)}
+func newIdService() *idService {
+	return &idService{ids: make(map[string]int)}
 }
