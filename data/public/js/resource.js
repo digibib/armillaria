@@ -197,6 +197,7 @@ var doQuery = function( query, task, callback ) {
       callback( JSON.parse( req.responseText ) );
     } else {
       ractive.set( { 'serverError': req.responseText } );
+      document.body.scrollTop = document.documentElement.scrollTop = 0;
     }
   };
 
