@@ -33,6 +33,13 @@ SCRIPT
       image: "elasticsearch:latest",
         args: "-p 9200:9200 -p 9300:9300"
 
+    #https://github.com/digibib/armillaria
+    d.build_image "/vagrant",
+      args: "-t armillaria"
+
+    d.run "armillaria",
+      args: "-p 8080:8080 \
+            -e SERVER_PORT=8080"
   end
 
 end
