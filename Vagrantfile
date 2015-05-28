@@ -1,5 +1,3 @@
-# Bug in docker/packer needs to append slash in salt paths:
-# https://github.com/mitchellh/packer/issues/1040
 Vagrant.configure("2") do |config|
   config.ssh.forward_x11 = true
   config.ssh.forward_agent = true
@@ -13,10 +11,6 @@ Vagrant.configure("2") do |config|
 
   config.ssh.insert_key = false
   config.vm.network "private_network", ip: "192.168.50.13"
-
-  config.vm.provision :shell, inline: <<SCRIPT
-  apt-get install -y golang
-SCRIPT
 
   config.vm.provision :docker do |d|
 
@@ -37,9 +31,12 @@ SCRIPT
     d.build_image "/vagrant",
       args: "-t armillaria"
 
+    sleep 3
     d.run "armillaria",
       args: "-p 8080:8080 \
-            -e SERVER_PORT=8080"
+            -e SERVER_PORT=8080 \
+            --link elasticsearch:elasticsearch \
+            --link virtuoso:virtuoso"
   end
 
 end
