@@ -1105,7 +1105,7 @@ if ( urlParams.uri ) {
                 unknownPred = false;
                 break;
               case "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>":
-                ractive.push("overview.type", '<' + b.o + '>');
+                ractive.push("overview.type", '<' + b.o.value + '>');
                 unknownPred = false;
                 break;
               case internalPred( 'profile' ):
