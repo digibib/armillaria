@@ -122,7 +122,8 @@
 				}
 			});
 
-		ractive.set(_.extend(ractive.data, common));
+		// merge in data structure from _commmon.js
+		ractive.set(_.extend(ractive.get(), common));
 		</script>
 	</body>
 </html>

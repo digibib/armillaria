@@ -44,7 +44,7 @@ var log = function( msg, isError ) {
   if ( msg.length > 120 ) {
     msg = msg.substr(0, 120) + "...";
   }
-  ractive.data.logLines.push({
+  ractive.push("logLines", {
     "message": msg,
     "type": t,
     "time": now
@@ -55,7 +55,7 @@ var log = function( msg, isError ) {
 // findElement returns the keypath of a predicate, or false if no match.
 var findElement = function(pred) {
   var kp = false;
-  ractive.data.views.forEach(function(v, i) {
+  ractive.get("views").forEach(function(v, i) {
     v.elements.forEach(function(e, j) {
       if (e.predicate === pred) {
         kp = "views."+i+".elements."+j;
@@ -84,7 +84,7 @@ var findElement = function(pred) {
 // findElementById returns the keypath of an id, or false if no match.
 var findElementById = function( id ) {
   var kp = false;
-  ractive.data.views.forEach(function(v, i) {
+  ractive.get("views").forEach(function(v, i) {
     v.elements.forEach(function(e, j) {
       if (e.id === id) {
         kp = "views."+i+".elements."+j;
@@ -113,50 +113,50 @@ var getValue = function(b) {
 
 // deleteQuery generates the SPARQL query to remove a resource from the graph.
 var deleteQuery = function( published ) {
-  var graph = published ? ractive.data.publicGraph : ractive.data.draftsGraph;
+  var graph = published ? ractive.get("publicGraph") : ractive.get("draftsGraph");
   return 'DELETE { GRAPH ' + graph + ' { ' +
-    ractive.get( 'existingURI' ) + ' ?p ?o } }\n' +
-    'WHERE { ' + ractive.get( 'existingURI' ) + ' ?p ?o }';
+    ractive.get("existingURI") + ' ?p ?o } }\n' +
+    'WHERE { ' + ractive.get("existingURI") + ' ?p ?o }';
 };
 
 // insertQuery generates the SPARQL query to insert the resource into the graph.
 var insertQuery = function( publish ) {
   // generate overview triples using the internal namespace
-  var uri = ractive.get( 'overview.uri' );
+  var uri = ractive.get("overview.uri");
   var now = new Date();
   var meta = [
     { 'p': internalPred( 'profile' ), 'o': '"' + urlParams.profile + '"' },
-    { 'p': internalPred( 'displayLabel' ), 'o': ractive.data.overview.displayLabel },
-    { 'p': internalPred( 'searchLabel' ), 'o': ractive.data.overview.searchLabel },
+    { 'p': internalPred( 'displayLabel' ), 'o': ractive.get("overview.displayLabel") },
+    { 'p': internalPred( 'searchLabel' ), 'o': ractive.get("overview.searchLabel") },
     { 'p': internalPred( 'updated' ), 'o': dateFormat( now.toISOString() ) }
   ];
-  for (var i=0; i<ractive.data.overview.type.length; i++) {
-    meta.push( { 'p': 'a', 'o': ractive.get( 'overview.type.'+ i) });
+  for (var i=0; i<ractive.get("overview.type").length; i++) {
+    meta.push( { 'p': 'a', 'o': ractive.get('overview.type.'+ i) });
   }
-  if ( !ractive.data.uriFn && ractive.get( 'overview.idNumber' ) ) {
-    meta.push( { 'p': internalPred( 'id' ), 'o': ractive.get( 'overview.idNumber' ) } );
+  if ( !ractive.get("uriFn") && ractive.get("overview.idNumber") ) {
+    meta.push( { 'p': internalPred( 'id' ), 'o': ractive.get("overview.idNumber") } );
   }
-  if ( ractive.data.existingResource ) {
+  if ( ractive.get("existingResource") ) {
     meta.push( {"p": internalPred( "created" ),
-                "o": dateFormat(ractive.data.overview.created) } );
-    if ( ractive.data.overview.published && publish ) {
+                "o": dateFormat(ractive.get("overview.created") ) } );
+    if ( ractive.get("overview.published") && publish ) {
       meta.push( {"p": internalPred( "published" ),
-                  "o": dateFormat( ractive.data.overview.published ) } );
+                  "o": dateFormat( ractive.get("overview.published") ) } );
     }
   } else {
     meta.push( { 'p': internalPred( 'created' ), "o": dateFormat( now.toISOString() ) } );
   }
-  if ( publish && !ractive.data.overview.published ) {
+  if ( publish && !ractive.get("overview.published") ) {
     meta.push( {'p': internalPred( 'published' ), 'o': dateFormat( now.toISOString() ) } );
   }
-  for (var i=0; i<ractive.data.nonEditableProperties.length; i++) {
+  for (var i=0; i<ractive.get("nonEditableProperties").length; i++) {
     meta.push( { 'p': ractive.get('nonEditableProperties.'+i+'.predicate'),
                  'o': ractive.get('nonEditableProperties.'+i+'.value')} );
   }
 
   var generated = "";
-  if ( ractive.data.generatedValues ) {
-    ractive.data.generatedValues.forEach( function( g ) {
+  if ( ractive.get("generatedValues") ) {
+    ractive.get("generatedValues").forEach( function( g ) {
       var gv = g(values);
       if ( gv ) {
         generated = generated + uri + ' ' + gv + " .\n";
@@ -174,7 +174,7 @@ var insertQuery = function( publish ) {
       preds += uri + " " + e.predicate + " " + e.value + " . \n";
     });
   });
-  var graph = publish ? ractive.data.publicGraph : ractive.data.draftsGraph;
+  var graph = publish ? ractive.get("publicGraph") : ractive.get("draftsGraph");
   return 'INSERT { GRAPH ' + graph + ' {\n' + metaPreds + preds + generated + '} }';
 };
 
@@ -183,9 +183,9 @@ var insertQuery = function( publish ) {
 var doQuery = function( query, task, callback ) {
   var postData = 'query=' + encodeURIComponent( query )
   postData += '&task=' +task;
-  postData += '&uri=' + encodeURIComponent( ractive.get( 'overview.uri' ) );
+  postData += '&uri=' + encodeURIComponent( ractive.get("overview.uri") );
   if ( ractive.get( 'overview.updated' ) ) {
-    postData += '&updated=' + encodeURIComponent( ractive.get( 'overview.updated') );
+    postData += '&updated=' + encodeURIComponent( ractive.get("overview.updated") );
   }
   var req = new XMLHttpRequest();
   req.open( 'POST', '/resource', true );
@@ -259,8 +259,8 @@ var searchES = _.debounce( function( q, kp) {
 
 listener = ractive.on({
   queryExternal: function( event ) {
-    log("Querying external resources: " + ractive.get( 'externalSources' ).length, false);
-    ractive.get( 'externalSources' ).forEach(function ( source ) {
+    log("Querying external resources: " + ractive.get("externalSources").length, false);
+    ractive.get("externalSources").forEach(function ( source ) {
       var q = source.genRequest( values );
       var req = new XMLHttpRequest();
       req.open( 'POST', '/external/'+ source.source, true );
@@ -268,8 +268,8 @@ listener = ractive.on({
 
       req.onerror = function( event ) {
         // decrement pending counter
-        ractive.subtract( 'externalQueriesPending' );
-        if ( ractive.get( 'externalQueriesPending') == 0 ) {
+        ractive.subtract("externalQueriesPending");
+        if ( ractive.get("externalQueriesPending") == 0 ) {
           removeClass( document.body, 'wait' );
         }
 
@@ -279,8 +279,8 @@ listener = ractive.on({
 
       req.onload = function( event ) {
         // decrement pending counter
-        ractive.subtract( 'externalQueriesPending' );
-        if ( ractive.get( 'externalQueriesPending') == 0 ) {
+        ractive.subtract("externalQueriesPending");
+        if ( ractive.get("externalQueriesPending") == 0 ) {
           removeClass( document.body, 'wait' );
         }
 
@@ -364,14 +364,14 @@ listener = ractive.on({
     });
   },
   saveDraft: function( event ) {
-    var published = ractive.get( 'overview.published' ) ? true : false;
+    var published = ractive.get("overview.published") ? true : false;
     var q;
-    if ( ractive.get( 'existingURI' ) ) {
+    if ( ractive.get("existingURI") ) {
       q = deleteQuery( published ) + ';\n' + insertQuery( false );
     } else {
       q = insertQuery( false );
     }
-    var task = ractive.get( 'existingURI') ? 'updateDraft' : 'createDraft';
+    var task = ractive.get("existingURI") ? 'updateDraft' : 'createDraft';
     doQuery( q, task, function() {
       // TODO check for return errors
 
@@ -379,14 +379,14 @@ listener = ractive.on({
       setTimeout( function () {
         window.location.replace( window.location.origin +
                                   window.location.pathname +
-                                  "?uri=" + trimURI( ractive.get( 'overview.uri' ) ) );
+                                  "?uri=" + trimURI( ractive.get("overview.uri") ) );
       }, 200);
     });
   },
   publish: function( event ) {
-    var published = ractive.get( 'overview.published' ) ? true : false;
+    var published = ractive.get("overview.published") ? true : false;
     var q;
-    if ( ractive.get( 'existingURI' ) ) {
+    if ( ractive.get("existingURI") ) {
       q = deleteQuery( published ) + ';\n' + insertQuery( true );
     } else {
       q = insertQuery( true, 'forward' );
@@ -399,12 +399,12 @@ listener = ractive.on({
       setTimeout( function () {
         window.location.replace( window.location.origin +
                                  window.location.pathname +
-                                 "?uri=" + trimURI( ractive.get( 'overview.uri' ) ) );
+                                 "?uri=" + trimURI( ractive.get("overview.uri") ) );
       }, 200);
     } );
   },
   delResource: function( event) {
-    var published = ractive.get( 'overview.published' ) ? true : false;
+    var published = ractive.get("overview.published") ? true : false;
     var q = deleteQuery( published );
     var task = published ? 'delete' : 'deleteDraft';
     doQuery( q, task, function() {
@@ -420,11 +420,13 @@ listener = ractive.on({
   },
   remove: function( event ) {
     var idx = event.index;
-    ractive.data.views[idx.i1].elements[idx.i2].values.splice(idx.i3, 1);
+    var idx1 = idx.i1;
+    var idx2 = idx.i2;
+    ractive.splice("views."+idx1+".elements."+idx2+".values", idx.i3, 1);
 
     // Also delete dependant, if exists:
-    if ( ractive.data.views[idx.i1].elements[idx.i2].dependant ) {
-      var kp = findElementById( ractive.data.views[idx.i1].elements[idx.i2].dependant );
+    if ( ractive.get("views")[idx.i1].elements[idx.i2].dependant ) {
+      var kp = findElementById( ractive.get("views")[idx.i1].elements[idx.i2].dependant );
       ractive.get( kp+'.values').splice(0, 1);
     }
   },
@@ -460,7 +462,9 @@ listener = ractive.on({
 
     // Push to values array
     var idx = event.index;
-    ractive.data.views[idx.i1].elements[idx.i2].values.push(
+    var idx1 = idx.i1;
+    var idx2 = idx.i2;
+    ractive.push("views."+idx1+".elements."+idx2+".values",
       {"predicate": predicate, "predicateLabel": predicateLabel, "value": value, "source": source});
 
     // Generate depdant values, if any
@@ -529,18 +533,20 @@ listener = ractive.on({
         uri = '<' + selected._source.uri + '>';
         source = 'local';
         var idx = event.index;
-        predicate = ractive.data.views[idx.i1].elements[idx.i2].predicate;
-        predicateLabel = ractive.data.views[idx.i1].elements[idx.i2].label;
-        var predSelect = document.getElementById("multiPred-" + ractive.data.views[idx.i1].elements[idx.i2].id);
+        var idx1 = idx.i1;
+        var idx2 = idx.i2;
+        predicate = ractive.get("views")[idx.i1].elements[idx.i2].predicate;
+        predicateLabel = ractive.get("views")[idx.i1].elements[idx.i2].label;
+        var predSelect = document.getElementById("multiPred-" + ractive.get("views")[idx.i1].elements[idx.i2].id);
         if ( predSelect ) {
           predicateLabel = predSelect.options[predSelect.selectedIndex].innerHTML;
         }
-        var exsitingURI = _.find(ractive.data.views[idx.i1].elements[idx.i2].values, function( e ) {
+        var existingURI = _.find(ractive.get("views")[idx.i1].elements[idx.i2].values, function( e ) {
           return e.value === uri && e.predicate === predicate;
         });
 
-        if ( !exsitingURI ) {
-          ractive.data.views[idx.i1].elements[idx.i2].values.push(
+        if ( !existingURI ) {
+          ractive.push("views."+idx1+".elements."+idx2+".values",
             {"predicate": predicate, "predicateLabel": predicateLabel, "value": uri,
              "URILabel": label, "source": source});
         }
@@ -559,22 +565,24 @@ listener = ractive.on({
     uri = '<' + event.context._source.uri + '>';
     source = 'local';
     var idx = event.index;
-    predicate = ractive.data.views[idx.i1].elements[idx.i2].predicate;
-    predicateLabel = ractive.data.views[idx.i1].elements[idx.i2].label;
-    var predSelect = document.getElementById("multiPred-" + ractive.data.views[idx.i1].elements[idx.i2].id);
+    var idx1 = idx.i1;
+    var idx2 = idx.i2;
+    predicate = ractive.get("views")[idx1].elements[idx2].predicate;
+    predicateLabel = ractive.get("views")[idx1].elements[idx2].label;
+    var predSelect = document.getElementById("multiPred-" + ractive.get("views")[idx1].elements[idx2].id);
     if ( predSelect ) {
       predicateLabel = predSelect.options[predSelect.selectedIndex].innerHTML;
     }
-    var exsitingURI = _.find(ractive.data.views[idx.i1].elements[idx.i2].values, function( e ) {
+    var exsitingURI = _.find(ractive.get("views")[idx1].elements[idx2].values, function( e ) {
       return e.value === uri && e.predicate === predicate;
     });
 
     if ( !exsitingURI ) {
-      ractive.data.views[idx.i1].elements[idx.i2].values.push(
+      ractive.push("views."+idx1+".elements."+idx2+".values", 
         {"predicate": predicate, "predicateLabel": predicateLabel, "value": uri,
          "URILabel": label, "source": source});
     }
-    ractive.update( 'views.'+ idx.i1 + '.elements.' + idx.i2 + '.values' );
+    ractive.update( 'views.'+ idx1 + '.elements.' + idx2 + '.values' );
 
   },
   searchSuggestion: function( event ) {
@@ -645,7 +653,9 @@ listener = ractive.on({
 
     // remove the value we're editing from values array
     var idx = event.index;
-    ractive.data.views[idx.i1].elements[idx.i2].values.splice(idx.i3, 1);
+    var idx1 = idx.i1;
+    var idx2 = idx.i2;
+    ractive.splice("views."+idx1+".elements."+idx2+".values", idx.i3, 1);
   },
   validateFloat: function( event ) {
     var value = event.node.value.trim();
@@ -723,13 +733,14 @@ listener = ractive.on({
   },
   validateLangString: function( event ) {
     var value, lang;
+    console.log(event);
     var idx = event.index;
     value = event.node.value.trim();
     if ( value === "" ) {
       // no action on empty input
       return
     }
-    lang = ractive.data.views[idx.i1].elements[idx.i2].selectedLang;
+    lang = ractive.get("views")[idx.i1].elements[idx.i2].selectedLang;
 
     // associate language tag if it is chosen
     if ( lang === "") {
@@ -761,9 +772,11 @@ listener = ractive.on({
   addText: function( event ) {
     var value, lang, pred;
     var idx = event.index;
-    value = ractive.data.views[idx.i1].elements[idx.i2].currentValue;
-    lang = ractive.data.views[idx.i1].elements[idx.i2].selectedLang;
-    pred = ractive.data.views[idx.i1].elements[idx.i2].predicate;
+    var idx1 = idx.i1;
+    var idx2 = idx.i2;
+    value = ractive.get("views")[idx1].elements[idx2].currentValue;
+    lang = ractive.get("views")[idx1].elements[idx2].selectedLang;
+    pred = ractive.get("views")[idx1].elements[idx2].predicate;
 
     if ( value.trim() === "" ) {
       return;
@@ -781,15 +794,15 @@ listener = ractive.on({
       return e.value === value;
     } );
     if ( exists ) {
-      ractive.data.views[idx.i1].elements[idx.i2].currentValue = "";
+      ractive.get("views")[idx1].elements[idx2].currentValue = "";
       ractive.update();
       return
     }
 
-    ractive.data.views[idx.i1].elements[idx.i2].values.push(
+    ractive.push("views."+idx1+".elements."+idx2+".values",
       {"value": value.replace(/\n/g, "<br/>"), "predicate": pred, "source": "local"});
 
-    ractive.data.views[idx.i1].elements[idx.i2].currentValue = "";
+    ractive.get("views")[idx1].elements[idx2].currentValue = "";
     ractive.update();
   },
   showHiddenField: function( event ) {
@@ -820,7 +833,7 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
       if ( !elem.repeatable && elem.values.length > 1) {
         tooManyValues = true;
       }
-      if ( ractive.data.externalRequired && ractive.data.externalRequired.indexOf( elem.id ) >= 0 && elem.values.length === 0 ) {
+      if ( ractive.get("externalRequired") && ractive.get("externalRequired").indexOf( elem.id ) >= 0 && elem.values.length === 0 ) {
         missingForExternal = true;
       }
       elem.values.forEach(function(v) {
@@ -841,7 +854,7 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
   }
 
   // Toggle button for querying external sources.
-  if ( missingForExternal || !ractive.data.externalRequired ) {
+  if ( missingForExternal || !ractive.get("externalRequired") ) {
     ractive.set( 'externalDisabled', true);
   } else {
     ractive.set( 'externalDisabled', false);
@@ -850,19 +863,19 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
 
   // Use uriFn if it exists
   if ( ractive.get( 'uriFn' ) ) {
-    var createURI = _.every( ractive.data.uriNeedIds, function( id ) {
+    var createURI = _.every( ractive.get("uriNeedIds"), function( id ) {
       return ( values[id].length > 0 );
     });
     if ( createURI ) {
       // got all needed values to generate uri
-      ractive.set( 'overview.uri', ractive.data.uriFn( values ) );
+      ractive.set( 'overview.uri', ractive.get("uriFn")( values ) );
     } else {
       ractive.set( 'overview.uri', '' );
     }
   }
 
-  var sl = ractive.data.searchLabel(values);
-  var dl = ractive.data.displayLabel(values);
+  var sl = ractive.get("searchLabel")(values);
+  var dl = ractive.get("displayLabel")(values);
 
    // create searchLabel and displayLabel
   ractive.set( 'overview.searchLabel', sl);
@@ -872,7 +885,7 @@ ractive.observe('views', function( newValue, oldValue, keypath) {
 ractive.observe( 'overview.uri', function( newURI, oldURI, keyPath ) {
   if ( loading ) { return; }
   var missingValues = false;
-  ractive.data.views.forEach(function(view, i) {
+  ractive.get("views").forEach(function(view, i) {
     view.elements.forEach(function(elem, j) {
       if (!values[elem.id]) {
         values[elem.id] = [];
@@ -1036,7 +1049,7 @@ if ( urlParams.uri ) {
             uriLabels['<' + b.o.value + '>'] = b.l.value;
           }
         });
-        ractive.data.overview.type = [];
+        ractive.set("overview.type", []);
         rdfRes.results.bindings.forEach(function(b) {
           var pred = "<" + b.p.value + ">";
           var source = 'local';
@@ -1092,7 +1105,7 @@ if ( urlParams.uri ) {
                 unknownPred = false;
                 break;
               case "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>":
-                ractive.data.overview.type.push( '<' + b.o + '>');
+                ractive.push("overview.type", '<' + b.o + '>');
                 unknownPred = false;
                 break;
               case internalPred( 'profile' ):
@@ -1103,7 +1116,7 @@ if ( urlParams.uri ) {
 
             // Store predicates and values whitch are NOT in profile schema:
             if (unknownPred) {
-              ractive.data.nonEditableProperties.push({
+              ractive.push("nonEditableProperties", {
               "predicate": pred, "value": getValue( b.o )
               });
             }
