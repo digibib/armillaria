@@ -38,3 +38,18 @@ indexes:
 
 mappings:
 	@go run setupmappings.go indexing.go
+
+docker-up:
+	@vagrant up && vagrant provision
+
+docker-stop:
+	@vagrant ssh -c '(docker stop armillaria && docker rm armillaria) | true'
+
+docker-restart: docker-stop
+	@echo "======= RESTARTING ARMILLARIA CONTAINER======\n"
+	@vagrant ssh -c 'docker run -d -e SERVER_PORT=8080 \
+	-p 8080:8080 \
+	--name armillaria \
+	--link virtuoso:virtuoso \
+	--link elasticsearch:elasticsearch \
+	-t armillaria'
