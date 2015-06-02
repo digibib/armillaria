@@ -30,13 +30,17 @@ Vagrant.configure("2") do |config|
     #https://github.com/digibib/armillaria
     d.build_image "/vagrant",
       args: "-t armillaria"
+  end
 
-    sleep 3
+  # Allow Elasticsearch and Virtuoso dockers 3 secs to spin up before Armillaria
+  config.vm.provision :shell,
+    inline: "sleep 3"
+
+  config.vm.provision :docker do |d|
     d.run "armillaria",
       args: "-p 8080:8080 \
             -e SERVER_PORT=8080 \
             --link elasticsearch:elasticsearch \
             --link virtuoso:virtuoso"
   end
-
 end
