@@ -12,6 +12,12 @@ Vagrant.configure("2") do |config|
   config.ssh.insert_key = false
   config.vm.network "private_network", ip: "192.168.50.13"
 
+  # Temporary fix in order to make docker install on ubuntu/thrusty64,
+  # until this issue is resolved:
+  # https://github.com/mitchellh/vagrant/issues/5697
+  config.vm.provision :shell,
+    inline: "sudo apt-get update"
+
   config.vm.provision :docker do |d|
 
     #https://github.com/tenforce/docker-virtuoso
