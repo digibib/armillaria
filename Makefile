@@ -40,6 +40,7 @@ mappings:
 	@go run setupmappings.go indexing.go
 
 docker-up:
+	@cp data/config_example.json data/config.json
 	@vagrant up && vagrant provision
 
 docker-stop:

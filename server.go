@@ -3,13 +3,13 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"strconv"
-	"strings"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
+	"strings"
 	"syscall"
 
 	"github.com/julienschmidt/httprouter"
@@ -42,26 +42,27 @@ func main() {
 		os.Exit(1)
 	}
 
-  // Override with environment variables if present
+	// Override with environment variables if present
 	for _, env := range os.Environ() {
 		key := strings.Split(env, "=")
 		switch key[0] {
-			case "SERVER_PORT":        cfg.ServePort,_ = strconv.Atoi(key[1])
-			case "VIRTUOSO_PORT_8890_TCP_ADDR":
-				cfg.RDFStore.Endpoint = fmt.Sprintf("http://%s:8890/sparql-auth", key[1])
-			case "SPARUL_USER":        cfg.RDFStore.Username = key[1]
-			case "SPARUL_PASS":        cfg.RDFStore.Password = key[1]
-			case "DEFAULT_GRAPH":      cfg.RDFStore.DefaultGraph = key[1]
-			case "ELASTICSEARCH_PORT_9300_TCP_ADDR":
-				cfg.Elasticsearch = fmt.Sprintf("http://%s:9200/", key[1])
+		case "SERVER_PORT":
+			cfg.ServePort, _ = strconv.Atoi(key[1])
+		case "VIRTUOSO_PORT_8890_TCP_ADDR":
+			cfg.RDFStore.Endpoint = fmt.Sprintf("http://%s:8890/sparql-auth", key[1])
+		case "SPARUL_USER":
+			cfg.RDFStore.Username = key[1]
+		case "SPARUL_PASS":
+			cfg.RDFStore.Password = key[1]
+		case "DEFAULT_GRAPH":
+			cfg.RDFStore.DefaultGraph = key[1]
+		case "ELASTICSEARCH_PORT_9300_TCP_ADDR":
+			cfg.Elasticsearch = fmt.Sprintf("http://%s:9200/", key[1])
 		}
 	}
 
 	// Setup logging
-	l.SetHandler(log.MultiHandler(
-		log.LvlFilterHandler(log.LvlInfo, log.Must.FileHandler(cfg.LogFile, log.LogfmtFormat())),
-		log.StreamHandler(os.Stdout, log.TerminalFormat())),
-	)
+	l.SetHandler(log.StreamHandler(os.Stdout, log.TerminalFormat()))
 
 	// Load index mappings (RDF predicate -> Elasticsearch document field)
 	indexMappings, err = loadFromProfiles()
