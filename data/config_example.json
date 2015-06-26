@@ -23,11 +23,11 @@
       "Type": "SPARQL"
     },
     "BS": {
-      "Endpoint": "http://z39proxy:8080?apikey=yourapikey&base=bibbi&isbn=%s",
+      "Endpoint": "http://10.172.2.4:3000?apikey=test&base=bibbi&isbn=%s",
       "Type": "GET"
     },
     "LOC": {
-      "Endpoint": "http://z39proxy:8080?apikey=yourapikey&base=loc&isbn=%v",
+      "Endpoint": "http://10.172.2.4:3000?apikey=test&base=loc&isbn=%v",
       "Type": "GET"
     },
     "Geonames": {

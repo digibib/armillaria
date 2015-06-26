@@ -16,7 +16,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
 ENV SERVER_PORT         8080
 ENV SPARUL_USER         dba
 ENV SPARUL_PASS         secret
-ENV DEFAULT_GRAPH       http://example.com/test
+ENV DEFAULT_GRAPH       http://data.deichman.no/books
 
 ENV HOME /app
 WORKDIR /app
