@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -16,6 +17,52 @@ import (
 func urlify(s string) string { return fmt.Sprintf("<%s>", s) }
 
 func main() {
+	es := os.Getenv("ELASTICSEARCH_PORT_9200_TCP_ADDR")
+
+	// clear any old indices
+	// curl -XDELETE http://172.17.0.20:9200/public
+	req, err := http.NewRequest(
+		"DELETE",
+		"http://"+es+":9200/public/",
+		nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	client := &http.Client{}
+	_, err = client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// setup analyzers
+	//curl -XPUT http://172.17.0.20:9200/public -d @data/es_settings.json
+	mb, err := ioutil.ReadFile("data/es_settings.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	req, err = http.NewRequest(
+		"PUT",
+		"http://"+es+":9200/public/",
+		bytes.NewReader(mb),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	resp.Body.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if resp.StatusCode > 300 || resp.StatusCode < 200 {
+		log.Fatal("Failed to setup indexing analyzer")
+	}
+
+	// ---
 	cb, err := ioutil.ReadFile("data/mappings/_common")
 	if err != nil {
 		log.Fatal(err)
@@ -67,13 +114,12 @@ func main() {
 
 		req, err := http.NewRequest(
 			"PUT",
-			"http://localhost:9200/public/"+profile+"/_mapping",
+			"http://"+es+":9200/public/"+profile+"/_mapping",
 			bytes.NewReader(export.Bytes()))
 		if err != nil {
 			log.Fatal(err)
 		}
 		req.Header.Set("Content-Type", "application/json")
-		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
 			log.Fatal(err)

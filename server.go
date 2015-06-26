@@ -26,7 +26,7 @@ var (
 	l             = log.New()
 	queues        Queues
 	indexMappings map[string]map[string]string // indexMappings[profile]map[predicate] = property
-	esIndexer     = Indexer{host: "http://localhost:9200", client: http.DefaultClient}
+	esIndexer     = Indexer{host: "http://" + os.Getenv("ELASTICSEARCH_PORT_9200_TCP_ADDR") + ":9200", client: http.DefaultClient}
 	idGen         = newIdService()
 	kohaCookies   http.CookieJar
 	qBank         sparql.Bank
@@ -56,7 +56,7 @@ func main() {
 			cfg.RDFStore.Password = key[1]
 		case "DEFAULT_GRAPH":
 			cfg.RDFStore.DefaultGraph = key[1]
-		case "ELASTICSEARCH_PORT_9300_TCP_ADDR":
+		case "ELASTICSEARCH_PORT_9200_TCP_ADDR":
 			cfg.Elasticsearch = fmt.Sprintf("http://%s:9200/", key[1])
 		}
 	}
