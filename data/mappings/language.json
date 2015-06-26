@@ -1,1 +1,7 @@
-{}
+{
+  "<http://purl.org/dc/terms/title>": {
+    "title": {
+      "type": "string"
+    }
+  }
+}
