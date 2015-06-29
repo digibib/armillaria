@@ -21,7 +21,6 @@ deps:
 	@wget http://cdn.ractivejs.org/0.5.8/ractive.min.js -O data/public/js/ractive.js
 	@wget https://raw.githubusercontent.com/ractivejs/ractive-events-keys/master/dist/ractive-events-keys.min.js -O data/public/js/ractive-events-keys.js
 	@wget http://underscorejs.org/underscore-min.js -O data/public/js/underscore-min.js
-	@wget -q --no-check-certificate https://gist.githubusercontent.com/bensinober/414f0babd78efc052321/raw/9c633f6465c6b1ac8d4fec8512e1c76540982ee8/ractive-patch-gh-1982 -O - | patch -d /app/data/public/js
 
 build:
 	@export GOBIN=$(shell pwd)
