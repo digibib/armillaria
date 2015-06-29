@@ -123,6 +123,7 @@
 									{{>gYearInput}}
 								{{/}}
 
+
 								{{# type == 'langString'}}
 									{{>langStringInput}}
 								{{/}}
@@ -214,7 +215,7 @@
 					<table>
 					{{/}}
 				</div>
-				{{#partial URIInput}}
+				<!-- {{>URIInput}} -->
 					<input
 					  type="search"
 						on-keyup='searchForURI'
@@ -237,41 +238,41 @@
 							</div>
 						</div>
 					{{/}}
-				{{/partial URIInput}}
+				<!-- {{/URIInput}} -->
 
-				{{#partial URLInput}}
+				<!-- {{>URLInput}} -->
 						<input id="{{id}}"
 						  type="text"
 						  value={{currentValue}}
 							on-enter='validateURL'/>
 								<span class="errorInfo">{{errorInfo}}</span>
-				{{/partial URLInput}}
+				<!-- {{/URLInput}} -->
 
-				{{#partial floatInput}}
+				<!-- {{>floatInput}} -->
 						<input id="{{id}}"
 							type="text"
 						  value='{{currentValue}}'
 							on-enter='validateFloat'/>
 							<span class="errorInfo">{{errorInfo}}</span>
-				{{/partial floatInput}}
+				<!-- {{/floatInput}} -->
 
-				{{#partial integerInput}}
+				<!-- {{>integerInput}} -->
 						<input id="{{id}}"
 						  type="text"
 						  value={{currentValue}}
 							on-enter='validateInteger'/>
 							<span class="errorInfo">{{errorInfo}}</span>
-				{{/partial integerInput}}
+				<!-- {{/integerInput}} -->
 
-				{{#partial gYearInput}}
+				<!-- {{>gYearInput}} -->
 						<input id="{{id}}"
 						  type="text"
 						  value={{currentValue}}
 							on-enter='validateGYear'/>
 							<span class="errorInfo">{{errorInfo}}</span>
-				{{/partial gYearInput}}
+				<!-- {{/gYearInput}} -->
 
-				{{#partial langStringInput}}
+				<!-- {{>langStringInput}} -->
 						<input id="{{id}}"
 							type="text"
 						  value={{currentValue}}
@@ -282,47 +283,47 @@
 									<option value={{value}}>{{label}}</option>
 								{{/languages}}
 							</select>
-				{{/partial langStringInput}}
+				<!-- {{/langStringInput}} -->
 
-				{{#partial stringInput}}
+				<!-- {{>stringInput}} -->
 						<input id="{{id}}"
 						  type="text"
 						  value={{currentValue}}
 							on-enter='validateString'/>
 							<span class="errorInfo">{{errorInfo}}</span>
-				{{/partial stringInput}}
+				<!-- {{/stringInput}} -->
 
-				{{#partial isbnInput}}
+				<!-- {{>isbnInput}} -->
 						<input id="{{id}}"
 						  type="text"
 						  value={{currentValue}}
 							on-enter='validateISBN'/>
 							<span class="errorInfo">{{errorInfo}}</span>
-				{{/partial isbnInput}}
+				<!-- {{/isbnInput}} -->
 
 
-				{{#partial textInput}}
+				<!-- {{>textInput}} -->
 						<textarea id="{{id}}"
 						  value={{currentValue}}
 							rows='2'/>
 							<br/><select class="langTagSelect" value={{.selectedLang}}>
-								{{#languages:i}}
+								{{#languages}}
 									<option value={{value}}>{{label}}</option>
 								{{/languages}}
 							</select>
 							<button class="smallButton monospace" on-click="addText">Legg til</button>
 							<span class="errorInfo">{{errorInfo}}</span>
-				{{/partial textInput}}
+				<!-- {{/textInput}} -->
 
-				{{#partial selectMustInput}}
+				<!-- {{>selectMustInput}} -->
 						<select class="valSelect" value={{values[0].value}} on-change="selectOption">
 							{{# options}}
 								<option value={{value}}>{{URILabel || value}}</option>
 							{{/options}}
 						</select>
 						<span class="errorInfo">{{errorInfo}}</span>
-				{{/partial selectMustInput}}
-				{{#partial selectInput}}
+				<!-- {{/selectMustInput}} -->
+				<!-- {{>selectInput}} -->
 						<select
 							class="valSelect" value={{.selected}}>
 							{{# options}}
@@ -331,15 +332,15 @@
 						</select>
 						<button class="smallButton monospace" on-click="selectAddOption">Legg til</button>
 						<span class="errorInfo">{{errorInfo}}</span>
-				{{/partial selectInput}}
+				<!-- {{/selectInput}} -->
 
-				{{#partial multiPredInput}}
+				<!-- {{>multiPredInput}} -->
 						<select id="multiPred-{{id}}" class="valSelect" value={{.predicate}}>
 							{{# predicates}}
 								<option value={{uri}}>{{predicateLabel}}</option>
 							{{/predicates}}
 						</select>
-				{{/partial multiPredInput}}
+				<!-- {{/multiPredInput}} -->
 			</script>
 		</div>
 		<script src="/public/profiles/_common.js"></script>
