@@ -36,7 +36,7 @@ RUN go get github.com/knakk/rdf
 RUN mkdir -p /app/data/public/css && \
     mkdir -p /app/data/public/js
 RUN wget -q --no-check-certificate http://necolas.github.com/normalize.css/3.0.1/normalize.css -O /app/data/public/css/normalize.css
-RUN wget -q --no-check-certificate http://cdn.ractivejs.org/0.7.3/ractive.js -O /app/data/public/js/ractive.js
+RUN wget -q --no-check-certificate http://cdn.ractivejs.org/0.5.8/ractive.js -O /app/data/public/js/ractive.js
 RUN wget -q --no-check-certificate https://github.com/ractivejs/cdn.ractivejs.org/blob/gh-pages/0.7.3/ractive.min.js.map -O /app/data/public/js/ractive.js.map
 RUN wget -q --no-check-certificate https://raw.github.com/ractivejs/ractive-events-keys/master/dist/ractive-events-keys.js -O /app/data/public/js/ractive-events-keys.js
 RUN wget -q --no-check-certificate http://underscorejs.org/underscore-min.js -O /app/data/public/js/underscore-min.js
@@ -44,8 +44,8 @@ RUN wget -q --no-check-certificate http://underscorejs.org/underscore-min.js -O 
 ADD . /app
 
 # patch ractive.js for event.index
-RUN wget -q --no-check-certificate \
-  https://gist.githubusercontent.com/bensinober/414f0babd78efc052321/raw/9c633f6465c6b1ac8d4fec8512e1c76540982ee8/ractive-patch-gh-1982 -O - | patch -d /app/data/public/js
+#RUN wget -q --no-check-certificate \
+#  https://gist.githubusercontent.com/bensinober/414f0babd78efc052321/raw/9c633f6465c6b1ac8d4fec8512e1c76540982ee8/ractive-patch-gh-1982 -O - | #patch -d /app/data/public/js
 
 RUN go build -o armillaria
 
